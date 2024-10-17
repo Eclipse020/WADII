@@ -1,25 +1,29 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from "./router"
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// src/main.js
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+import { auth, db } from './services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBg4ZKf4hYPsG6X1hdm7_p-D6iG-rnYRDs",
-  authDomain: "wad2-testing-v2.firebaseapp.com",
-  projectId: "wad2-testing-v2",
-  storageBucket: "wad2-testing-v2.appspot.com",
-  messagingSenderId: "891321867847",
-  appId: "1:891321867847:web:b407e816c8d12153159b62"
-};
+const app = createApp(App);
 
-// Initialize Firebase
-initializeApp(firebaseConfig);
-const app = createApp(App)
+// Monitor auth state changes
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    console.log('User is logged in:', user);
+    
+    // Fetch user profile from Firestore
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      // You can store userData in a global state or Vuex store if needed
+      console.log('User profile:', userData);
+    }
+  } else {
+    console.log('No user logged in');
+    // Clear any user data if necessary
+  }
+});
 
-app.use(router)
-
-app.mount('#app')
+app.use(router);
+app.mount('#app');
