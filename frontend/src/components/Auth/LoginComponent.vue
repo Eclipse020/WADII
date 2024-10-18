@@ -6,7 +6,7 @@
       <!-- Email and Password Login Form -->
       <form @submit.prevent="loginWithEmail">
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="email">Email: </label>
           <input
             type="email"
             v-model="email"
@@ -18,7 +18,7 @@
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">Password: </label>
           <input
             type="password"
             v-model="password"
@@ -27,8 +27,9 @@
             required
             aria-label="Password"
           />
+          <p class="mt-3">Forgot your password? <router-link to="/reset-password">Reset here</router-link>.</p>
         </div>
-
+        
         <!-- Email Login Button -->
         <button type="submit" class="btn btn-primary btn-block">
           Login
@@ -44,7 +45,7 @@
       <div class="text-center mt-3">
         <p>
           Don’t have an account?
-          <router-link to="/register">Register</router-link>
+          <router-link to="/register">Register Here</router-link>
         </p>
       </div>
     </div>

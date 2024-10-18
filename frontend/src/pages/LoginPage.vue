@@ -1,9 +1,7 @@
 <template>
   <div>
     <Login />
-    <p class="mt-3">
-      Forgot your password? <router-link to="/reset-password">Reset here</router-link>.
-    </p>
+    
   </div>
 </template>
 
