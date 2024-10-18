@@ -1,33 +1,53 @@
 <template>
-  <div class="container">
-    <h2>Login</h2>
-    <form @submit.prevent="loginWithEmail">
-      <div class="form-group">
-        <input
-          type="email"
-          v-model="email"
-          placeholder="Email"
-          class="form-control"
-          required
-          aria-label="Email"
-        />
+  <div class="login-container">
+    <div class="login-card">
+      <h2 class="text-center">Login</h2>
+
+      <!-- Email and Password Login Form -->
+      <form @submit.prevent="loginWithEmail">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            v-model="email"
+            placeholder="Email address"
+            class="form-control"
+            required
+            aria-label="Email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            v-model="password"
+            placeholder="Password"
+            class="form-control"
+            required
+            aria-label="Password"
+          />
+        </div>
+
+        <!-- Email Login Button -->
+        <button type="submit" class="btn btn-primary btn-block">
+          Login
+        </button>
+      </form>
+
+      <!-- Google Login Button -->
+      <button @click="loginWithGoogle" class="btn btn-outline-danger btn-block mt-3">
+        <i class="fab fa-google"></i> Login with Google
+      </button>
+
+      <!-- Register Link -->
+      <div class="text-center mt-3">
+        <p>
+          Don’t have an account?
+          <router-link to="/register">Register</router-link>
+        </p>
       </div>
-      <div class="form-group">
-        <input
-          type="password"
-          v-model="password"
-          placeholder="Password"
-          class="form-control"
-          required
-          aria-label="Password"
-        />
-      </div>
-      <button type="submit" class="btn btn-primary">Login</button>
-    </form>
-    <button @click="loginWithGoogle" class="btn btn-danger mt-3">
-      Login with Google
-    </button>
-    <p>Don't have an account? <router-link to="/register">Register</router-link></p>
+    </div>
   </div>
 </template>
 
@@ -48,9 +68,9 @@ export default {
     async loginWithEmail() {
       try {
         await signInWithEmailAndPassword(auth, this.email, this.password);
-        this.$router.push('/'); 
+        this.$router.push('/');
       } catch (error) {
-        this.errorMessage = 'Login failed: ' + error.message; 
+        this.errorMessage = 'Login failed: ' + error.message;
         console.error(this.errorMessage);
       }
     },
@@ -76,7 +96,7 @@ export default {
           console.log('User profile saved to Firestore');
         }
 
-        this.$router.push('/'); 
+        this.$router.push('/');
       } catch (error) {
         console.error('Google Sign-In error', error);
       }
@@ -84,3 +104,52 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8f9fa; /* Light background */
+}
+
+.login-card {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+}
+
+h2 {
+  font-weight: bold;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.fab {
+  margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    padding: 1.5rem;
+  }
+}
+</style>

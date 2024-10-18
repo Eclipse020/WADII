@@ -63,7 +63,12 @@ export default {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
         this.user = { ...this.user, ...userDoc.data() };
+      } else {
+        console.error('No such document!');
       }
+    } else {
+      console.error('No user logged in');
+      this.$router.push('/login');  // Redirect to login if no user
     }
   },
   methods: {

@@ -48,6 +48,7 @@ export default {
     async logout() {
       try {
         await signOut(auth);
+        localStorage.removeItem('user');  // Clear the user information
         this.$router.push('/login');
       } catch (error) {
         alert('Logout failed: ' + error.message);
