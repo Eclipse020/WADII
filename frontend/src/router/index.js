@@ -5,6 +5,8 @@ import { auth } from '../services/firebase';
 // Import Pages
 import HomePage from '../pages/HomePage.vue';
 import FridgePage from '../pages/FridgePage.vue';
+import SummaryPage from '../pages/SummaryPage.vue';
+import CustomizePage from '../pages/CustomizePage.vue';
 import MealPlanner from '../pages/MealPlanner.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import RegistrationPage from '../pages/RegistrationPage.vue';
@@ -25,6 +27,18 @@ const routes = [
     name: 'Fridge',
     component: FridgePage,
     meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'summary',
+        name: 'SummaryPage',
+        component: SummaryPage,
+      },
+      {
+        path: 'customize',
+        name: 'CustomizePage',
+        component: CustomizePage,
+      }
+    ]
   },
   {
     path: '/mealPlanner',

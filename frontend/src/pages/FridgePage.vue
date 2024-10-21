@@ -1,14 +1,19 @@
 <template>
+
   <div class="container-fluid">
     <div class="content">
-      <header class="d-flex justify-content-between align-items-center">
-        <p class="m-0">My Fridge</p>
+      <header class="my-3 d-flex justify-content-end align-items-end">
         <div>
-          <button class="btn btn-primary me-2" @click="sortByCategory">Category &#8597;</button>
-          <button class="btn btn-primary me-2" @click="navigateTo('summary.html')">View Inventory Summary</button>
-          <button class="btn btn-primary" @click="navigateTo('customize.html')">Customize</button>
+          <button class="btn btn-success btn-sm me-2" @click="sortByCategory">Category &#8597;</button>
+          <button class="btn btn-success btn-sm me-2" @click="navigateTo('summary')">View Inventory Summary</button>
+          <button class="btn btn-success btn-sm" @click="navigateTo('customize')">Customize</button>
         </div>
       </header>
+
+      <p v-if="!items || items.length === 0">
+        Your Fridge is Empty ~&#127810;<br>
+        <img class="img-fluid" style="width: 300px" src="../assets/emptyFridge.jpg" alt="Empty Fridge">
+      </p>
 
       <!--Categorized Items-->
       <div v-for="(itemsInCategory, category) in finalItems" :key="category" class="col-12">
@@ -35,7 +40,7 @@
                 </div>
                 <div class="mt-auto d-flex flex-column">
                   <button class="btn btn-secondary btn-sm mb-1 cardBtn" @click="editItem(item)">Edit</button>
-                  <button class="btn btn-primary btn-sm cardBtn" @click="deleteItem(item.id)">Delete</button>
+                  <button class="btn btn-danger btn-sm cardBtn" @click="deleteItem(item.id)">Delete</button>
                 </div>
               </div>
             </div>
@@ -44,7 +49,7 @@
       </div>
 
       <!--Add Product + Edit Product Card-->
-      <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-primary addButton">
+      <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-success btn-sm addButton">
         Add Product
       </button>
 
@@ -79,7 +84,7 @@
               <label class="form-label" for="expiryDate">Expiry Date</label>
               <input v-model="itemExpiryDate" class="form-control" type="date" id="expiryDate" required />
             </div>
-            <button type="submit" class="btn btn-primary" id="btnAdd">{{ isEditing ? 'Save' : 'Add!' }}</button>
+            <button type="submit" class="btn btn-success" id="btnAdd">{{ isEditing ? 'Save' : 'Add!' }}</button>
           </form>
         </div>
       </div>
@@ -88,9 +93,11 @@
 </template>
 
 <script>
-import { db, auth } from '../services/firebase'; // Adjust path as necessary
+import { db, auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, getDoc, addDoc, deleteDoc, doc, setDoc, updateDoc } from "firebase/firestore";
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; 
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default {
 
@@ -129,6 +136,15 @@ export default {
     };
   },
   methods: {
+
+    navigateTo(page) {
+      // Navigate to the appropriate route based on the page parameter
+      if (page === 'summary') {
+          this.$router.push({ name: 'SummaryPage' });
+      } else if (page === 'customize') {
+          this.$router.push({ name: 'CustomizePage' });
+      }
+    },
 
     //Get Database: Start
     async getCurrentUserItems() {
@@ -410,7 +426,7 @@ export default {
 
 <style scoped>
 /* Content */
-body {
+template {
   margin: 10px;
 }
 
@@ -472,7 +488,6 @@ header button:first-child {
   display: flex;
   flex-direction: column;
   font-size: 18px;
-  /* Adjust font size for better readability */
   padding: 15px;
   flex-grow: 1;
   color: #333;
@@ -480,9 +495,7 @@ header button:first-child {
 
 .card-info {
   flex-grow: 1;
-  /* Allow this section to take up space */
   margin-bottom: 10px;
-  /* Add some space before buttons */
 }
 
 .card-text {
@@ -493,17 +506,14 @@ header button:first-child {
 
 .expiry-date {
   font-weight: bold;
-  /* Make expiry date bold */
 }
 
 .quantity {
   font-weight: bold;
-  /* Make quantity bold */
 }
 
 .cardBtn {
   max-width: 190px;
-  /* Make buttons take the full width */
 }
 
 
@@ -517,8 +527,8 @@ header button:first-child {
 
 .addButton {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 100px;
+  right: 10px;
 }
 
 /*Form*/
@@ -549,6 +559,10 @@ h5 {
   z-index: 1000;
   border-radius: 15px;
   font-family: 'Roboto', sans-serif;
+}
+
+.addCard, .card-body {
+  text-align: left; /* Ensure text alignment is left */
 }
 
 .btnClose {
@@ -588,22 +602,16 @@ h5 {
 /*Sort btn*/
 .category-container {
   display: flex;
-  /* Use flexbox for layout */
   justify-content: space-between;
-  /* Space items between */
   align-items: center;
-  /* Center items vertically */
   margin: 10px 0;
-  /* Add some margin above and below */
 }
 
 #sortButton {
   display: flex;
-  /* Ensures buttons are in a row */
 }
 
 .btn2 {
   margin-left: 10px;
-  /* Add spacing between buttons */
 }
 </style>
