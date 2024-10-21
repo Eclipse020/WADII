@@ -31,13 +31,13 @@
         </div>
         
         <!-- Email Login Button -->
-        <button type="submit" class="btn btn-primary btn-block">
+        <button type="submit" class="btn btn-primary btn-custom btn-block">
           Login
         </button>
       </form>
 
       <!-- Google Login Button -->
-      <button @click="loginWithGoogle" class="btn btn-outline-danger btn-block mt-3">
+      <button @click="loginWithGoogle" class="btn btn-outline-danger btn-custom btn-block mt-3">
         <i class="fab fa-google"></i> Login with Google
       </button>
 
@@ -107,6 +107,7 @@ export default {
 </script>
 
 <style scoped>
+/* Ensure consistent container styling */
 .login-container {
   display: flex;
   justify-content: center;
@@ -115,6 +116,7 @@ export default {
   background-color: #f8f9fa; /* Light background */
 }
 
+/* Style the login card similar to other components */
 .login-card {
   background-color: white;
   padding: 2rem;
@@ -126,14 +128,43 @@ export default {
 
 h2 {
   font-weight: bold;
+  color: #42b983; /* Primary color */
 }
 
 .form-group {
   margin-bottom: 1.5rem;
 }
 
-.btn-block {
+input {
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
   width: 100%;
+}
+
+/* Custom button styles */
+.btn-custom {
+  background-color: #42b983; /* Primary theme color */
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 4px;
+}
+
+.btn-custom:hover {
+  background-color: #3aa673;
+}
+
+/* Google login button outline style */
+.btn-outline-danger {
+  border-color: #3aa673;
+  color: white;
+}
+
+.btn-outline-danger:hover {
+  background-color: #3aa673;
+  color: white;
 }
 
 .mt-3 {
@@ -144,10 +175,7 @@ h2 {
   text-align: center;
 }
 
-.fab {
-  margin-right: 8px;
-}
-
+/* Media query for smaller screens */
 @media (max-width: 768px) {
   .login-card {
     padding: 1.5rem;

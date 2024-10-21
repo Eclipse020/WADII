@@ -1,41 +1,106 @@
 <template>
-  <section class="hero">
+  <div>
+    <!-- Hero Section -->
+    <section class="hero">
       <div class="hero-content">
         <h2>Cook Healthier, Live Better</h2>
         <p>Explore personalized healthy recipes based on your ingredients and dietary preferences.</p>
         <router-link to="/recipes" class="cta-button">Discover Recipes</router-link>
       </div>
-  </section>
+    </section>
 
-  <div class="home-page">
-    <h1>Welcome to HealthyChef</h1>
-    <p class="intro-text">
-      HealthyChef encourages Singaporeans to cook healthier meals at home by offering a wide range of personalized healthy meal recipes.
-    </p>
-    <div class="features">
-      <div class="feature-box">
-        <h2>Personalized Recipes</h2>
-        <p>Receive meal suggestions tailored to your available ingredients and dietary preferences for a balanced diet.</p>
+    <!-- Home Page Content -->
+    <div class="home-page">
+      <div class="container" v-if="user">
+        <h1>Welcome to HealthyChef, {{ user.displayName }}</h1>
+        <p class="intro-text">
+          HealthyChef encourages Singaporeans to cook healthier meals at home by offering a wide range of personalized healthy meal recipes.
+        </p>
       </div>
-      <div class="feature-box">
-        <h2>Virtual Fridge Management</h2>
-        <p>Keep track of your ingredients and get notified before they expire with our virtual fridge and expiry alerts.</p>
+
+      <!-- Display user-specific information if the user is logged in -->
+      <!-- some user data includes: user.email, user.notifications, user.dietaryPreferences -->
+      <!-- <div class="container" v-if="user">
+        <h2>Welcome, </h2>
+        <p>Your email: {{ user.email }}</p>
+        <p>Receive notifications: {{ user.notifications }}</p>
+        <p>Dietary Preferences: {{ user.dietaryPreferences }}</p>
+        <button @click="logout" class="btn btn-danger">Logout</button>
+      </div> -->
+
+      <!-- If user is not loaded yet, show loading message -->
+      <div v-else>
+        <p>Loading user information...</p>
       </div>
-      <div class="feature-box">
-        <h2>Reduce Food Waste</h2>
-        <p>Minimize food waste by using what you already have and exploring new recipes based on your inventory.</p>
+
+      <router-link to="/settings" class="btn btn-secondary mt-3">Settings</router-link>
+
+      <!-- Features Section -->
+      <div class="features">
+        <div class="feature-box">
+          <h2>Personalized Recipes</h2>
+          <p>Receive meal suggestions tailored to your available ingredients and dietary preferences for a balanced diet.</p>
+        </div>
+        <div class="feature-box">
+          <h2>Virtual Fridge Management</h2>
+          <p>Keep track of your ingredients and get notified before they expire with our virtual fridge and expiry alerts.</p>
+        </div>
+        <div class="feature-box">
+          <h2>Reduce Food Waste</h2>
+          <p>Minimize food waste by using what you already have and exploring new recipes based on your inventory.</p>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { auth, db } from '../services/firebase';  // Firebase imports
+import { signOut } from 'firebase/auth';           // Firebase auth method
+import { doc, getDoc } from 'firebase/firestore';  // Firestore methods
+
 export default {
-  name: 'HomePage',
-}
+  data() {
+    return {
+      user: null, // User data will be stored here
+    };
+  },
+  async created() {
+    const currentUser = auth.currentUser; // Get current user
+    if (currentUser) {
+      try {
+        const userRef = doc(db, 'users', currentUser.uid); // Reference to the user document
+        const userSnap = await getDoc(userRef);            // Fetch user document
+
+        if (userSnap.exists()) {
+          this.user = userSnap.data(); // Load user data into the component
+        } else {
+          console.error('No such document!');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error.message);
+        this.$router.push('/login'); // Redirect to login if error occurs
+      }
+    } else {
+      this.$router.push('/login'); // Redirect to login if user not authenticated
+    }
+  },
+  methods: {
+    async logout() {
+      try {
+        await signOut(auth); // Sign out user
+        localStorage.removeItem('user'); // Clear local storage
+        this.$router.push('/login'); // Redirect to login page
+      } catch (error) {
+        alert('Logout failed: ' + error.message);
+      }
+    }
+  }
+};
 </script>
 
 <style scoped>
+/* Styles for HomePage */
 .home-page {
   text-align: center;
   padding: 30px;
@@ -116,67 +181,4 @@ h1 {
 .cta-button:hover {
   background-color: #ffd700;
 }
-</style>
-<template>
-  <div class="container" v-if="user">
-    <h2>Welcome, {{ user.displayName }}</h2>
-    <p>Your email: {{ user.email }}</p>
-    <p>Display Name: {{ user.displayName }}</p>
-    <p>Receive notifications: {{ user.notifications }}</p>
-    <p>Dietary Preferences: {{ user.dietaryPreferences }}</p>
-    <button @click="logout" class="btn btn-danger">Logout</button>
-  </div>
-  <div v-else>
-    <p>Loading user information...</p>
-  </div>
-  <router-link to="/settings" class="btn btn-secondary mt-3">Settings</router-link>
-</template>
-
-<script>
-import { auth, db } from '../services/firebase';
-import { signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-
-export default {
-  data() {
-    return {
-      user: null,
-    };
-  },
-  async created() {
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      try {
-        const userRef = doc(db, 'users', currentUser.uid);
-        const userSnap = await getDoc(userRef);
-
-        if (userSnap.exists()) {
-          this.user = userSnap.data();
-        } else {
-          console.error('No such document!');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error.message);
-        this.$router.push('/login'); // Redirect if error occurs
-      }
-    } else {
-      this.$router.push('/login');
-    }
-  },
-  methods: {
-    async logout() {
-      try {
-        await signOut(auth);
-        localStorage.removeItem('user');  // Clear the user information
-        this.$router.push('/login');
-      } catch (error) {
-        alert('Logout failed: ' + error.message);
-      }
-    }
-  }
-};
-</script>
-
-<style scoped>
-/* Optional styles */
 </style>

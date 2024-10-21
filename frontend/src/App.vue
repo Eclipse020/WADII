@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <!-- Header Section -->
-    <header class="app-header">
+    <!-- Conditionally show header and footer only if user is authenticated -->
+    <header v-if="isAuthenticated" class="app-header">
       <div class="logo-heading-container">
         <img :src="require('@/assets/healthychef.png')" alt="HealthyChef Logo" class="logo" />
         <h1>HealthyChef</h1>
@@ -33,25 +33,38 @@
       <router-view />
     </main>
 
-    <!-- Footer Section -->
-    <footer>
+    <!-- Conditionally show footer only if user is authenticated -->
+    <footer v-if="isAuthenticated">
       <p>&copy; 2024 HealthyChef. All rights reserved.</p>
     </footer>
   </div>
 </template>
 
 <script>
+import { auth } from '@/services/firebase';
+
 export default {
   name: 'App',
+  data() {
+    return {
+      isAuthenticated: false, // Track the authentication state
+    };
+  },
+  mounted() {
+    // Watch for changes in the user's authentication state
+    auth.onAuthStateChanged((user) => {
+      this.isAuthenticated = !!user; // If user exists, set isAuthenticated to true
+    });
+  },
 };
 </script>
 
 <style scoped>
 /* General Reset for Body and HTML */
 html, body {
-  margin: 0; /* Remove default margin */
-  padding: 0; /* Remove default padding */
-  height: 100%; /* Full height */
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 /* General App Styling */
@@ -67,24 +80,24 @@ html, body {
   color: white;
   padding: 20px;
   display: flex;
-  flex-direction: column; /* Stack logo and nav vertically */
-  align-items: center; /* Center items horizontally */
+  flex-direction: column;
+  align-items: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .logo-heading-container {
   display: flex;
   align-items: center;
-  margin-bottom: 15px; /* Space between logo and nav */
+  margin-bottom: 15px;
 }
 
 .logo {
-  height: 50px; /* Decreased logo size */
-  margin-right: 10px; /* Adjusted spacing */
+  height: 50px;
+  margin-right: 10px;
 }
 
 h1 {
-  font-size: 1.5rem; /* Decreased heading size */
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
@@ -95,13 +108,13 @@ h1 {
 .app-nav {
   display: flex;
   gap: 20px;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
-  justify-content: center; /* Center nav items */
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .nav-link {
   color: white;
-  font-size: 1rem; /* Decreased font size for links */
+  font-size: 1rem;
   font-weight: bold;
   text-decoration: none;
   position: relative;
@@ -119,24 +132,5 @@ footer {
   padding: 20px;
   margin-top: 20px;
   font-size: 0.8em;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-  .logo {
-    height: 40px; /* Smaller logo for smaller screens */
-  }
-
-  h1 {
-    font-size: 1.2rem; /* Smaller heading size */
-  }
-
-  .nav-link {
-    font-size: 0.9rem; /* Smaller font size for links */
-  }
-
-  .app-nav {
-    flex-direction: column; /* Stack nav links vertically */
-  }
 }
 </style>
