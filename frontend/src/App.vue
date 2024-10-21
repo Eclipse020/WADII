@@ -19,7 +19,7 @@
         <router-link to="/recipes" class="nav-link">
           <i class="fas fa-utensils"></i> Recipes
         </router-link>
-        <router-link to="/planner" class="nav-link">
+        <router-link to="/mealPlanner" class="nav-link">
           <i class="fas fa-calendar-alt"></i> Meal Planner
         </router-link>
         <router-link to="/profile" class="nav-link">
@@ -29,7 +29,7 @@
     </header>
 
     <!-- Main Content -->
-    <main>
+    <main class="container-fluid p-0">
       <router-view />
     </main>
 

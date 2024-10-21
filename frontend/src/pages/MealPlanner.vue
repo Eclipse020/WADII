@@ -1,6 +1,7 @@
 <template>
   <div class="home">
-    <h1>Welcome to Your Meal Planning App</h1>
+    <h1>Plan Your Meals</h1>
+      <p>Unsure on what to cook? Don't worry, Josh is here to help!</p>
     <MealPlanner />
   </div>
 </template>
