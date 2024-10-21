@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { auth } from '../services/firebase';
 
+
 // Import Pages
 import HomePage from '../pages/HomePage.vue';
 import FridgePage from '../pages/FridgePage.vue';

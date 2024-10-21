@@ -99,8 +99,9 @@
   // Initialize Firebase
   initializeApp(firebaseConfig);
   const db = getFirestore();
-  
+
   export default {
+    name: 'FridgePage',
     data() {
       return {
         items: [],
