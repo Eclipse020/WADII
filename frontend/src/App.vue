@@ -62,7 +62,7 @@ export default {
   },
   created() {
     const auth = getAuth();
-
+    
     // Monitor auth state on page load
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -173,4 +173,9 @@ footer {
   position: relative;
   bottom: 0;
 }
+
+.container-fluid {
+  max-width: 100%;
+}
+
 </style>

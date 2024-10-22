@@ -20,10 +20,14 @@
 </html>
 
 <style>
+  /* fixed the stupid white space on the right */
   html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-}
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+    box-sizing: border-box; /* Ensure padding is included in width calculations */
+  }
+
 </style>
