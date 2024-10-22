@@ -20,13 +20,13 @@
 
       <!-- Display user-specific information if the user is logged in -->
       <!-- some user data includes: user.email, user.notifications, user.dietaryPreferences -->
-      <!-- <div class="container" v-if="user">
+      <div class="container" v-if="user">
         <h2>Welcome, </h2>
         <p>Your email: {{ user.email }}</p>
         <p>Receive notifications: {{ user.notifications }}</p>
         <p>Dietary Preferences: {{ user.dietaryPreferences }}</p>
         <button @click="logout" class="btn btn-danger">Logout</button>
-      </div> -->
+      </div>
 
       <!-- If user is not loaded yet, show loading message -->
       <div v-else>
