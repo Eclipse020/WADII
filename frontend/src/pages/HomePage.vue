@@ -20,20 +20,18 @@
 
       <!-- Display user-specific information if the user is logged in -->
       <!-- some user data includes: user.email, user.notifications, user.dietaryPreferences -->
-      <!-- <div class="container" v-if="user">
-        <h2>Welcome, </h2>
+      <!-- <div class="container" v-if="user"> -->
+        <!-- <h2>Welcome, </h2>
         <p>Your email: {{ user.email }}</p>
         <p>Receive notifications: {{ user.notifications }}</p>
-        <p>Dietary Preferences: {{ user.dietaryPreferences }}</p>
-        <button @click="logout" class="btn btn-danger">Logout</button>
+        <p>Dietary Preferences: {{ user.dietaryPreferences }}</p> -->
+        <!-- <button @click="logout" class="btn btn-danger">Logout</button>
       </div> -->
 
       <!-- If user is not loaded yet, show loading message -->
       <div v-else>
         <p>Loading user information...</p>
       </div>
-
-      <router-link to="/settings" class="btn btn-secondary mt-3">Settings</router-link>
 
       <!-- Features Section -->
       <div class="features">
