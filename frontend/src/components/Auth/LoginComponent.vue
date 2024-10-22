@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2 class="text-center">Login</h2>
+      <h2 class="text-center">Welcome to HealthyChef!</h2>
 
       <!-- Email and Password Login Form -->
       <form @submit.prevent="loginWithEmail">
@@ -35,6 +35,11 @@
           Login
         </button>
       </form>
+
+      <!-- Display error message if it exists -->
+      <div v-if="errorMessage" class="alert alert-danger mt-3">
+        {{ errorMessage }}
+      </div>
 
       <!-- Google Login Button -->
       <button @click="loginWithGoogle" class="btn btn-outline-danger btn-custom btn-block mt-3">
@@ -71,8 +76,17 @@ export default {
         await signInWithEmailAndPassword(auth, this.email, this.password);
         this.$router.push('/');
       } catch (error) {
-        this.errorMessage = 'Login failed: ' + error.message;
-        console.error(this.errorMessage);
+        // Handle different authentication errors
+        if (error.code === 'auth/wrong-password') {
+          this.errorMessage = 'Incorrect password. Please try again.';
+        } else if (error.code === 'auth/user-not-found') {
+          this.errorMessage = 'No user found with this email address.';
+        } else if (error.code === 'auth/invalid-email') {
+          this.errorMessage = 'Invalid email format. Please check your email.';
+        } else {
+          this.errorMessage = 'Login failed. Have you registered an account?';
+        }
+        console.error(error);
       }
     },
     async loginWithGoogle() {
@@ -91,8 +105,8 @@ export default {
             uid: user.uid,
             dietaryPreferences: [], // Initialize as empty array
             notifications: false, // Default notification preference
-            createdAt: new Date(), // Add createdAt field
-            updatedAt: new Date(), // Add updatedAt field
+            createdAt: new Date(),
+            updatedAt: new Date(),
           });
           console.log('User profile saved to Firestore');
         }
@@ -106,8 +120,14 @@ export default {
 };
 </script>
 
+
 <style scoped>
 /* Ensure consistent container styling */
+.alert {
+  color: red;
+  font-weight: bold;
+}
+
 .login-container {
   display: flex;
   justify-content: center;
