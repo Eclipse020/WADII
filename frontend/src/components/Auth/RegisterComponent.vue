@@ -140,4 +140,78 @@ export default {
   font-weight: bold;
   margin-top: 5px;
 }
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8f9fa; /* Light background */
+}
+
+/* Style the login card similar to other components */
+.login-card {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+}
+
+h2 {
+  font-weight: bold;
+  color: #42b983; /* Primary color */
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+input {
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+/* Custom button styles */
+.btn-custom {
+  background-color: #42b983; /* Primary theme color */
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 4px;
+}
+
+.btn-custom:hover {
+  background-color: #3aa673;
+}
+
+/* Google login button outline style */
+.btn-outline-danger {
+  border-color: #3aa673;
+  color: white;
+}
+
+.btn-outline-danger:hover {
+  background-color: #3aa673;
+  color: white;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+  .login-card {
+    padding: 1.5rem;
+  }
+}
 </style>
