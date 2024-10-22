@@ -33,7 +33,9 @@
 
     <!-- Main Content -->
     <main class="container-fluid p-0">
-      <router-view />
+      <div @mousemove="resetTimer" @keydown="resetTimer" @click="resetTimer">
+        <router-view />
+      </div>
     </main>
 
     <!-- Conditionally show footer only if user is authenticated -->
@@ -51,8 +53,36 @@ export default {
   name: 'App',
   data() {
     return {
+      timeout: null, // Holds the timeout ID
+      idleTimeLimit: 15 * 60 * 1000, // 15 minutes inactivity time limit (in milliseconds)
       isAuthenticated: false, // Track the authentication state
     };
+  },
+  methods: {
+    startTimer() {
+      // Clear any existing timer
+      if (this.timeout) clearTimeout(this.timeout);
+
+      // Start a new timer
+      this.timeout = setTimeout(() => {
+        this.logoutUser();
+      }, this.idleTimeLimit); // Logout after 15 minutes of inactivity
+    },
+    resetTimer() {
+      // Reset the timer on user activity
+      this.startTimer();
+    },
+    logoutUser() {
+      const auth = getAuth();
+      auth.signOut()
+        .then(() => {
+          // Redirect to login after logout
+          this.$router.push('/login');
+        })
+        .catch((error) => {
+          console.error('Error logging out:', error);
+        });
+    },
   },
   mounted() {
     // Watch for changes in the user's authentication state
