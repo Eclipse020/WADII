@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h2>Register</h2>
+    <h2>Register an account?</h2>
     <form @submit.prevent="register">
       <!-- Email -->
       <div class="form-group">
@@ -42,7 +42,7 @@
       </div>
       <!-- Show/Hide Password fields -->
       <div>
-        <button type="button" class="btn btn-outline-secondary" @click="togglePasswordVisibility">
+        <button type="button" class="btn btn-custom" @click="togglePasswordVisibility">
             {{ passwordVisible ? 'Hide Passwords' : 'Show Passwords' }}
           </button>
       </div>
@@ -58,7 +58,7 @@
         </label>
         <!-- Register button -->
       </div>
-      <button type="submit" class="btn btn-primary" :disabled="passwordsDontMatch">
+      <button type="submit" class="btn btn-custom" :disabled="passwordsDontMatch">
         Register
       </button>
     </form>
