@@ -9,6 +9,7 @@ import LoginPage from '../pages/LoginPage.vue';
 import RegistrationPage from '../pages/RegistrationPage.vue';
 import ResetPasswordPage from '../pages/ResetPasswordPage.vue';
 import ProfileSettingsPage from '../pages/ProfileSettingsPage.vue';
+import LogoutComponent from '../components/Auth/LogoutComponent.vue';
 
 // Define routes, grouped logically
 const routes = [
@@ -51,11 +52,18 @@ const routes = [
 
   // User profile-related routes
   {
-    path: '/settings',
+    path: '/profile',
     name: 'ProfileSettings',
     component: ProfileSettingsPage,
     meta: { requiresAuth: true },
   },
+  // User logs out
+  {
+    path: '/logout',
+    name: 'Logout',
+    component: LogoutComponent,
+    meta: { requiresAuth: true },
+  }
 ];
 
 // Create and configure the router

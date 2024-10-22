@@ -25,6 +25,9 @@
         <router-link to="/profile" class="nav-link">
           <i class="fas fa-user"></i> Profile
         </router-link>
+        <router-link to="/logout" class="nav-link">
+          Logout
+        </router-link>
       </nav>
     </header>
 
@@ -41,7 +44,8 @@
 </template>
 
 <script>
-import { auth } from '@/services/firebase';
+import { auth } from '@/services/firebase'; // Import Firebase Authentication
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default {
   name: 'App',
@@ -54,6 +58,20 @@ export default {
     // Watch for changes in the user's authentication state
     auth.onAuthStateChanged((user) => {
       this.isAuthenticated = !!user; // If user exists, set isAuthenticated to true
+    });
+  },
+  created() {
+    const auth = getAuth();
+
+    // Monitor auth state on page load
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, redirect to homepage
+        this.$router.push('/');
+      } else {
+        // No user signed in, redirect to login
+        this.$router.push('/login');
+      }
     });
   },
 };
@@ -123,6 +141,25 @@ h1 {
 
 .nav-link:hover {
   color: #ffdb58;
+}
+
+/* Profile and Logout Styling */
+.profile-logout-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between Profile and Logout */
+}
+
+.logout-button {
+  padding: 5px 10px;
+  font-size: 1rem;
+  color: white;
+  background-color: #42b983;
+  border-collapse: collapse;
+}
+
+.logout-button:hover {
+  background-color: #42b983;
 }
 
 /* Footer Styling */

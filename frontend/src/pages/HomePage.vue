@@ -33,8 +33,6 @@
         <p>Loading user information...</p>
       </div>
 
-      <router-link to="/settings" class="btn btn-secondary mt-3">Settings</router-link>
-
       <!-- Features Section -->
       <div class="features">
         <div class="feature-box">

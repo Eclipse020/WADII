@@ -3,7 +3,6 @@
     <div>
       <ProfileSettings />
     </div>
-    <router-link to="/" class="btn btn-secondary mt-3">Home</router-link>
   </template>
   
   <script>
@@ -15,4 +14,6 @@
     },
   };
   </script>
+
+  
   
