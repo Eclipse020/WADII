@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <h1>Plan Your Meals</h1>
-      <p>Unsure on what to cook? Don't worry, Josh is here to help!</p>
+    <p>Unsure on what to cook? Don't worry, Josh is here to help!</p>
     <MealPlanner />
   </div>
 </template>
@@ -11,7 +11,7 @@ import { defineComponent } from 'vue'
 import MealPlanner from '@/components/Planner/MealPlannerComponent.vue'
 
 export default defineComponent({
-  name: 'HomePage',
+  name: 'MealPlanner',
   components: {
     MealPlanner
   }
