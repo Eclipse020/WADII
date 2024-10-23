@@ -1,9 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { auth } from '../services/firebase';
 
+
 // Import Pages
 import HomePage from '../pages/HomePage.vue';
 import FridgePage from '../pages/FridgePage.vue';
+import SummaryPage from '../pages/SummaryPage.vue';
+import CustomizePage from '../pages/CustomizePage.vue';
 import MealPlanner from '../pages/MealPlanner.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import RegistrationPage from '../pages/RegistrationPage.vue';
@@ -24,6 +27,18 @@ const routes = [
     path: '/fridge',
     name: 'Fridge',
     component: FridgePage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/summary',
+    name: 'Summary',
+    component: SummaryPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/customize',
+    name: 'Customize',
+    component: CustomizePage,
     meta: { requiresAuth: true },
   },
   {
