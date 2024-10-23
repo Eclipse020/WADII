@@ -205,7 +205,13 @@ footer {
 }
 
 .container-fluid {
-  max-width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex-grow: 1;
 }
 
 </style>
