@@ -126,11 +126,14 @@ h1 {
 }
 
 /* Footer Styling */
-footer {
-  background-color: #42b983;
-  color: white;
-  padding: 20px;
-  margin-top: 20px;
-  font-size: 0.8em;
+footer { 
+  background-color: #42b983; 
+  color: white; 
+  padding: 20px; 
+  font-size: 0.8em; 
+  text-align: center; 
+  width: 100%; 
+  position: relative; 
+  bottom: 0; 
 }
 </style>

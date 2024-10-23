@@ -49,7 +49,7 @@
       </div>
 
       <!--Add Product + Edit Product Card-->
-      <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-success btn-sm addButton">
+      <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-success addButton">
         Add Product
       </button>
 
@@ -138,11 +138,10 @@ export default {
   methods: {
 
     navigateTo(page) {
-      // Navigate to the appropriate route based on the page parameter
       if (page === 'summary') {
-          this.$router.push({ name: 'SummaryPage' });
+          this.$router.push({ name: 'Summary' });
       } else if (page === 'customize') {
-          this.$router.push({ name: 'CustomizePage' });
+          this.$router.push({ name: 'Customize' });
       }
     },
 
@@ -527,7 +526,7 @@ header button:first-child {
 
 .addButton {
   position: fixed;
-  bottom: 100px;
+  bottom: 90px;
   right: 10px;
 }
 

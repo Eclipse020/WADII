@@ -27,18 +27,18 @@ const routes = [
     name: 'Fridge',
     component: FridgePage,
     meta: { requiresAuth: true },
-    children: [
-      {
-        path: 'summary',
-        name: 'SummaryPage',
-        component: SummaryPage,
-      },
-      {
-        path: 'customize',
-        name: 'CustomizePage',
-        component: CustomizePage,
-      }
-    ]
+  },
+  {
+    path: '/summary',
+    name: 'Summary',
+    component: SummaryPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/customize',
+    name: 'Customize',
+    component: CustomizePage,
+    meta: { requiresAuth: true },
   },
   {
     path: '/mealPlanner',
