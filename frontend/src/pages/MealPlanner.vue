@@ -1,19 +1,21 @@
 <template>
-  <div class="home">
-    <h1>Plan Your Meals</h1>
-    <p>Unsure on what to cook? Don't worry, Josh is here to help!</p>
-    <MealPlanner />
+  <div class="meal-planner-page">
+    <div class="header">
+      <h1>Plan Your Meals</h1>
+      <p>Organize your weekly meals, manage recipes, and keep track of your shopping list - all in one place!</p>
+    </div>
+    <MealPlannerComponent />
   </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue'
-import MealPlanner from '@/components/Planner/MealPlannerComponent.vue'
+import MealPlannerComponent from '../components/Planner/MealPlannerComponent.vue'
 
 export default defineComponent({
-  name: 'MealPlanner',
+  name: 'MealPlannerPage',
   components: {
-    MealPlanner
+    MealPlannerComponent
   }
 })
 </script>

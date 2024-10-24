@@ -1,11 +1,24 @@
-// backend/routes/mealPlanRoutes.js
-import express from 'express';
-import { getMealPlan, addToShoppingList, getShoppingList } from '../controllers/mealPlanController.js';
-
+const express = require('express');
 const router = express.Router();
+const mealPlanController = require('../controllers/mealPlanController');
+const { authenticateToken } = require('../middleware/auth');
 
-router.get('/mealplan', getMealPlan);
-router.post('/shoppinglist', addToShoppingList);
-router.get('/shoppinglist', getShoppingList);
+// Apply authentication middleware to all routes
+router.use(authenticateToken);
 
-export default router;
+// Meal Plan routes
+router.get('/plan', mealPlanController.getMealPlan);
+router.put('/plan', mealPlanController.updateMealPlan);
+
+// Favorites routes
+router.get('/favorites', mealPlanController.getFavorites);
+router.put('/favorites', mealPlanController.updateFavorites);
+
+// Shopping List routes
+router.get('/shopping-list', mealPlanController.getShoppingList);
+router.put('/shopping-list', mealPlanController.updateShoppingList);
+
+// Fridge Sync route
+router.post('/sync-fridge', mealPlanController.syncWithFridge);
+
+module.exports = router;

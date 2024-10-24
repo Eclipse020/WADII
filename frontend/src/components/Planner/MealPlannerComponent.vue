@@ -1,21 +1,40 @@
 <template>
-    <div class="meal-plan">
-      <h1>Weekly Meal Planner</h1>
-  
-      <div class="search-section">
+  <div class="meal-plan">
+    <div class="container">
+      <!-- Favorite Recipes Section -->
+      <div class="favorites-section mb-4">
+        <h2>Favorite Recipes</h2>
+        <div class="favorite-recipes">
+          <div v-for="recipe in favoriteRecipes" :key="recipe.id" class="favorite-recipe-card">
+            <h4>{{ recipe.name }}</h4>
+            <p>{{ recipe.description }}</p>
+            <button class="btn btn-primary btn-sm" @click="addToMealPlan(recipe)">Add to Plan</button>
+            <button class="btn btn-danger btn-sm" @click="removeFromFavorites(recipe)">
+              <i class="fas fa-heart-broken"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <h2>Weekly Meal Planner</h2>
+      <div class="search-section mb-3">
         <input
           v-model="newRecipeName"
-          placeholder="What do you want to eat?"
+          placeholder="Search or add a recipe"
           @keyup.enter="addRecipeToDay"
+          class="form-control"
         />
-        <select v-model="selectedDay">
+        <select v-model="selectedDay" class="form-select">
           <option v-for="(day, index) in mealPlan.days" :key="index" :value="index">
             {{ day.name }}
           </option>
         </select>
-        <button class="add-button" @click="addRecipeToDay">Add Recipe</button>
+        <button class="btn btn-primary" @click="addRecipeToDay">Add Recipe</button>
+        <button class="btn btn-success ms-2" @click="generateSuggestedPlan">
+          Generate Suggested Plan
+        </button>
       </div>
-  
+
       <table class="meal-plan-table">
         <thead>
           <tr>
@@ -39,235 +58,349 @@
                   @dragstart="dragRecipe($event, recipe)"
                   class="recipe-slot"
                 >
-                  <span>{{ recipe.name }}</span>
-                  <button class="remove-button" @click="removeRecipe(day, recipe)">Remove</button>
+                  <div class="recipe-content">
+                    <span>{{ recipe.name }}</span>
+                    <div class="recipe-actions">
+                      <button class="btn btn-sm btn-outline-primary" @click="toggleFavorite(recipe)">
+                        <i :class="recipe.isFavorite ? 'fas fa-heart' : 'far fa-heart'"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" @click="removeRecipe(day, recipe)">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="recipe-ingredients" v-if="recipe.ingredients">
+                    <small>Missing ingredients: {{ getMissingIngredients(recipe).join(', ') }}</small>
+                  </div>
                 </li>
               </ul>
-              <button class="suggest-button" @click="suggestRecipes(day)">Suggest Recipes</button>
             </td>
           </tr>
         </tbody>
       </table>
-  
-      <h2>Shopping List</h2>
-      <ul>
-        <li v-for="(item, index) in shoppingList" :key="index">
-          {{ item }}
-          <button class="remove-button" @click="removeItemFromShoppingList(item)">Remove</button>
-        </li>
-      </ul>
-  
-      <input v-model="newShoppingItem" placeholder="Add item to shopping list" />
-      <button class="add-button" @click="addItemToShoppingList">Add to Shopping List</button>
+
+      <!-- Shopping List Section -->
+      <div class="shopping-list-section mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2>Shopping List</h2>
+          <div>
+            <button class="btn btn-success me-2" @click="exportToPDF">
+              <i class="fas fa-file-pdf"></i> Export PDF
+            </button>
+            <button class="btn btn-primary me-2" @click="shareList">
+              <i class="fas fa-share-alt"></i> Share
+            </button>
+            <button class="btn btn-warning" @click="syncWithFridge">
+              <i class="fas fa-sync"></i> Sync with Fridge
+            </button>
+          </div>
+        </div>
+        <div class="shopping-list">
+          <div class="input-group mb-3">
+            <input
+              v-model="newShoppingItem"
+              class="form-control"
+              placeholder="Add item to shopping list"
+              @keyup.enter="addItemToShoppingList"
+            />
+            <button class="btn btn-primary" @click="addItemToShoppingList">Add</button>
+          </div>
+          <ul class="list-group">
+            <li
+              v-for="(item, index) in shoppingList"
+              :key="index"
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <div class="form-check">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  :id="'item-' + index"
+                  v-model="item.purchased"
+                  @change="updateInventory(item)"
+                />
+                <label class="form-check-label" :for="'item-' + index">{{ item.name }}</label>
+              </div>
+              <button class="btn btn-sm btn-danger" @click="removeItemFromShoppingList(index)">
+                <i class="fas fa-times"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  
-  export default {
-    data() {
-      return {
-        mealPlan: {
-          days: [
-            { name: 'Monday', recipes: [] },
-            { name: 'Tuesday', recipes: [] },
-            { name: 'Wednesday', recipes: [] },
-            { name: 'Thursday', recipes: [] },
-            { name: 'Friday', recipes: [] },
-            { name: 'Saturday', recipes: [] },
-            { name: 'Sunday', recipes: [] },
-          ],
-        },
-        shoppingList: [],
-        newShoppingItem: '',
-        newRecipeName: '', // New data property for the recipe name input
-        selectedDay: 0,    // New data property for the selected day index
-        draggedRecipe: null,
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue';
+import { db } from '../../services/firebase';
+import { collection, getDocs, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
+import html2pdf from 'html2pdf.js';
+
+export default {
+  name: 'MealPlannerComponent',
+  setup() {
+    const currentUserId = ref(null);
+    const mealPlan = ref({
+      days: Array.from({ length: 7 }, (_, index) => ({
+        name: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index],
+        recipes: []
+      }))
+    });
+
+    return {
+      currentUserId,
+      mealPlan,
+    };
+  },
+  data() {
+    return {
+      shoppingList: [],
+      newShoppingItem: '',
+      newRecipeName: '',
+      selectedDay: 0,
+      draggedRecipe: null,
+      favoriteRecipes: [],
+      fridgeInventory: [],
+    };
+  },
+  methods: {
+    async initializeFirestoreDocuments() {
+      if (!this.currentUserId) return;
+
+      try {
+        const mealPlanRef = doc(db, `users/${this.currentUserId}/mealPlanner/current`);
+        const shoppingListRef = doc(db, `users/${this.currentUserId}/mealPlanner/shoppingList`);
+        const favoritesRef = doc(db, `users/${this.currentUserId}/mealPlanner/favorites`);
+
+        await Promise.all([
+          this.createDocumentIfNotExists(mealPlanRef, { days: this.mealPlan.days }),
+          this.createDocumentIfNotExists(shoppingListRef, { items: [] }),
+          this.createDocumentIfNotExists(favoritesRef, { recipes: [] }),
+        ]);
+      } catch (error) {
+        console.error("Error initializing Firestore documents:", error);
+      }
+    },
+
+    async createDocumentIfNotExists(docRef, data) {
+      const docSnapshot = await getDoc(docRef);
+      if (!docSnapshot.exists()) {
+        await setDoc(docRef, data);
+      }
+    },
+
+    async fetchFridgeInventory() {
+      if (this.currentUserId) {
+        try {
+          const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/items`));
+          this.fridgeInventory = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+          console.error("Error fetching fridge inventory:", error);
+        }
+      }
+    },
+
+    getMissingIngredients(recipe) {
+      if (!recipe.ingredients) return [];
+      return recipe.ingredients.filter(ingredient => 
+        !this.fridgeInventory.some(item => 
+          item.name.toLowerCase() === ingredient.toLowerCase()
+        )
+      );
+    },
+
+    async syncWithFridge() {
+      await this.fetchFridgeInventory();
+      // Update shopping list based on missing ingredients
+      this.mealPlan.days.forEach(day => {
+        day.recipes.forEach(recipe => {
+          const missingIngredients = this.getMissingIngredients(recipe);
+          missingIngredients.forEach(ingredient => {
+            if (!this.shoppingList.some(item => item.name === ingredient)) {
+              this.shoppingList.push({
+                name: ingredient,
+                purchased: false,
+                recipeId: recipe.id
+              });
+            }
+          });
+        });
+      });
+      await this.saveShoppingList();
+    },
+
+    async toggleFavorite(recipe) {
+      recipe.isFavorite = !recipe.isFavorite;
+      if (recipe.isFavorite) {
+        if (!this.favoriteRecipes.some(r => r.name === recipe.name)) {
+          this.favoriteRecipes.push(recipe);
+          await this.saveFavoriteRecipes();
+        }
+      } else {
+        await this.removeFromFavorites(recipe);
+      }
+    },
+
+    async saveFavoriteRecipes() {
+      if (this.currentUserId) {
+        try {
+          const favoritesRef = doc(db, `users/${this.currentUserId}/mealPlanner/favorites`);
+          await updateDoc(favoritesRef, {
+            recipes: this.favoriteRecipes
+          });
+        } catch (error) {
+          console.error("Error saving favorite recipes:", error);
+        }
+      }
+    },
+
+    async removeFromFavorites(recipe) {
+      const index = this.favoriteRecipes.findIndex(r => r.name === recipe.name);
+      if (index !== -1) {
+        this.favoriteRecipes.splice(index, 1);
+        await this.saveFavoriteRecipes();
+      }
+    },
+
+    async addToMealPlan(recipe) {
+      const day = this.mealPlan.days[this.selectedDay];
+      if (!day.recipes.some(r => r.name === recipe.name)) {
+        day.recipes.push(recipe);
+        await this.saveMealPlan();
+      }
+    },
+
+    async saveMealPlan() {
+      if (this.currentUserId) {
+        try {
+          const mealPlanRef = doc(db, `users/${this.currentUserId}/mealPlanner/current`);
+          await updateDoc(mealPlanRef, { days: this.mealPlan.days });
+        } catch (error) {
+          console.error("Error saving meal plan:", error);
+        }
+      }
+    },
+
+    async generateSuggestedPlan() {
+      // Logic for generating suggested meal plans
+    },
+
+    async exportToPDF() {
+      const element = document.createElement('div');
+      element.innerHTML = `
+        <h2>Shopping List</h2>
+        <ul>
+          ${this.shoppingList.map(item => `<li>${item.name}</li>`).join('')}
+        </ul>
+      `;
+      
+      const opt = {
+        margin: 1,
+        filename: 'shopping-list.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
       };
+
+      html2pdf().from(element).set(opt).save();
     },
-    methods: {
-      async fetchMealPlan() {
-        try {
-          const response = await axios.get('/api/mealplan');
-          this.mealPlan = response.data;
-        } catch (error) {
-          console.error('Error fetching meal plan:', error);
-        }
-      },
-      async fetchShoppingList() {
-        try {
-          const response = await axios.get('/api/shoppinglist');
-          this.shoppingList = response.data;
-        } catch (error) {
-          console.error('Error fetching shopping list:', error);
-        }
-      },
-      async addItemToShoppingList() {
-        if (this.newShoppingItem.trim()) {
-          try {
-            await axios.post('/api/shoppinglist', { item: this.newShoppingItem });
-            this.fetchShoppingList(); // Refresh the shopping list after adding
-            this.newShoppingItem = ''; // Clear input
-          } catch (error) {
-            console.error('Error adding item to shopping list:', error);
-          }
-        }
-      },
-      async removeItemFromShoppingList(item) {
-        try {
-          await axios.delete(`/api/shoppinglist/${item}`); // Ensure your backend handles item deletion
-          this.fetchShoppingList(); // Refresh the shopping list after removal
-        } catch (error) {
-          console.error('Error removing item from shopping list:', error);
-        }
-      },
-      dragRecipe(event, recipe) {
-        this.draggedRecipe = recipe;
-      },
-      dropRecipe(event, dayIndex) {
-        if (this.draggedRecipe) {
-          this.mealPlan.days[dayIndex].recipes.push(this.draggedRecipe);
-          this.draggedRecipe = null; // Reset the dragged recipe
-        }
-      },
-      removeRecipe(day, recipe) {
-        const index = day.recipes.indexOf(recipe);
-        if (index > -1) {
-          day.recipes.splice(index, 1);
-        }
-      },
-      async suggestRecipes(day) {
-        // Placeholder for recipe suggestion logic
-        const suggestedRecipes = [
-          { name: 'Spaghetti Bolognese' },
-          { name: 'Chicken Salad' },
-          { name: 'Beef Stir-fry' },
-        ];
-        day.recipes.push(...suggestedRecipes);
-      },
-      addRecipeToDay() {
-        if (this.newRecipeName.trim()) {
-          const dayIndex = this.selectedDay;
-          this.mealPlan.days[dayIndex].recipes.push({ name: this.newRecipeName });
-          this.newRecipeName = ''; // Clear input after adding
-        }
-      },
+
+    async addItemToShoppingList() {
+      if (this.newShoppingItem.trim() !== '') {
+        this.shoppingList.push({ name: this.newShoppingItem, purchased: false });
+        this.newShoppingItem = '';
+        await this.saveShoppingList();
+      }
     },
-    mounted() {
-      this.fetchMealPlan();
-      this.fetchShoppingList();
+
+    async removeItemFromShoppingList(index) {
+      this.shoppingList.splice(index, 1);
+      await this.saveShoppingList();
     },
-  };
-  </script>
-  
-  <style scoped>
-  .meal-plan {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .search-section {
-    margin-bottom: 20px;
-  }
-  
-  .search-section input {
-    padding: 10px;
-    margin-right: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .search-section select {
-    padding: 10px;
-    margin-right: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .meal-plan-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .meal-plan-table th {
-    background-color: #42b983;
-    color: white;
-    font-size: 1.2em; /* Increase header font size */
-  }
-  
-  .meal-plan-table th,
-  .meal-plan-table td {
-    border: 1px solid #42b983;
-    padding: 10px;
-    text-align: center;
-    width: 14.2857%; /* 100% / 7 days = 14.2857% per column */
-  }
-  
-  .meal-plan-table td {
-    font-size: 0.9em; /* Decrease table content font size */
-  }
-  
-  .meal-day {
-    position: relative;
-  }
-  
-  .recipe-list {
-    list-style-type: none; /* Remove bullet points */
-    padding: 0;           /* Remove padding */
-    margin: 0;            /* Remove margin */
-  }
-  
-  .recipe-slot {
-    padding: 5px;
-    background-color: #f9f9f9;
-    margin: 5px 0;
-    position: relative;
-    display: flex; /* Use flex to align items */
-    justify-content: space-between; /* Space between name and button */
-    align-items: center; /* Center vertically */
-  }
-  
-  .remove-button,
-  .add-button,
-  .suggest-button {
-    font-size: 0.8em; /* Smaller font size for buttons */
-    padding: 5px 10px; /* Reduced padding for buttons */
-    border: none; /* Remove default border */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s ease; /* Smooth background color change */
-  }
-  
-  .remove-button {
-    background-color: #ff6347; /* Red for remove buttons */
-    color: black; /* White text */
-  }
-  
-  .add-button {
-    background-color: #f7e7a9; /* Light yellow color */
-    color: black; /* Dark text color for contrast */
-  }
-  
-  .suggest-button {
-    background-color: #f0d58f; /* Green color for suggest button */
-    color: black; /* White text for contrast */
-  }
-  
-  .remove-button:hover {
-    background-color: #ff2e2e; /* Darker red on hover */
-  }
-  
-  .add-button:hover {
-    background-color: #f0d58f; /* Darker yellow on hover */
-  }
-  
-  .suggest-button:hover {
-    background-color: #36a771; /* Darker green on hover */
-  }
-  
-  h2 {
-    margin-top: 0;
-  }
-  </style>
-  
+
+    async saveShoppingList() {
+      if (this.currentUserId) {
+        try {
+          const shoppingListRef = doc(db, `users/${this.currentUserId}/mealPlanner/shoppingList`);
+          await updateDoc(shoppingListRef, { items: this.shoppingList });
+        } catch (error) {
+          console.error("Error saving shopping list:", error);
+        }
+      }
+    },
+
+    // updateInventory(item) {
+    //   // Update inventory logic
+    // },
+
+    addRecipeToDay() {
+      const recipe = this.favoriteRecipes.find(r => r.name.toLowerCase() === this.newRecipeName.toLowerCase());
+      if (recipe) {
+        this.addToMealPlan(recipe);
+        this.newRecipeName = '';
+      }
+    },
+
+    dragRecipe(event, recipe) {
+      this.draggedRecipe = recipe;
+    },
+
+    dropRecipe(event, dayIndex) {
+      event.preventDefault();
+      if (this.draggedRecipe) {
+        this.addToMealPlan(this.draggedRecipe, dayIndex);
+        this.draggedRecipe = null;
+      }
+    },
+
+    async removeRecipe(day, recipe) {
+      const index = day.recipes.indexOf(recipe);
+      if (index !== -1) {
+        day.recipes.splice(index, 1);
+        await this.saveMealPlan();
+      }
+    },
+
+    shareList() {
+      // Logic to share shopping list
+    }
+  },
+  mounted() {
+    this.initializeFirestoreDocuments();
+    this.fetchFridgeInventory();
+  },
+};
+</script>
+
+<style scoped>
+.meal-plan {
+  padding: 20px;
+}
+.favorite-recipes {
+  display: flex;
+  flex-wrap: wrap;
+}
+.favorite-recipe-card {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 5px;
+}
+.meal-plan-table {
+  width: 100%;
+  margin: 20px 0;
+}
+.recipe-list {
+  list-style: none;
+  padding: 0;
+}
+.recipe-slot {
+  padding: 5px;
+}
+.recipe-actions {
+  display: flex;
+  gap: 5px;
+}
+</style>

@@ -7,7 +7,7 @@ import HomePage from '../pages/HomePage.vue';
 import FridgePage from '../pages/FridgePage.vue';
 import SummaryPage from '../pages/SummaryPage.vue';
 import CustomizePage from '../pages/CustomizePage.vue';
-import MealPlanner from '../pages/MealPlanner.vue';
+import MealPlannerPage from '../pages/MealPlanner.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import RegistrationPage from '../pages/RegistrationPage.vue';
 import ResetPasswordPage from '../pages/ResetPasswordPage.vue';
@@ -44,7 +44,7 @@ const routes = [
   {
     path: '/mealPlanner',
     name: 'MealPlanner',
-    component: MealPlanner,
+    component: MealPlannerPage,
     meta: { requiresAuth: true },
   },
 
