@@ -3,6 +3,8 @@
 ## Project setup
 ```
 npm install
+npm install firebase
+npm install @google/generative-ai
 ```
 
 ### Compiles and hot-reloads for development
