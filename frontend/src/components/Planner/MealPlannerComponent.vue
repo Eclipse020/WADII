@@ -1,406 +1,426 @@
 <template>
-  <div class="meal-plan">
-    <div class="container">
-      <!-- Favorite Recipes Section -->
-      <div class="favorites-section mb-4">
-        <h2>Favorite Recipes</h2>
-        <div class="favorite-recipes">
-          <div v-for="recipe in favoriteRecipes" :key="recipe.id" class="favorite-recipe-card">
-            <h4>{{ recipe.name }}</h4>
-            <p>{{ recipe.description }}</p>
-            <button class="btn btn-primary btn-sm" @click="addToMealPlan(recipe)">Add to Plan</button>
-            <button class="btn btn-danger btn-sm" @click="removeFromFavorites(recipe)">
-              <i class="fas fa-heart-broken"></i>
+  <div class="meal-planner">
+    <div class="left-column">
+      <!-- Reserved for future component -->
+      <RecipeTypeModal
+      :show="showRecipeTypeModal"
+      :selectedDay="selectedDay"
+      @close="closeRecipeTypeModal"
+      @meal-selected="handleMealSelected"
+      @add-recipe="addRecipe"
+      />
+    </div>
+
+    <div class="center-column">
+      <h1>Meal Planner for {{ formattedMonthYear }}</h1>
+
+      <div class="planner-controls">
+        <button class="nav-button prev-button" @click="prevMonth">Previous</button>
+        
+        <div class="center-controls">
+          <p v-if="selectedDay">Selected Day: {{ selectedDay }} {{ formattedMonthYear }}</p>
+          <div v-if="selectedDay" class="button-group">
+            <button class="add-recipe-button" @click="openRecipeModal">
+              Add Recipe
+            </button>
+            <button 
+              v-if="mealPlan[selectedDay] && mealPlan[selectedDay].length > 0"
+              class="clear-day-button" 
+              @click="clearDayMeals"
+            >
+              Clear Day
             </button>
           </div>
         </div>
+
+        <button class="nav-button next-button" @click="nextMonth">Next</button>
       </div>
 
-      <h2>Weekly Meal Planner</h2>
-      <div class="search-section mb-3">
-        <input
-          v-model="newRecipeName"
-          placeholder="Search or add a recipe"
-          @keyup.enter="addRecipeToDay"
-          class="form-control"
-        />
-        <select v-model="selectedDay" class="form-select">
-          <option v-for="(day, index) in mealPlan.days" :key="index" :value="index">
-            {{ day.name }}
-          </option>
-        </select>
-        <button class="btn btn-primary" @click="addRecipeToDay">Add Recipe</button>
-        <button class="btn btn-success ms-2" @click="generateSuggestedPlan">
-          Generate Suggested Plan
-        </button>
-      </div>
-
-      <table class="meal-plan-table">
-        <thead>
-          <tr>
-            <th v-for="(day, index) in mealPlan.days" :key="index">{{ day.name }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td
-              v-for="(day, index) in mealPlan.days"
-              :key="index"
-              @dragover.prevent
-              @drop="dropRecipe($event, index)"
-              class="meal-day"
+      <div class="calendar-wrapper">
+        <table class="calendar-table">
+          <thead>
+            <tr>
+              <th>Wk</th>
+              <th v-for="day in weekDays" :key="day">{{ day }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(week, weekIndex) in calendar" :key="weekIndex">
+              <td class="week-number">{{ weekIndex + 1 }}</td>
+              <td
+              v-for="(day, dayIndex) in week"
+              :key="dayIndex"
+              :class="['calendar-cell', { selected: day === selectedDay, today: isToday(day), 'clicked': clickedDay === day }]"
+              @click="selectDay(day), openRecipeModal()"
             >
-              <ul class="recipe-list">
-                <li
-                  v-for="(recipe, recipeIndex) in day.recipes"
-                  :key="recipeIndex"
-                  draggable
-                  @dragstart="dragRecipe($event, recipe)"
-                  class="recipe-slot"
+              <span v-if="day" class="date-number">{{ day }}</span>
+              <div v-if="day && mealPlan[day]" class="meal-container">
+                <div 
+                  v-for="(meal, index) in mealPlan[day]" 
+                  :key="meal.uri"
+                  class="meal-item"
+                  @click.stop="openRecipeDetails(meal, day, index)"
+                  :title="meal.label"
                 >
-                  <div class="recipe-content">
-                    <span>{{ recipe.name }}</span>
-                    <div class="recipe-actions">
-                      <button class="btn btn-sm btn-outline-primary" @click="toggleFavorite(recipe)">
-                        <i :class="recipe.isFavorite ? 'fas fa-heart' : 'far fa-heart'"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" @click="removeRecipe(day, recipe)">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="recipe-ingredients" v-if="recipe.ingredients">
-                    <small>Missing ingredients: {{ getMissingIngredients(recipe).join(', ') }}</small>
-                  </div>
-                </li>
-              </ul>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Shopping List Section -->
-      <div class="shopping-list-section mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2>Shopping List</h2>
-          <div>
-            <button class="btn btn-success me-2" @click="exportToPDF">
-              <i class="fas fa-file-pdf"></i> Export PDF
-            </button>
-            <button class="btn btn-primary me-2" @click="shareList">
-              <i class="fas fa-share-alt"></i> Share
-            </button>
-            <button class="btn btn-warning" @click="syncWithFridge">
-              <i class="fas fa-sync"></i> Sync with Fridge
-            </button>
-          </div>
-        </div>
-        <div class="shopping-list">
-          <div class="input-group mb-3">
-            <input
-              v-model="newShoppingItem"
-              class="form-control"
-              placeholder="Add item to shopping list"
-              @keyup.enter="addItemToShoppingList"
-            />
-            <button class="btn btn-primary" @click="addItemToShoppingList">Add</button>
-          </div>
-          <ul class="list-group">
-            <li
-              v-for="(item, index) in shoppingList"
-              :key="index"
-              class="list-group-item d-flex justify-content-between align-items-center"
-            >
-              <div class="form-check">
-                <input
-                  type="checkbox"
-                  class="form-check-input"
-                  :id="'item-' + index"
-                  v-model="item.purchased"
-                  @change="updateInventory(item)"
-                />
-                <label class="form-check-label" :for="'item-' + index">{{ item.name }}</label>
+                  {{ meal.label }}
+                </div>
               </div>
-              <button class="btn btn-sm btn-danger" @click="removeItemFromShoppingList(index)">
-                <i class="fas fa-times"></i>
-              </button>
-            </li>
-          </ul>
-        </div>
+            </td>
+
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
+
+    <div class="right-column">
+      <ShoppingList 
+        :ingredients="shoppingList" 
+        @update="updateShoppingList" 
+      />
+    </div>
+
+    <AddRecipeModal
+      :show="showRecipeModal"
+      :selected-day="selectedDay"
+      :month-year="formattedMonthYear"
+      @close="closeRecipeModal"
+      @add-recipe="addRecipeToDay"
+      @fetch-available-ingredients="fetchAvailableIngredients" 
+    />
+
+    <RecipeDetailsModal
+      v-if="showRecipeDetails"
+      :recipe="selectedRecipe"
+      :day="selectedDay"
+      :month-year="formattedMonthYear"
+      :selected-recipe-index="selectedRecipeIndex"
+      @close="closeRecipeDetails"
+      @delete-recipe="deleteRecipe"
+      @add-to-shopping-list="addToShoppingList"
+    />
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
-import { db } from '../../services/firebase';
-import { collection, getDocs, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
-import html2pdf from 'html2pdf.js';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, collection, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
+import { auth, db } from '../../services/firebase';
+import AddRecipeModal from './AddRecipeModal.vue';
+import RecipeDetailsModal from './RecipeDetailsModal.vue';
+import ShoppingList from './ShoppingList.vue';
+import '@/styles/MealPlannerComponent.css';
 
 export default {
-  name: 'MealPlannerComponent',
-  setup() {
-    const currentUserId = ref(null);
-    const mealPlan = ref({
-      days: Array.from({ length: 7 }, (_, index) => ({
-        name: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index],
-        recipes: []
-      }))
-    });
-
-    return {
-      currentUserId,
-      mealPlan,
-    };
+  components: {
+    AddRecipeModal,
+    RecipeDetailsModal,
+    ShoppingList,
   },
   data() {
     return {
+      currentYear: new Date().getFullYear(),
+      currentMonth: new Date().getMonth(),
+      selectedDay: null,
+      showRecipeModal: false,
+      showRecipeDetails: false,
+      selectedRecipe: null,
+      selectedRecipeIndex: null,
+      mealPlan: {},
+      weekDays: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
       shoppingList: [],
-      newShoppingItem: '',
-      newRecipeName: '',
-      selectedDay: 0,
-      draggedRecipe: null,
-      favoriteRecipes: [],
-      fridgeInventory: [],
+      currentUserId: null,
+      availableIngredients: [],
+      showRecipeTypeModal: false,
+      mealType: '', // to track selected meal type
     };
   },
+  computed: {
+    formattedMonthYear() {
+      return new Date(this.currentYear, this.currentMonth).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
+    },
+    calendar() {
+      const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
+      const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+
+      const weeks = [];
+      let week = new Array(7).fill(null);
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayOfWeek = (firstDay + day - 1) % 7;
+        week[dayOfWeek] = day;
+
+        if (dayOfWeek === 6 || day === daysInMonth) {
+          weeks.push(week);
+          week = new Array(7).fill(null);
+        }
+      }
+
+      return weeks;
+    },
+  },
+  watch: {
+    currentMonth: {
+      handler: function() {
+        this.loadMealPlan();
+      }
+    }
+  },
   methods: {
-    async initializeFirestoreDocuments() {
+    isToday(day) {
+      const today = new Date();
+      return day === today.getDate() && 
+             this.currentMonth === today.getMonth() && 
+             this.currentYear === today.getFullYear();
+    },
+    async loadMealPlan() {
+      if (!this.currentUserId) return;
+      
+      try {
+        console.log("Loading meal plan for month:", this.currentMonth);
+        const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/mealPlans`));
+        this.mealPlan = {};
+        
+        querySnapshot.forEach((doc) => {
+          const mealData = { id: doc.id, ...doc.data() };
+          
+          // Only process if we have valid day data and it matches current month/year
+          if (mealData.day && 
+              mealData.month === this.currentMonth && 
+              mealData.year === this.currentYear) {
+            
+            if (!this.mealPlan[mealData.day]) {
+              this.mealPlan[mealData.day] = [];
+            }
+            
+            this.mealPlan[mealData.day].push({
+              ...mealData.recipe,
+              id: doc.id,
+              day: mealData.day,
+              month: mealData.month,
+              year: mealData.year,
+              createdAt: mealData.createdAt
+            });
+          }
+        });
+        
+        console.log("Meal plan loaded:", this.mealPlan);
+      } catch (error) {
+        console.error("Error loading meal plan:", error);
+      }
+    },
+
+    async loadShoppingList() {
+      if (!this.currentUserId) return;
+      
+      try {
+        const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/shoppingList`));
+        this.shoppingList = [];
+        
+        querySnapshot.forEach((doc) => {
+          const itemData = { id: doc.id, ...doc.data() };
+          this.shoppingList.push(itemData.item);
+        });
+        
+        console.log("Shopping list loaded:", this.shoppingList);
+      } catch (error) {
+        console.error("Error loading shopping list:", error);
+      }
+    },
+
+    async addRecipeToDay(recipe) {
       if (!this.currentUserId) return;
 
       try {
-        const mealPlanRef = doc(db, `users/${this.currentUserId}/mealPlanner/current`);
-        const shoppingListRef = doc(db, `users/${this.currentUserId}/mealPlanner/shoppingList`);
-        const favoritesRef = doc(db, `users/${this.currentUserId}/mealPlanner/favorites`);
-
-        await Promise.all([
-          this.createDocumentIfNotExists(mealPlanRef, { days: this.mealPlan.days }),
-          this.createDocumentIfNotExists(shoppingListRef, { items: [] }),
-          this.createDocumentIfNotExists(favoritesRef, { recipes: [] }),
-        ]);
-      } catch (error) {
-        console.error("Error initializing Firestore documents:", error);
-      }
-    },
-
-    async createDocumentIfNotExists(docRef, data) {
-      const docSnapshot = await getDoc(docRef);
-      if (!docSnapshot.exists()) {
-        await setDoc(docRef, data);
-      }
-    },
-
-    async fetchFridgeInventory() {
-      if (this.currentUserId) {
-        try {
-          const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/items`));
-          this.fridgeInventory = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } catch (error) {
-          console.error("Error fetching fridge inventory:", error);
-        }
-      }
-    },
-
-    getMissingIngredients(recipe) {
-      if (!recipe.ingredients) return [];
-      return recipe.ingredients.filter(ingredient => 
-        !this.fridgeInventory.some(item => 
-          item.name.toLowerCase() === ingredient.toLowerCase()
-        )
-      );
-    },
-
-    async syncWithFridge() {
-      await this.fetchFridgeInventory();
-      // Update shopping list based on missing ingredients
-      this.mealPlan.days.forEach(day => {
-        day.recipes.forEach(recipe => {
-          const missingIngredients = this.getMissingIngredients(recipe);
-          missingIngredients.forEach(ingredient => {
-            if (!this.shoppingList.some(item => item.name === ingredient)) {
-              this.shoppingList.push({
-                name: ingredient,
-                purchased: false,
-                recipeId: recipe.id
-              });
-            }
-          });
+        const docRef = await addDoc(collection(db, `users/${this.currentUserId}/mealPlans`), {
+          day: this.selectedDay,
+          recipe: recipe,
+          month: this.currentMonth,
+          year: this.currentYear,
+          createdAt: new Date().toISOString()
         });
-      });
-      await this.saveShoppingList();
-    },
 
-    async toggleFavorite(recipe) {
-      recipe.isFavorite = !recipe.isFavorite;
-      if (recipe.isFavorite) {
-        if (!this.favoriteRecipes.some(r => r.name === recipe.name)) {
-          this.favoriteRecipes.push(recipe);
-          await this.saveFavoriteRecipes();
+        if (!this.mealPlan[this.selectedDay]) {
+          this.mealPlan[this.selectedDay] = [];
         }
-      } else {
-        await this.removeFromFavorites(recipe);
+        this.mealPlan[this.selectedDay].push({
+          ...recipe,
+          id: docRef.id,
+          day: this.selectedDay,
+          month: this.currentMonth,
+          year: this.currentYear,
+          createdAt: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error("Error adding recipe:", error);
       }
+      this.closeRecipeModal();
     },
 
-    async saveFavoriteRecipes() {
-      if (this.currentUserId) {
-        try {
-          const favoritesRef = doc(db, `users/${this.currentUserId}/mealPlanner/favorites`);
-          await updateDoc(favoritesRef, {
-            recipes: this.favoriteRecipes
+    async deleteRecipe(day, index) {
+      if (!this.currentUserId || !this.mealPlan[day]) return;
+
+      try {
+        const recipeToDelete = this.mealPlan[day][index];
+        if (recipeToDelete.id) {
+          await deleteDoc(doc(db, `users/${this.currentUserId}/mealPlans`, recipeToDelete.id));
+        }
+        
+        this.mealPlan[day].splice(index, 1);
+        if (this.mealPlan[day].length === 0) {
+          delete this.mealPlan[day];
+        }
+      } catch (error) {
+        console.error("Error deleting recipe:", error);
+      }
+      this.closeRecipeDetails();
+    },
+
+    async addToShoppingList() {
+      if (!this.currentUserId || !this.selectedRecipe || !this.selectedRecipe.ingredientLines) return;
+
+      try {
+        for (const ingredient of this.selectedRecipe.ingredientLines) {
+          if (!this.shoppingList.includes(ingredient)) {
+            await addDoc(collection(db, `users/${this.currentUserId}/shoppingList`), {
+              item: ingredient,
+              createdAt: new Date().toISOString()
+            });
+            this.shoppingList.push(ingredient);
+          }
+        }
+      } catch (error) {
+        console.error("Error adding to shopping list:", error);
+      }
+      this.closeRecipeDetails();
+    },
+
+    async updateShoppingList(newList) {
+      if (!this.currentUserId) return;
+
+      try {
+        // Delete all existing items
+        const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/shoppingList`));
+        for (const doc of querySnapshot.docs) {
+          await deleteDoc(doc.ref);
+        }
+
+        // Add new items
+        for (const item of newList) {
+          await addDoc(collection(db, `users/${this.currentUserId}/shoppingList`), {
+            item: item,
+            createdAt: new Date().toISOString()
           });
-        } catch (error) {
-          console.error("Error saving favorite recipes:", error);
         }
+
+        this.shoppingList = newList;
+      } catch (error) {
+        console.error("Error updating shopping list:", error);
       }
     },
 
-    async removeFromFavorites(recipe) {
-      const index = this.favoriteRecipes.findIndex(r => r.name === recipe.name);
-      if (index !== -1) {
-        this.favoriteRecipes.splice(index, 1);
-        await this.saveFavoriteRecipes();
-      }
-    },
+    async clearDayMeals() {
+      if (!this.currentUserId || !this.selectedDay || !this.mealPlan[this.selectedDay]) return;
 
-    async addToMealPlan(recipe) {
-      const day = this.mealPlan.days[this.selectedDay];
-      if (!day.recipes.some(r => r.name === recipe.name)) {
-        day.recipes.push(recipe);
-        await this.saveMealPlan();
-      }
-    },
-
-    async saveMealPlan() {
-      if (this.currentUserId) {
-        try {
-          const mealPlanRef = doc(db, `users/${this.currentUserId}/mealPlanner/current`);
-          await updateDoc(mealPlanRef, { days: this.mealPlan.days });
-        } catch (error) {
-          console.error("Error saving meal plan:", error);
+      try {
+        const recipes = this.mealPlan[this.selectedDay];
+        for (const recipe of recipes) {
+          if (recipe.id) {
+            await deleteDoc(doc(db, `users/${this.currentUserId}/mealPlans`, recipe.id));
+          }
         }
+        delete this.mealPlan[this.selectedDay];
+      } catch (error) {
+        console.error("Error clearing day meals:", error);
       }
     },
 
-    async generateSuggestedPlan() {
-      // Logic for generating suggested meal plans
-    },
-
-    async exportToPDF() {
-      const element = document.createElement('div');
-      element.innerHTML = `
-        <h2>Shopping List</h2>
-        <ul>
-          ${this.shoppingList.map(item => `<li>${item.name}</li>`).join('')}
-        </ul>
-      `;
+    async fetchAvailableIngredients() {
+      if (!this.currentUserId) return;
       
-      const opt = {
-        margin: 1,
-        filename: 'shopping-list.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-
-      html2pdf().from(element).set(opt).save();
-    },
-
-    async addItemToShoppingList() {
-      if (this.newShoppingItem.trim() !== '') {
-        this.shoppingList.push({ name: this.newShoppingItem, purchased: false });
-        this.newShoppingItem = '';
-        await this.saveShoppingList();
+      try {
+        const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/fridge`));
+        const ingredients = querySnapshot.docs.map(doc => doc.data().item);
+        this.$refs.addRecipeModal.availableIngredients = ingredients; // Update the available ingredients in the modal
+      } catch (error) {
+        console.error("Error fetching available ingredients:", error);
       }
     },
 
-    async removeItemFromShoppingList(index) {
-      this.shoppingList.splice(index, 1);
-      await this.saveShoppingList();
+    selectDay(day) {
+      this.selectedDay = day;
+      this.clickedDay = day; 
+      this.showRecipeTypeModal = true;
     },
 
-    async saveShoppingList() {
-      if (this.currentUserId) {
-        try {
-          const shoppingListRef = doc(db, `users/${this.currentUserId}/mealPlanner/shoppingList`);
-          await updateDoc(shoppingListRef, { items: this.shoppingList });
-        } catch (error) {
-          console.error("Error saving shopping list:", error);
-        }
+    closeRecipeModal() {
+      this.showRecipeModal = false;
+    },
+
+    openRecipeDetails(recipe, day, index) {
+      this.selectedRecipe = recipe;
+      this.selectedRecipeIndex = index;
+      this.selectedDay = day;
+      this.showRecipeDetails = true;
+    },
+
+    closeRecipeDetails() {
+      this.showRecipeDetails = false;
+      this.selectedRecipe = null;
+      this.selectedRecipeIndex = null;
+    },
+
+    prevMonth() {
+      if (this.currentMonth === 0) {
+        this.currentYear -= 1;
+        this.currentMonth = 11;
+      } else {
+        this.currentMonth -= 1;
       }
     },
 
-    // updateInventory(item) {
-    //   // Update inventory logic
-    // },
-
-    addRecipeToDay() {
-      const recipe = this.favoriteRecipes.find(r => r.name.toLowerCase() === this.newRecipeName.toLowerCase());
-      if (recipe) {
-        this.addToMealPlan(recipe);
-        this.newRecipeName = '';
+    nextMonth() {
+      if (this.currentMonth === 11) {
+        this.currentYear += 1;
+        this.currentMonth = 0;
+      } else {
+        this.currentMonth += 1;
       }
     },
 
-    dragRecipe(event, recipe) {
-      this.draggedRecipe = recipe;
+    //For the pop-up
+    closeRecipeTypeModal() {
+      this.showRecipeTypeModal = false;
     },
-
-    dropRecipe(event, dayIndex) {
-      event.preventDefault();
-      if (this.draggedRecipe) {
-        this.addToMealPlan(this.draggedRecipe, dayIndex);
-        this.draggedRecipe = null;
-      }
+    handleMealSelected(mealType) {
+      this.mealType = mealType; // Save selected meal type
+      this.openRecipeModal(); // Open the recipe modal to add a new recipe
     },
-
-    async removeRecipe(day, recipe) {
-      const index = day.recipes.indexOf(recipe);
-      if (index !== -1) {
-        day.recipes.splice(index, 1);
-        await this.saveMealPlan();
-      }
+    openRecipeModal() {
+      this.showRecipeModal = true;
     },
-
-    shareList() {
-      // Logic to share shopping list
-    }
   },
   mounted() {
-    this.initializeFirestoreDocuments();
-    this.fetchFridgeInventory();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.currentUserId = user.uid;
+        // Load both meal plan and shopping list immediately after getting user ID
+        Promise.all([
+          this.loadMealPlan(),
+          this.loadShoppingList()
+        ]).catch(error => {
+          console.error("Error loading data:", error);
+        });
+      } else {
+        console.log("No user is signed in.");
+        this.currentUserId = null;
+        this.mealPlan = {};
+        this.shoppingList = [];
+      }
+    });
   },
 };
 </script>
-
-<style scoped>
-.meal-plan {
-  padding: 20px;
-}
-.favorite-recipes {
-  display: flex;
-  flex-wrap: wrap;
-}
-.favorite-recipe-card {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin: 10px;
-  border-radius: 5px;
-}
-.meal-plan-table {
-  width: 100%;
-  margin: 20px 0;
-}
-.recipe-list {
-  list-style: none;
-  padding: 0;
-}
-.recipe-slot {
-  padding: 5px;
-}
-.recipe-actions {
-  display: flex;
-  gap: 5px;
-}
-</style>

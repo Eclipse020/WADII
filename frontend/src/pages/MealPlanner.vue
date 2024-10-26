@@ -1,9 +1,5 @@
 <template>
   <div class="meal-planner-page">
-    <div class="header">
-      <h1>Plan Your Meals</h1>
-      <p>Organize your weekly meals, manage recipes, and keep track of your shopping list - all in one place!</p>
-    </div>
     <MealPlannerComponent />
   </div>
 </template>

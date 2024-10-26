@@ -88,6 +88,7 @@
           </form>
         </div>
       </div>
+      
     </div>
   </div>
 </template>
@@ -386,6 +387,11 @@ export default {
     },
 
     //Add Item: End
+
+    //Getting ingredients for MealPlanner
+    getAvailableIngredients() {
+    return this.items.map(item => item.name).join(',');
+    }
   },
   computed: {
 
