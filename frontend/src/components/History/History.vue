@@ -78,6 +78,7 @@ export default {
       this.$axios.get('/api/cooking-history')
         .then((response) => {
           this.history = response.data;
+          this.generateCalendar(); // Regenerate the calendar after fetching history
         })
         .catch((error) => {
           console.error('Error fetching history:', error);
