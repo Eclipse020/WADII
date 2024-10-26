@@ -1,18 +1,31 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import './styles/main.css'; // Import global styles
+import { auth } from './services/firebase';
 
-// Create the Vue app
-const app = createApp(App);
+auth.onAuthStateChanged(user => {
+  if (user) {
+    console.log('User is logged in:', user);
+    console.log('Logged in user:', user.email, user.uid, user.displayName); // Ensure this is correct for Google OAuth
+    
+    localStorage.setItem('user', JSON.stringify({
+      uid: user.uid,  // Use the Google OAuth uid
+      email: user.email,  // Use the Google OAuth email
+      displayName: user.displayName,  // Optional: store displayName
+      photoURL: user.photoURL  // Optional: store profile picture
+    }));
+  } else {
+    console.log('No user logged in');
+    localStorage.removeItem('user');
+  }
+});
 
-// Attach Axios to the global Vue prototype if it's loaded from CDN
-if (window.axios) {
-  app.config.globalProperties.$axios = window.axios;
-}
 
-// Use the router
-app.use(router);
+createApp(App)
+  .use(router)
+  .mount('#app');
 
-// Mount the app
-app.mount('#app');
-
+  if (window.axios) {
+    App.config.globalProperties.$axios = window.axios;
+  }

@@ -1,24 +1,93 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomePage from '../components/Dashboard/Home.vue';
-import AddItem from '../components/Fridge/AddItem.vue';
+import { auth } from '../services/firebase';
+
+
+// Import Pages
+import HomePage from '../pages/HomePage.vue';
+import FridgePage from '../pages/FridgePage.vue';
+import SummaryPage from '../pages/SummaryPage.vue';
+import CustomizePage from '../pages/CustomizePage.vue';
+import MealPlannerPage from '../pages/MealPlanner.vue';
+import LoginPage from '../pages/LoginPage.vue';
+import RegistrationPage from '../pages/RegistrationPage.vue';
+import ResetPasswordPage from '../pages/ResetPasswordPage.vue';
+import ProfileSettingsPage from '../pages/ProfileSettingsPage.vue';
+import LogoutComponent from '../components/Auth/LogoutComponent.vue';
 import CookingHistory from '../components/History/History.vue';
 import CalendarPage from '../components/History/CalendarPage.vue';
-import RecipeDetails from '../components/Community/CRecipeDetails.vue'; // Updated import
-import PostRecipe from '../components/Community/CPostRecipe.vue'; // Updated import
-import PostDrafts from '../components/Community/CPostDrafts.vue'; // Updated import
+import RecipeDetails from '../components/Community/CRecipeDetails.vue';
+import PostRecipe from '../components/Community/CPostRecipe.vue';
+import PostDrafts from '../components/Community/CPostDrafts.vue';
 import RecipeList from '../components/Community/CRecipeList.vue';
 
+// Define routes, grouped logically
 const routes = [
+  // General routes
   {
     path: '/',
-    name: 'HomePage',
+    name: 'Home',
     component: HomePage,
+    meta: { requiresAuth: true },
   },
   {
-    path: '/add-item',
-    name: 'AddItem',
-    component: AddItem,
+    path: '/fridge',
+    name: 'Fridge',
+    component: FridgePage,
+    meta: { requiresAuth: true },
   },
+  {
+    path: '/summary',
+    name: 'Summary',
+    component: SummaryPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/customize',
+    name: 'Customize',
+    component: CustomizePage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/mealPlanner',
+    name: 'MealPlanner',
+    component: MealPlannerPage,
+    meta: { requiresAuth: true },
+  },
+
+  // Authentication routes
+  {
+    path: '/login',
+    name: 'Login',
+    component: LoginPage,
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: RegistrationPage,
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPasswordPage,
+  },
+
+  // User profile-related routes
+  {
+    path: '/profile',
+    name: 'ProfileSettings',
+    component: ProfileSettingsPage,
+    meta: { requiresAuth: true },
+  },
+  // User logs out
+  {
+    path: '/logout',
+    name: 'Logout',
+    component: LogoutComponent,
+    meta: { requiresAuth: true },
+  },
+
+  //history + community
+
   {
     path: '/history',
     name: 'CookingHistory',
@@ -52,10 +121,22 @@ const routes = [
   }
 ];
 
-
+// Create and configure the router
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+// Navigation guard for authenticated routes
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  const user = auth.currentUser;
+
+  if (requiresAuth && !user) {
+    next('/login');
+  } else {
+    next();
+  }
 });
 
 export default router;
