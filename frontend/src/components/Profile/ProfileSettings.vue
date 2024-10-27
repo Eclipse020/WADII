@@ -128,6 +128,11 @@ export default {
       this.error = '';
       const user = JSON.parse(localStorage.getItem('user'));
 
+      if (this.user.notifications && !this.isMethodSelected) {
+        this.error = 'Please select at least one notification method.';
+        return; // Stop the function if validation fails
+      }
+
       try {
         // Prepare the data to update
         const updateData = {
