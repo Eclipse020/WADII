@@ -5,9 +5,8 @@
       <div class="content">
         <header class="my-3 d-flex justify-content-end align-items-end">
           <div>
-            <button class="btn btn-success btn-sm me-2" @click="sortByCategory">Category &#8597;</button>
-            <button class="btn btn-success btn-sm me-2" @click="navigateTo('summary')">View Inventory Summary</button>
-            <!-- <button class="btn btn-success btn-sm" @click="navigateTo('customize')">Customize</button> -->
+            <button class="btn btn-success btn-sm me-2" @click="sortByCategory" :disabled="openAddCard">Category &#8597;</button>
+            <button class="btn btn-success btn-sm me-2" @click="navigateTo('summary')" :disabled="openAddCard">View Inventory Summary</button>
           </div>
         </header>
         <p v-if="!items || items.length === 0">
@@ -20,9 +19,9 @@
           <div class="category-container">
             <h5 class="m-0">{{ category }}</h5>
             <div id="sortButton">
-              <button class="btn btn-sm me-2 btn2" @click="sortCategorizedItems(category, 'quantity')">Quantity
+              <button class="btn btn-sm me-2 btn2" @click="sortCategorizedItems(category, 'quantity')" :disabled="openAddCard">Quantity
                 &#8595;</button>
-              <button class="btn btn-sm btn2" @click="sortCategorizedItems(category, 'expiryDate')">Expiry Date
+              <button class="btn btn-sm btn2" @click="sortCategorizedItems(category, 'expiryDate')" :disabled="openAddCard">Expiry Date
                 &#8595;</button>
             </div>
           </div>
@@ -37,8 +36,8 @@
                     <p class="card-text mb-0">Quantity: {{ item.quantity }}</p>
                   </div>
                   <div class="mt-auto d-flex flex-column">
-                    <button class="btn btn-secondary btn-sm mb-1 cardBtn" @click="editItem(item)">Edit</button>
-                    <button class="btn btn-danger btn-sm cardBtn" @click="deleteItem(item.id)">Delete</button>
+                    <button class="btn btn-secondary btn-sm mb-1 cardBtn" @click="editItem(item)" :disabled="openAddCard">Edit</button>
+                    <button class="btn btn-danger btn-sm cardBtn" @click="deleteItem(item.id)" :disabled="openAddCard">Delete</button>
                   </div>
                 </div>
               </div>

@@ -54,9 +54,6 @@
                   <input type="checkbox" value="email" v-model="notificationSettings.method" class="notification-checkbox"> Email
                 </label>
                 <label>
-                  <input type="checkbox" value="sms" v-model="notificationSettings.method" class="notification-checkbox"> SMS
-                </label>
-                <label>
                   <input type="checkbox" value="app" v-model="notificationSettings.method" class="notification-checkbox"> In-App Notification
                 </label>
               </div>
@@ -128,7 +125,7 @@ export default {
       this.error = '';
       const user = JSON.parse(localStorage.getItem('user'));
 
-      if (this.user.notifications && !this.isMethodSelected) {
+      if (this.user.notifications && this.notificationSettings.method.length == 0) {
         this.error = 'Please select at least one notification method.';
         return; // Stop the function if validation fails
       }
@@ -155,7 +152,8 @@ export default {
         this.error = 'Error updating profile: ' + error.message;
       }
     },
-  }
+  
+  },
 };
 </script>
 

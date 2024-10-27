@@ -248,6 +248,11 @@
   #appFridge .btn2 {
     margin-left: 10px;
   }
+
+  #appFridge .btn:disabled {
+      opacity: 0.5; 
+      cursor: not-allowed; 
+  }
 /*Fridge Page CSS: End*/
 
 /*Customize Page CSS: Start*/
