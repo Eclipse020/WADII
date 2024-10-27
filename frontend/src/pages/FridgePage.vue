@@ -1,94 +1,91 @@
 <template>
 
-  <div class="container-fluid">
-    <div class="content">
-      <header class="my-3 d-flex justify-content-end align-items-end">
-        <div>
-          <button class="btn btn-success btn-sm me-2" @click="sortByCategory">Category &#8597;</button>
-          <button class="btn btn-success btn-sm me-2" @click="navigateTo('summary')">View Inventory Summary</button>
-          <button class="btn btn-success btn-sm" @click="navigateTo('customize')">Customize</button>
-        </div>
-      </header>
-
-      <p v-if="!items || items.length === 0">
-        Your Fridge is Empty ~&#127810;<br>
-        <img class="img-fluid" style="width: 300px" src="../assets/emptyFridge.jpg" alt="Empty Fridge">
-      </p>
-
-      <!--Categorized Items-->
-      <div v-for="(itemsInCategory, category) in finalItems" :key="category" class="col-12">
-        <hr />
-        <div class="category-container">
-          <h5 class="m-0">{{ category }}</h5>
-          <div id="sortButton">
-            <button class="btn btn-sm me-2 btn2" @click="sortCategorizedItems(category, 'quantity')">Quantity
-              &#8595;</button>
-            <button class="btn btn-sm btn2" @click="sortCategorizedItems(category, 'expiryDate')">Expiry Date
-              &#8595;</button>
+  <div id="appFridge">
+    <div class="container-fluid">
+      <div class="content">
+        <header class="my-3 d-flex justify-content-end align-items-end">
+          <div>
+            <button class="btn btn-success btn-sm me-2" @click="sortByCategory">Category &#8597;</button>
+            <button class="btn btn-success btn-sm me-2" @click="navigateTo('summary')">View Inventory Summary</button>
+            <button class="btn btn-success btn-sm" @click="navigateTo('customize')">Customize</button>
           </div>
-        </div>
-
-        <hr />
-        <div class="row">
-          <div v-for="item in itemsInCategory" :key="item.id" class="col-sm-6 col-md-4 col-lg-3">
-            <div class="card mb-4 mx-4 filterCard" :class="{ 'expiring-soon': item.isExpiringSoon }">
-              <div class="card-body">
-                <h6 class="card-title">{{ item.name }}</h6>
-                <div class="card-info">
-                  <p class="card-text">Expiry Date: {{ item.expiryDate }}</p>
-                  <p class="card-text mb-0">Quantity: {{ item.quantity }}</p>
-                </div>
-                <div class="mt-auto d-flex flex-column">
-                  <button class="btn btn-secondary btn-sm mb-1 cardBtn" @click="editItem(item)">Edit</button>
-                  <button class="btn btn-danger btn-sm cardBtn" @click="deleteItem(item.id)">Delete</button>
+        </header>
+        <p v-if="!items || items.length === 0">
+          Your Fridge is Empty ~&#127810;<br>
+          <img class="img-fluid" style="width: 300px" src="../assets/emptyFridge.jpg" alt="Empty Fridge">
+        </p>
+        <!--Categorized Items-->
+        <div v-for="(itemsInCategory, category) in finalItems" :key="category" class="col-12">
+          <hr />
+          <div class="category-container">
+            <h5 class="m-0">{{ category }}</h5>
+            <div id="sortButton">
+              <button class="btn btn-sm me-2 btn2" @click="sortCategorizedItems(category, 'quantity')">Quantity
+                &#8595;</button>
+              <button class="btn btn-sm btn2" @click="sortCategorizedItems(category, 'expiryDate')">Expiry Date
+                &#8595;</button>
+            </div>
+          </div>
+          <hr />
+          <div class="row">
+            <div v-for="item in itemsInCategory" :key="item.id" class="col-sm-6 col-md-4 col-lg-3">
+              <div class="card mb-4 mx-4 filterCard" :class="{ 'expiring-soon': item.isExpiringSoon }">
+                <div class="card-body">
+                  <h6 class="card-title">{{ item.name }}</h6>
+                  <div class="card-info">
+                    <p class="card-text">Expiry Date: {{ item.expiryDate }}</p>
+                    <p class="card-text mb-0">Quantity: {{ item.quantity }}</p>
+                  </div>
+                  <div class="mt-auto d-flex flex-column">
+                    <button class="btn btn-secondary btn-sm mb-1 cardBtn" @click="editItem(item)">Edit</button>
+                    <button class="btn btn-danger btn-sm cardBtn" @click="deleteItem(item.id)">Delete</button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <!--Add Product + Edit Product Card-->
-      <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-success addButton">
-        Add Product
-      </button>
-
-      <div v-else class="card addCard" style="width: 30rem;">
-        <div class="card-body">
-          <div class="cardTitle">
-            <h5 class="card-title">{{ isEditing ? 'Edit Product' : 'Add Product' }} &#129365;&#127815;&#127838;&#129367;
-            </h5>
-            <button @click="closeAddCard" class="btn btn-light btnClose">X</button>
+        <!--Add Product + Edit Product Card-->
+        <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-success addButton">
+          Add Product
+        </button>
+        <div v-else class="card addCard" style="width: 30rem;">
+          <div class="card-body">
+            <div class="cardTitle">
+              <h5 class="card-title">{{ isEditing ? 'Edit Product' : 'Add Product' }} &#129365;&#127815;&#127838;&#129367;
+              </h5>
+              <button @click="closeAddCard" class="btn btn-light btnClose">X</button>
+            </div>
+            <hr />
+            <p v-if="validationError" class="errorMessage">{{ validationError }}</p>
+            <form @submit.prevent="isEditing ? saveEdit() : addItem()">
+              <div class="mb-3">
+                <label class="form-label" for="itemName">Name</label>
+                <input v-model="itemName" class="form-control" type="text" id="itemName" placeholder="Insert Name"
+                  required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="category">Category</label>
+                <select v-model="itemCategory" class="form-select" id="category" required>
+                  <option disabled value="" selected>Please Select</option>
+                  <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="quantity">Quantity</label>
+                <input v-model="itemQuantity" class="form-control" type="number" id="quantity" min="1" placeholder="1"
+                  required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="expiryDate">Expiry Date</label>
+                <input v-model="itemExpiryDate" class="form-control" type="date" id="expiryDate" required />
+              </div>
+              <button type="submit" class="btn btn-success" id="btnAdd">{{ isEditing ? 'Save' : 'Add!' }}</button>
+            </form>
           </div>
-          <hr />
-          <p v-if="validationError" class="errorMessage">{{ validationError }}</p>
-          <form @submit.prevent="isEditing ? saveEdit() : addItem()">
-            <div class="mb-3">
-              <label class="form-label" for="itemName">Name</label>
-              <input v-model="itemName" class="form-control" type="text" id="itemName" placeholder="Insert Name"
-                required />
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="category">Category</label>
-              <select v-model="itemCategory" class="form-select" id="category" required>
-                <option disabled value="" selected>Please Select</option>
-                <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="quantity">Quantity</label>
-              <input v-model="itemQuantity" class="form-control" type="number" id="quantity" min="1" placeholder="1"
-                required />
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="expiryDate">Expiry Date</label>
-              <input v-model="itemExpiryDate" class="form-control" type="date" id="expiryDate" required />
-            </div>
-            <button type="submit" class="btn btn-success" id="btnAdd">{{ isEditing ? 'Save' : 'Add!' }}</button>
-          </form>
         </div>
+    
       </div>
-      
     </div>
   </div>
 </template>
@@ -99,6 +96,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, getDoc, addDoc, deleteDoc, doc, setDoc, updateDoc } from "firebase/firestore";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/FridgeComponent.css';
 
 export default {
 
@@ -317,19 +315,22 @@ export default {
 
     async deleteItem(itemId) {
       const itemRef = doc(db, `users/${this.currentUserId}/items`, itemId);
-      const itemData = await getDoc(itemRef); 
-  
-      if (itemData.exists()) {
-          await setDoc(doc(db, `users/${this.currentUserId}/deletedItems`, itemId), {
-              name: itemData.data().name,
-              category: itemData.data().category,
-              deletedAt: new Date().toISOString() 
-          });
-          await deleteDoc(itemRef);
-          console.log("Item deleted and logged to deletedItems.");
-          this.items = this.items.filter(item => item.id !== itemId);
-      } else {
-          console.error("Item not found: ", itemId);
+      try {
+        const itemData = await getDoc(itemRef); 
+        if (itemData.exists()) {
+            await setDoc(doc(db, `users/${this.currentUserId}/deletedItems`, itemId), {
+                name: itemData.data().name,
+                category: itemData.data().category,
+                deletedAt: new Date().toISOString() 
+            });
+            await deleteDoc(itemRef);
+            console.log("Item deleted and logged to deletedItems.");
+            this.items = this.items.filter(item => item.id !== itemId);
+        } else {
+            console.error("Item not found: ", itemId);
+        }
+      } catch (error) {
+        console.error("Error deleting item: ", error);
       }
     },
 
@@ -428,195 +429,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-/* Content */
-template {
-  margin: 10px;
-}
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-header p {
-  white-space: nowrap;
-  margin: 0;
-  /* No margin for a cleaner look */
-}
-
-header div {
-  /* Add styles for the button container */
-  display: flex;
-  /* Use flexbox for button alignment */
-}
-
-header button {
-  white-space: nowrap;
-  margin: 0;
-  /* No margin for buttons */
-  margin-left: 10px;
-  /* Margin to space buttons apart */
-}
-
-header button:first-child {
-  margin-left: 0;
-  /* No left margin on the first button */
-}
-
-/*Cards: Start*/
-.filterCard {
-  width: 80%;
-  /* Adjust this percentage as needed */
-  max-width: 220px;
-  /* Maximum width to keep them small */
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  background-color: #ffffff;
-  transition: transform 0.3s;
-}
-
-.filterCard:hover {
-  transform: translateY(-4px);
-}
-
-.expiring-soon {
-  border: 2px solid red;
-}
-
-.card-body {
-  display: flex;
-  flex-direction: column;
-  font-size: 18px;
-  padding: 15px;
-  flex-grow: 1;
-  color: #333;
-}
-
-.card-info {
-  flex-grow: 1;
-  margin-bottom: 10px;
-}
-
-.card-text {
-  margin: 0;
-  font-size: 16px;
-  color: #555;
-}
-
-.expiry-date {
-  font-weight: bold;
-}
-
-.quantity {
-  font-weight: bold;
-}
-
-.cardBtn {
-  max-width: 190px;
-}
-
-
-.card {
-  min-height: 150px;
-}
-
-/*Cards: End*/
-
-/*Add Button*/
-
-.addButton {
-  position: fixed;
-  bottom: 90px;
-  right: 10px;
-}
-
-/*Form*/
-
-.cardTitle {
-  display: flex;
-  justify-content: space-between;
-}
-
-#btnClose {
-  font-weight: bold;
-}
-
-h5 {
-  padding-top: 15px;
-}
-
-.addCard {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 30rem;
-  background: linear-gradient(135deg, #f9f9f9, #ffffff);
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e0e0e0;
-  padding: 30px;
-  z-index: 1000;
-  border-radius: 15px;
-  font-family: 'Roboto', sans-serif;
-}
-
-.addCard, .card-body {
-  text-align: left; /* Ensure text alignment is left */
-}
-
-.btnClose {
-  background-color: #f5f5f5;
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-#btnClose:hover {
-  background-color: #ddd;
-}
-
-#btnAdd {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-#btnAdd:hover {
-  background-color: #45a049;
-}
-
-.errorMessage {
-  color: red;
-  font-weight: bold;
-  margin-bottom: 10px;
-  font-size: 14px;
-  text-align: center;
-}
-
-/*Sort btn*/
-.category-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 10px 0;
-}
-
-#sortButton {
-  display: flex;
-}
-
-.btn2 {
-  margin-left: 10px;
-}
-</style>
