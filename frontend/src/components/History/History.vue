@@ -4,17 +4,17 @@ import { fetchCookingHistory, addCookingHistory } from "@/services/historyServic
 export default {
   name: "CookingHistoryPage",
   data() {
-    return {
-      filter: '',
-      history: [], // Initialize as an empty array
-      calendarDays: [],
-      currentMonth: new Date().getMonth(),
-      currentYear: new Date().getFullYear(),
-      currentMonthName: new Date().toLocaleString('default', { month: 'long' }),
-      years: this.generateYearRange(),
-      userId: "exampleUserId", // Replace this with actual user ID from auth state
-    };
-  },
+  return {
+    filter: '',
+    history: [],
+    calendarDays: [],
+    currentMonth: new Date().getMonth(),
+    currentYear: new Date().getFullYear(),
+    currentMonthName: new Date().toLocaleString('default', { month: 'long' }),
+    years: this.generateYearRange(),
+    userId: this.$store.state.user.id, // Replace with actual user ID from your auth state management
+  };
+},
   computed: {
     filteredHistory() {
       // Check if history is an array before filtering

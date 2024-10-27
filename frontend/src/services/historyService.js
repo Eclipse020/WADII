@@ -1,11 +1,10 @@
-// src/services/historyService.js
 import { db } from "./firebase";
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, query, getDocs } from "firebase/firestore";
 
+// Change to store history under each user's collection
 export const addCookingHistory = async (userId, recipeId, date, calories) => {
   try {
-    const docRef = await addDoc(collection(db, "cookingHistory"), {
-      userId,
+    const docRef = await addDoc(collection(db, `users/${userId}/cookingHistory`), {
       recipeId,
       date: date.toISOString(),
       calories,
@@ -18,7 +17,8 @@ export const addCookingHistory = async (userId, recipeId, date, calories) => {
 
 export const fetchCookingHistory = async (userId) => {
   try {
-    const q = query(collection(db, "cookingHistory"), where("userId", "==", userId));
+    // Query the user's specific cooking history collection
+    const q = query(collection(db, `users/${userId}/cookingHistory`));
     const querySnapshot = await getDocs(q);
     const history = querySnapshot.docs.map(doc => ({
       id: doc.id,
@@ -27,5 +27,6 @@ export const fetchCookingHistory = async (userId) => {
     return history;
   } catch (error) {
     console.error("Error fetching cooking history:", error);
+    return []; // Return an empty array on error
   }
 };

@@ -1,6 +1,9 @@
 <!-- src/pages/ProfileSettingsPage.vue -->
 <template>
     <div>
+      <router-link to="/history">
+      <button class="history-button">View Cooking History</button>
+      </router-link>
       <ProfileSettings />
     </div>
   </template>

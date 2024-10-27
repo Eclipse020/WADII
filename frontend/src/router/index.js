@@ -13,11 +13,12 @@ import ResetPasswordPage from '../pages/ResetPasswordPage.vue';
 import ProfileSettingsPage from '../pages/ProfileSettingsPage.vue';
 import LogoutComponent from '../components/Auth/LogoutComponent.vue';
 import CookingHistory from '../components/History/History.vue';
+import HistoryPage from '../pages/HistoryPage.vue';
 import CalendarPage from '../components/History/CalendarPage.vue';
-import RecipeDetails from '../components/Community/CRecipeDetails.vue';
+import CRecipeDetails from '../components/Community/CRecipeDetails.vue';
 import PostRecipe from '../components/Community/CPostRecipe.vue';
 import PostDrafts from '../components/Community/CPostDrafts.vue';
-import RecipeList from '../components/Community/CRecipeList.vue';
+import CRecipeList from '../components/Community/CRecipeList.vue';
 import RecipeList from '../components/Recipes/RecipeList.vue';
 import RecipeDetails from '../components/Recipes/RecipeDetails.vue';
 import CommunityPage from '../pages/CommunityPage.vue';
@@ -31,6 +32,7 @@ const routes = [
   { path: '/customize', name: 'Customize', component: CustomizePage, meta: { requiresAuth: true } },
   { path: '/mealPlanner', name: 'MealPlanner', component: MealPlannerPage, meta: { requiresAuth: true } },
   { path: '/community', name: 'Community', component: CommunityPage, meta: { requiresAuth: true } },
+  { path: '/history', name: 'History', component: HistoryPage, meta: {requiresAuth: true} },
   
   // Recipe routes
   { path: '/recipes', name: 'RecipeList', component: RecipeList, meta: { requiresAuth: true } },
@@ -71,12 +73,12 @@ const routes = [
   {
     path: '/community',
     name: 'Community',
-    component: RecipeList // Displays list of all community recipes
+    component: CRecipeList // Displays list of all community recipes
   },
   {
     path: '/community/recipe/:id',
     name: 'RecipeDetails',
-    component: RecipeDetails, // Displays the details of a single recipe
+    component: CRecipeDetails, // Displays the details of a single recipe
     props: true // Allows passing the recipe ID as a prop
   },
   {
