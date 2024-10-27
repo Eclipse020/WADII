@@ -1,3 +1,31 @@
+import { addCommunityRecipe, fetchCommunityRecipes, likeRecipe, addComment } from "../services/communityService";
+
+export default {
+  data() {
+    return {
+      recipes: [],
+    };
+  },
+  async created() {
+    this.recipes = await fetchCommunityRecipes();
+  },
+  methods: {
+    async postRecipe() {
+      await addCommunityRecipe(this.userId, this.newRecipe);
+      this.recipes = await fetchCommunityRecipes();
+    },
+    async like(recipeId) {
+      await likeRecipe(recipeId);
+      this.recipes = await fetchCommunityRecipes(); // Refresh the recipe list
+    },
+    async comment(recipeId, comment) {
+      await addComment(recipeId, comment);
+      this.recipes = await fetchCommunityRecipes(); // Refresh the recipe list
+    },
+  },
+};
+
+
 <template>
   <div class="post-recipe-container">
     <h2 class="text-center mb-4">{{ isEditing ? 'Edit Recipe' : 'Post New Recipe' }}</h2>

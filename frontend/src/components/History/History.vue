@@ -1,3 +1,103 @@
+<script>
+import { fetchCookingHistory, addCookingHistory } from "@/services/historyService";
+
+export default {
+  name: "CookingHistoryPage",
+  data() {
+    return {
+      filter: '',
+      history: [], // Initialize as an empty array
+      calendarDays: [],
+      currentMonth: new Date().getMonth(),
+      currentYear: new Date().getFullYear(),
+      currentMonthName: new Date().toLocaleString('default', { month: 'long' }),
+      years: this.generateYearRange(),
+      userId: "exampleUserId", // Replace this with actual user ID from auth state
+    };
+  },
+  computed: {
+    filteredHistory() {
+      // Check if history is an array before filtering
+      return Array.isArray(this.history) ? this.history.filter((entry) =>
+        entry.name.toLowerCase().includes(this.filter.toLowerCase())
+      ) : [];
+    },
+  },
+  created() {
+    this.fetchHistory();
+    this.generateCalendar();
+  },
+  methods: {
+    async fetchHistory() {
+      try {
+        const response = await fetchCookingHistory(this.userId);
+        console.log("Fetched history:", response); // Log the response for debugging
+        this.history = Array.isArray(response) ? response : []; // Ensure history is always an array
+        this.generateCalendar(); // Regenerate the calendar after fetching history
+      } catch (error) {
+        console.error('Error fetching history:', error);
+        this.history = []; // Reset history on error
+      }
+    },
+    generateCalendar() {
+      const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+      const startDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
+
+      this.calendarDays = Array.from({ length: startDay }).map(() => ({}));
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(this.currentYear, this.currentMonth, day);
+        const hasRecipe = this.history.some(entry => new Date(entry.date).toDateString() === date.toDateString());
+        this.calendarDays.push({ day, hasRecipe, date: date.toDateString() });
+      }
+    },
+    changeMonth(direction) {
+      this.currentMonth += direction;
+      if (this.currentMonth < 0) {
+        this.currentMonth = 11;
+        this.currentYear--;
+      } else if (this.currentMonth > 11) {
+        this.currentMonth = 0;
+        this.currentYear++;
+      }
+      this.currentMonthName = new Date(this.currentYear, this.currentMonth).toLocaleString('default', { month: 'long' });
+      this.generateCalendar();
+    },
+    generateYearRange() {
+      const currentYear = new Date().getFullYear();
+      return Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
+    },
+    setYear(year) {
+      this.currentYear = year;
+      this.generateCalendar();
+    },
+    viewRecipe(entry) {
+      console.log("Viewing recipe:", entry);
+    },
+    toggleFavorite(entry) {
+      console.log("Toggling favorite for:", entry);
+      entry.isFavorite = !entry.isFavorite;
+    },
+    shareRecipe(entry) {
+      const message = `Check out what I cooked on ${entry.date}! It's ${entry.name}.`;
+      console.log("Sharing recipe:", message);
+    },
+    async saveNewHistory() {
+      try {
+        const newHistory = {
+          recipeId: "exampleRecipeId",
+          date: new Date(),
+          calories: 300,
+        };
+        await addCookingHistory(this.userId, newHistory.recipeId, newHistory.date, newHistory.calories);
+        this.fetchHistory(); // Refresh the history list after adding new data
+      } catch (error) {
+        console.error("Error saving new history:", error);
+      }
+    },
+  },
+};
+</script>
+
 <template>
   <div class="cooking-history">
     <input v-model="filter" placeholder="Search by recipe name" class="search-bar" />
@@ -47,88 +147,6 @@
     </div>
   </div>
 </template>
-
-<script>
-export default {
-  name: 'CookingHistoryPage',
-  data() {
-    return {
-      filter: '',
-      history: [],
-      calendarDays: [],
-      currentMonth: new Date().getMonth(),
-      currentYear: new Date().getFullYear(),
-      currentMonthName: new Date().toLocaleString('default', { month: 'long' }),
-      years: this.generateYearRange(),
-    };
-  },
-  computed: {
-    filteredHistory() {
-      return this.history.filter((entry) =>
-        entry.name.toLowerCase().includes(this.filter.toLowerCase())
-      );
-    },
-  },
-  created() {
-    this.fetchHistory();
-    this.generateCalendar();
-  },
-  methods: {
-    fetchHistory() {
-      this.$axios.get('/api/cooking-history')
-        .then((response) => {
-          this.history = response.data;
-          this.generateCalendar(); // Regenerate the calendar after fetching history
-        })
-        .catch((error) => {
-          console.error('Error fetching history:', error);
-        });
-    },
-    generateCalendar() {
-      const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
-      const startDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
-      
-      this.calendarDays = Array.from({ length: startDay }).map(() => ({}));
-      for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(this.currentYear, this.currentMonth, day);
-        const hasRecipe = this.history.some(entry => new Date(entry.date).toDateString() === date.toDateString());
-        this.calendarDays.push({ day, hasRecipe, date: date.toDateString() });
-      }
-    },
-    changeMonth(direction) {
-      this.currentMonth += direction;
-      if (this.currentMonth < 0) {
-        this.currentMonth = 11; 
-        this.currentYear--;
-      } else if (this.currentMonth > 11) {
-        this.currentMonth = 0; 
-        this.currentYear++;
-      }
-      this.currentMonthName = new Date(this.currentYear, this.currentMonth).toLocaleString('default', { month: 'long' });
-      this.generateCalendar();
-    },
-    generateYearRange() {
-      const currentYear = new Date().getFullYear();
-      return Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
-    },
-    setYear(year) {
-      this.currentYear = year;
-      this.generateCalendar();
-    },
-    viewRecipe(entry) {
-      console.log("Viewing recipe:", entry);
-    },
-    toggleFavorite(entry) {
-      console.log("Toggling favorite for:", entry);
-      entry.isFavorite = !entry.isFavorite; 
-    },
-    shareRecipe(entry) {
-      const message = `Check out what I cooked on ${entry.date}! It's ${entry.name}.`;
-      console.log("Sharing recipe:", message);
-    },
-  },
-};
-</script>
 
 <style scoped>
 .cooking-history {
