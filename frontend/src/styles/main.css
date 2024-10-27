@@ -15,4 +15,8 @@
 @import './components/mealplanner/shoppinglist.css';
 @import './components/mealplanner/modal.css';
 @import './components/mealplanner/ingredientlist.css';
-@import './components/mealplanner/DayPlanPopup.css'
+@import './components/mealplanner/DayPlanPopup.css';
+@import './components/mealplanner/recipetracker.css';
+@import './components/home/homepage.css';
+
+

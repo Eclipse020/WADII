@@ -22,9 +22,9 @@
             </button>
           </div>
           <div class="meal-items">
-            <div v-for="(meal, index) in breakfastMeals" :key="index" class="meal-item">
+            <div v-for="(meal, index) in breakfastMeals" :key="index" class="meal-item" @click="$emit('show-recipe-details', meal, index)">
               <span>{{ meal.label }}</span>
-              <button class="delete-meal" @click="$emit('delete-recipe', meal, index)">×</button>
+              <button class="delete-meal" @click.stop="$emit('delete-recipe', meal, index)">×</button>
             </div>
           </div>
         </div>
@@ -38,9 +38,9 @@
             </button>
           </div>
           <div class="meal-items">
-            <div v-for="(meal, index) in lunchMeals" :key="index" class="meal-item">
+            <div v-for="(meal, index) in lunchMeals" :key="index" class="meal-item" @click="$emit('show-recipe-details', meal, index)">
               <span>{{ meal.label }}</span>
-              <button class="delete-meal" @click="$emit('delete-recipe', meal, index)">×</button>
+              <button class="delete-meal" @click.stop="$emit('delete-recipe', meal, index)">×</button>
             </div>
           </div>
         </div>
@@ -54,9 +54,9 @@
             </button>
           </div>
           <div class="meal-items">
-            <div v-for="(meal, index) in dinnerMeals" :key="index" class="meal-item">
+            <div v-for="(meal, index) in dinnerMeals" :key="index" class="meal-item" @click="$emit('show-recipe-details', meal, index)">
               <span>{{ meal.label }}</span>
-              <button class="delete-meal" @click="$emit('delete-recipe', meal, index)">×</button>
+              <button class="delete-meal" @click.stop="$emit('delete-recipe', meal, index)">×</button>
             </div>
           </div>
         </div>
@@ -98,107 +98,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.day-plan-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.popup-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.popup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  padding: 0 8px;
-}
-
-.control-buttons {
-  margin-bottom: 20px;
-}
-
-.meal-section {
-  margin-bottom: 20px;
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-}
-
-.meal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.meal-items {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.meal-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
-
-.add-recipe-button {
-  padding: 6px 12px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.clear-day-button {
-  padding: 6px 12px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.delete-meal {
-  background: none;
-  border: none;
-  color: #f44336;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 0 4px;
-}
-
-button:hover {
-  opacity: 0.8;
-}
-</style>

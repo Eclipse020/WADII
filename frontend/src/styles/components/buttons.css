@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: center;
   color: white;
-  background-color: var(--primary-color);
+  background-color: #004d40;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   min-width: 70px;
 }
@@ -24,7 +24,7 @@
 .add-recipe-button:hover,
 .nav-button:hover,
 .add-to-shopping-list:hover {
-  background-color: var(--primary-dark);
+  background-color: #00695c;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
@@ -50,6 +50,27 @@
 .clear-day-button:hover,
 .delete-button:hover {
   background-color: var(--danger-dark);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-warning {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #333;
+  background-color: #F6E69B;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 70px;
+}
+
+.btn-warning:hover {
+  background-color: #f4e089;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }

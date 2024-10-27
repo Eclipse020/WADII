@@ -4,7 +4,7 @@
     <header v-if="isAuthenticated" class="app-header">
       <div class="logo-heading-container">
         <img :src="require('@/assets/healthychef.png')" alt="HealthyChef Logo" class="logo" />
-        <h1>HealthyChef</h1>
+        <h1 class="header-title">HealthyChef</h1>
       </div>
       <nav class="app-nav">
         <router-link to="/" class="nav-link">
@@ -42,7 +42,7 @@
     </main>
 
     <!-- Conditionally show footer only if user is authenticated -->
-    <footer v-if="isAuthenticated">
+    <footer class="footer" v-if="isAuthenticated">
       <p>&copy; 2024 HealthyChef. All rights reserved.</p>
     </footer>
   </div>
@@ -51,6 +51,7 @@
 <script>
 import { auth } from '@/services/firebase'; // Import Firebase Authentication
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import './styles/main.css';
 
 export default {
   name: 'App',
@@ -111,6 +112,17 @@ export default {
 </script>
 
 <style scoped>
+/* CSS Variables for consistent theming */
+:root {
+  --primary-color: #00796b; /* Updated to match the teal color */
+  --text-primary: #2c3e50;
+  --background-light: #ffffff;
+  --accent-medium: #00796b;
+  --accent-border: #00695c;
+  --hover-color: rgba(255, 255, 255, 0.1);
+  --footer-color: #2c3e50;
+}
+
 /* General Reset for Body and HTML */
 html, body {
   margin: 0;
@@ -121,86 +133,106 @@ html, body {
 /* General App Styling */
 #app {
   font-family: 'Poppins', sans-serif;
-  color: #2c3e50;
+  color: var(--text-primary);
   text-align: center;
 }
 
 /* Header Styling */
 .app-header {
-  background-color: #42b983;
+  background-color: var(--primary-color);
   color: white;
-  padding: 20px;
+  padding: 10px 30px;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: space-between;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .logo-heading-container {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  gap: 12px;
 }
 
 .logo {
-  height: 50px;
-  margin-right: 10px;
+  height: 40px;
+}
+
+.header-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: white;
+  margin: 0;
 }
 
 h1 {
-  font-size: 1.5rem;
+  font-size: 2.5rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
   margin: 0;
+  color: var(--primary-color);
 }
 
 /* Navigation Styling */
 .app-nav {
+  padding: 25px 25px;
   display: flex;
+  align-items: center;
   gap: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
+  margin-left: auto; /* Push nav items to the right */
 }
 
 .nav-link {
   color: white;
-  font-size: 1rem;
-  font-weight: bold;
+  font-size: 0.9rem;
+  font-weight: 600;
   text-decoration: none;
-  position: relative;
-  transition: color 0.3s;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.nav-link i {
+  font-size: 1rem;
 }
 
 .nav-link:hover {
-  color: #ffdb58;
+  background-color: var(--hover-color);
+  transform: translateY(-1px);
+  color: white;
 }
 
 /* Profile and Logout Styling */
-.profile-logout-container {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* Space between Profile and Logout */
+.nav-link[to="/profile"],
+.nav-link[to="/logout"] {
+  font-size: 0.85rem;
+  padding: 4px 10px;
 }
 
-.logout-button {
-  padding: 5px 10px;
-  font-size: 1rem;
-  color: white;
-  background-color: #42b983;
-  border-collapse: collapse;
+/* Content Styling */
+.content {
+  flex-grow: 1;
+  padding: 30px;
 }
 
-.logout-button:hover {
-  background-color: #42b983;
+.intro-text {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  color: var(--text-primary);
 }
 
 /* Footer Styling */
 footer {
-  background-color: #42b983;
+  background-color: var(--footer-color);
   color: white;
   padding: 20px;
-  font-size: 0.8em;
+  font-size: 0.9em;
   text-align: center;
   width: 100%;
   position: relative;
@@ -213,8 +245,37 @@ footer {
   flex-direction: column;
 }
 
-.content {
-  flex-grow: 1;
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .app-header {
+    padding: 10px 15px;
+  }
+  
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+  }
+  
+  .header-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .app-header {
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .logo-heading-container {
+    margin-bottom: 15px;
+  }
+
+  .app-nav {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 }
 
 </style>

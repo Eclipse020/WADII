@@ -1,15 +1,7 @@
 <template>
   <div class="meal-planner">
     <div class="left-column">
-      <DayPlanPopup
-        :show="showDayPlanPopup"
-        :selectedDay="selectedDayText"
-        :meals="selectedDayMeals"
-        @close="closeDayPlanPopup"
-        @add-recipe="handleAddRecipe"
-        @clear-day="clearDayMeals"
-        @delete-recipe="deleteRecipe"
-      />
+      <RecipeTracker ref="recipeTracker" />
     </div>
 
     <div class="center-column">
@@ -39,8 +31,16 @@
               <td
                 v-for="(day, dayIndex) in week"
                 :key="dayIndex"
-                :class="['calendar-cell', { selected: day === selectedDay, today: isToday(day), 'clicked': clickedDay === day }]"
-                @click="selectDay(day)"
+                :class="[
+                  'calendar-cell', 
+                  { 
+                    selected: day === selectedDay, 
+                    today: isToday(day), 
+                    'clicked': clickedDay === day,
+                    'past-date': isPastDate(day)
+                  }
+                ]"
+                @click="handleDayClick(day)"
               >
                 <span v-if="day" class="date-number">{{ day }}</span>
                 <div v-if="day && mealPlan[day]" class="meal-container">
@@ -87,20 +87,32 @@
       @close="closeRecipeDetails"
       @delete-recipe="deleteRecipe"
       @add-to-shopping-list="addToShoppingList"
+      @recipe-completed="handleRecipeCompleted"
+    />
+    
+    <DayPlanPopup
+        :show="showDayPlanPopup"
+        :selectedDay="selectedDayText"
+        :meals="selectedDayMeals"
+        @close="closeDayPlanPopup"
+        @add-recipe="handleAddRecipe"
+        @clear-day="clearDayMeals"
+        @delete-recipe="deleteRecipe"
+        @show-recipe-details="handleShowRecipeDetails"
     />
   </div>
 </template>
 
 <script>
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, collection, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
+import { doc, collection, getDocs, addDoc, deleteDoc, updateDoc } from 'firebase/firestore'; // Add updateDoc import
 import { auth, db } from '../../services/firebase';
 import AddRecipeModal from './AddRecipeModal.vue';
 import RecipeDetailsModal from './RecipeDetailsModal.vue';
 import ShoppingList from './ShoppingList.vue';
 import DayPlanPopup from './DayPlanPopup.vue';
-import '@/styles/main.css';
-
+import RecipeTracker from './RecipeTracker.vue';
+import '../../styles/main.css';
 
 export default {
   components: {
@@ -108,6 +120,7 @@ export default {
     RecipeDetailsModal,
     ShoppingList,
     DayPlanPopup,
+    RecipeTracker,
   },
   data() {
     return {
@@ -126,6 +139,7 @@ export default {
       availableIngredients: [],
       mealType: '',
       clickedDay: null,
+      lastCleanupDate: null,
     };
   },
   computed: {
@@ -171,6 +185,29 @@ export default {
     }
   },
   methods: {
+    handleShowRecipeDetails(recipe, index) {
+      this.selectedRecipe = recipe;
+      this.selectedRecipeIndex = index;
+      this.showRecipeDetails = true;
+      this.showDayPlanPopup = false;
+    },
+    async handleRecipeCompleted(recipe) {
+      try {
+        if (this.$refs.recipeTracker) {
+          this.$refs.recipeTracker.addCompletedRecipe(recipe);
+        }
+        
+        if (recipe.id && this.currentUserId) {
+          const recipeRef = doc(db, `users/${this.currentUserId}/mealPlans`, recipe.id);
+          await updateDoc(recipeRef, {
+            completed: true
+          });
+          await this.loadMealPlan(); // Reload the meal plan to reflect changes
+        }
+      } catch (error) {
+        console.error("Error marking recipe as completed:", error);
+      }
+    },
     isToday(day) {
       const today = new Date();
       return day === today.getDate() && 
@@ -192,19 +229,27 @@ export default {
               mealData.month === this.currentMonth && 
               mealData.year === this.currentYear) {
             
-            if (!this.mealPlan[mealData.day]) {
-              this.mealPlan[mealData.day] = [];
-            }
+            // Don't load recipes for past dates
+            const mealDate = new Date(mealData.year, mealData.month, mealData.day);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             
-            this.mealPlan[mealData.day].push({
-              ...mealData.recipe,
-              id: doc.id,
-              day: mealData.day,
-              month: mealData.month,
-              year: mealData.year,
-              mealType: mealData.mealType,
-              createdAt: mealData.createdAt
-            });
+            if (mealDate >= today || mealData.completed) {
+              if (!this.mealPlan[mealData.day]) {
+                this.mealPlan[mealData.day] = [];
+              }
+              
+              this.mealPlan[mealData.day].push({
+                ...mealData.recipe,
+                id: doc.id,
+                day: mealData.day,
+                month: mealData.month,
+                year: mealData.year,
+                mealType: mealData.mealType,
+                createdAt: mealData.createdAt,
+                completed: mealData.completed || false
+              });
+            }
           }
         });
         
@@ -268,15 +313,24 @@ export default {
 
       try {
         if (recipe.id) {
+          console.log("Deleting recipe with ID:", recipe.id);
           await deleteDoc(doc(db, `users/${this.currentUserId}/mealPlans`, recipe.id));
         }
-        
+
+        console.log("Removing recipe from local meal plan.");
         this.mealPlan[this.selectedDay].splice(index, 1);
         if (this.mealPlan[this.selectedDay].length === 0) {
           delete this.mealPlan[this.selectedDay];
         }
+
+        console.log("Reloading meal plan...");
+        await this.loadMealPlan();
+        console.log("Meal plan reloaded successfully:", this.mealPlan);
+
       } catch (error) {
         console.error("Error deleting recipe:", error);
+      } finally {
+        this.closeRecipeDetails();
       }
     },
 
@@ -350,6 +404,44 @@ export default {
       }
     },
 
+    // To grey out calander
+    isPastDate(day) {
+      if (!day) return false;
+      const currentDate = new Date();
+      const checkDate = new Date(this.currentYear, this.currentMonth, day);
+      return checkDate < new Date(currentDate.setHours(0, 0, 0, 0));
+    },
+
+    handleDayClick(day) {
+      if (!day || this.isPastDate(day)) return;
+      this.selectDay(day);
+    },
+
+    async cleanupPastRecipes() {
+      if (!this.currentUserId) return;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      try {
+        const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/mealPlans`));
+        
+        for (const doc of querySnapshot.docs) {
+          const mealData = doc.data();
+          const mealDate = new Date(mealData.year, mealData.month, mealData.day);
+          
+          if (mealDate < today && !mealData.completed) {
+            await deleteDoc(doc.ref);
+          }
+        }
+
+        this.lastCleanupDate = today;
+        await this.loadMealPlan();
+      } catch (error) {
+        console.error("Error cleaning up past recipes:", error);
+      }
+    },
+
     selectDay(day) {
       if (!day) return;
       this.selectedDay = day;
@@ -403,16 +495,32 @@ export default {
       }
     },
   },
+  // Add mounted hook for cleanup
   mounted() {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.currentUserId = user.uid;
-        Promise.all([
-          this.loadMealPlan(),
-          this.loadShoppingList()
-        ]).catch(error => {
+        try {
+          await Promise.all([
+            this.loadMealPlan(),
+            this.loadShoppingList(),
+            this.cleanupPastRecipes()
+          ]);
+          
+          // Set up daily cleanup
+          const checkForCleanup = async () => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (!this.lastCleanupDate || this.lastCleanupDate < today) {
+              await this.cleanupPastRecipes();
+            }
+          };
+
+          this.cleanupInterval = setInterval(checkForCleanup, 3600000); // Check every hour
+        } catch (error) {
           console.error("Error loading data:", error);
-        });
+        }
       } else {
         console.log("No user is signed in.");
         this.currentUserId = null;
@@ -420,6 +528,12 @@ export default {
         this.shoppingList = [];
       }
     });
+  },
+
+  beforeUnmount() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
   },
 };
 </script>

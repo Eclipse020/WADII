@@ -6,37 +6,44 @@
   border: 1px solid var(--border-color);
   padding: 1.25rem;
   max-width: 400px;
-  margin: 0 auto;
+  /* Remove margin: 0 auto to let grid handle alignment */
+  font-family: 'Arial', sans-serif;
+  color: #004d40;
+  font-size: 20px;
 }
 
 .shopping-list h3 {
   font-size: 20px;
   margin-bottom: 15px;
-  color: var(--text-primary);
+  color: #004d40;
 }
 
+/* List item styles */
 .shopping-list .list-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   background-color: var(--background-light);
   border-radius: 6px;
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
   font-size: 13px;
+  width: calc(100% - 24px);
 }
 
+/* Maintain hover effect */
 .shopping-list .list-item:hover {
   background-color: var(--accent-light);
   transform: translateX(2px);
 }
 
+/* Input group styles */
 .shopping-list .input-group {
   display: flex;
   gap: 6px;
-  margin-top: 1rem;
+  margin-top: 0;
   position: sticky;
   bottom: 0;
   background: white;
@@ -44,6 +51,7 @@
   border-top: 1px solid var(--border-color);
 }
 
+/* Form control styles */
 .shopping-list .form-control {
   flex: 1;
   padding: 8px 10px;
@@ -53,10 +61,35 @@
   transition: all 0.2s ease;
 }
 
+/* Focus effect */
 .shopping-list .form-control:focus {
   border-color: var(--accent-border);
   outline: none;
   box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.2);
+}
+
+/* Ingredient list styles */
+.ingredient-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+/* Standardizing remove button size */
+.btn-danger {
+  font-size: 13px;
+  height: auto;
+  border: none;
+}
+
+/* Clear All button styles */
+.btn-warning {
+  font-size: 13px;
+  height: auto;
+  border: none;
+  width: 100%;
+  background-color: #F6E69B;
+  color: #333;
 }
 
 @media (max-width: 768px) {

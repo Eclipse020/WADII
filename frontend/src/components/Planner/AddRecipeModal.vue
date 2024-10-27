@@ -24,11 +24,11 @@
             </div>
           </div>
 
-          <div v-if="availableIngredients.length" class="mt-3 d-flex align-items-center justify-content-between">
+          <div v-if="validIngredients.length" class="mt-3 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
               <h6 class="me-2">Available Ingredients:</h6>
               <ul class="ingredient-list d-flex flex-wrap">
-                <li v-for="(ingredient, index) in availableIngredients" :key="index" class="ingredient-item me-2">
+                <li v-for="(ingredient, index) in validIngredients" :key="index" class="ingredient-item me-2">
                   <div class="form-check">
                     <input 
                       type="checkbox" 
@@ -37,7 +37,13 @@
                       :id="'ingredient-' + index"
                       class="form-check-input"
                     />
-                    <label :for="'ingredient-' + index" class="form-check-label">{{ ingredient.name }}</label>
+                    <label 
+                      :for="'ingredient-' + index" 
+                      class="form-check-label"
+                      :style="{ color: isExpiringSoon(ingredient) ? '#dc3545' : 'inherit' }"
+                    >
+                      {{ ingredient.name }}
+                    </label>
                   </div>
                 </li>
               </ul>
@@ -107,6 +113,16 @@ export default {
       BASE_URL: "https://api.edamam.com/api/recipes/v2"
     };
   },
+  computed: {
+    validIngredients() {
+      const currentDate = new Date();
+      return this.availableIngredients.filter(ingredient => {
+        if (!ingredient.expiryDate) return true;
+        const expiryDate = new Date(ingredient.expiryDate);
+        return expiryDate >= currentDate;
+      });
+    }
+  },
   watch: {
     show: {
       immediate: true,
@@ -118,6 +134,16 @@ export default {
     }
   },
   methods: {
+    isExpiringSoon(ingredient) {
+      if (!ingredient.expiryDate) return false;
+      
+      const expiryDate = new Date(ingredient.expiryDate);
+      const currentDate = new Date();
+      const daysUntilExpiry = Math.ceil((expiryDate - currentDate) / (1000 * 60 * 60 * 24));
+      
+      return daysUntilExpiry <= 3 && daysUntilExpiry >= 0;
+    },
+
     async searchRecipes() {
       if (!this.query) return;
 

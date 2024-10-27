@@ -13,6 +13,9 @@
 
 .left-column {
   min-height: 100px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
 }
 
 .center-column {
@@ -21,7 +24,15 @@
 }
 
 .right-column {
-  padding: 20px 0;
+  /* padding: 20px 0; */
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.past-day {
+  background-color: #e0e0e0; /* Gray out past days */
+  color: #999; /* Dim the text color for past days */
 }
 
 @media (max-width: 1200px) {
@@ -41,5 +52,6 @@
 
   .right-column {
     order: 2;
+    justify-content: center;
   }
 }

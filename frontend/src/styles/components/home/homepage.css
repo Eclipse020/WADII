@@ -1,0 +1,143 @@
+/* Homepage Styles */
+.home-page {
+    text-align: center;
+    padding: 30px;
+  }
+  
+  /* Typography overrides for homepage */
+  .home-page h1 {
+    font-size: 2.3rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  
+  .intro-text {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    font-weight: 300;
+    color: var(--text-primary);
+  }
+  
+  /* Features Section */
+  .features {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .feature-box {
+    background-color: var(--background-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    text-align: left;
+  }
+  
+  .feature-box h2 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  
+  .feature-box p {
+    font-size: 1rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  
+  /* Hero Section */
+  .carousel-section .carousel-item {
+    height: 300px; /* Adjust height as needed */
+  }
+  
+  .carousel-item img {
+    object-fit: cover;
+    height: 100%;
+  }
+  
+  .carousel-caption h2 {
+    font-size: 2rem;
+    /* margin-bottom: 20px; */
+    font-weight: 700;
+    color: white;
+  }
+  
+  .carousel-caption p {
+    font-size: 1.3rem;
+    /* margin-bottom: 20px; */
+    font-weight: 700;
+    color: white;
+  }
+
+  /* Carousel Controls */
+  .carousel-control-prev,
+  .carousel-control-next {
+    background-color: #00796b;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.9;
+  }
+
+  .carousel-control-prev {
+    left: 20px;
+  }
+
+  .carousel-control-next {
+    right: 20px;
+  }
+
+  .carousel-control-prev:hover,
+  .carousel-control-next:hover {
+    background-color: #00796b;
+    opacity: 1;
+  }
+  
+  /* CTA Button */
+  .cta-button {
+    height: 32px;
+    padding: 20px 30px;
+    font-size: 20px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background-color: var(--primary-color);
+    /* Want to change the button color */
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .cta-button:hover {
+    background-color: var(--accent-border);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .hero-content h2 {
+      font-size: 2rem;
+    }
+  
+    .hero-content p {
+      font-size: 1rem;
+    }
+  
+    .cta-button {
+      height: 30px;
+      padding: 0 20px;
+      font-size: 12px;
+    }
+  }
