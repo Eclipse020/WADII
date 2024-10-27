@@ -3,7 +3,7 @@
     <div class="card">
       <div class="card-body">
         <div class="cardTitle">
-          <h5 class="card-title">Add Recipe for {{ selectedDay }} {{ monthYear }} 🥗🍳</h5>
+          <h5 class="card-title">Add {{ mealType }} Recipe for {{ selectedDay }} {{ monthYear }} 🥗🍳</h5>
           <button @click="close" class="btn btn-light btnClose">X</button>
         </div>
         <hr />
@@ -89,6 +89,10 @@ export default {
     monthYear: {
       type: String,
       required: true
+    },
+    mealType: {
+      type: String,
+      required: true
     }
   },
   data() {
@@ -157,6 +161,8 @@ export default {
     },
 
     addRecipe(recipe) {
+      // Set the mealType before emitting
+      recipe.mealType = this.mealType.toLowerCase();
       this.$emit('add-recipe', recipe);
     },
     
