@@ -31,7 +31,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Save Preferences</button>
             </form>
-             </div>
+        </div>
      </div>
 </template>
 

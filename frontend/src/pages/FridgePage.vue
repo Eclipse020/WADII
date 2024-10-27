@@ -7,7 +7,7 @@
           <div>
             <button class="btn btn-success btn-sm me-2" @click="sortByCategory">Category &#8597;</button>
             <button class="btn btn-success btn-sm me-2" @click="navigateTo('summary')">View Inventory Summary</button>
-            <button class="btn btn-success btn-sm" @click="navigateTo('customize')">Customize</button>
+            <!-- <button class="btn btn-success btn-sm" @click="navigateTo('customize')">Customize</button> -->
           </div>
         </header>
         <p v-if="!items || items.length === 0">

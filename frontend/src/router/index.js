@@ -6,7 +6,7 @@ import { auth } from '../services/firebase';
 import HomePage from '../pages/HomePage.vue';
 import FridgePage from '../pages/FridgePage.vue';
 import SummaryPage from '../pages/SummaryPage.vue';
-import CustomizePage from '../pages/CustomizePage.vue';
+// import CustomizePage from '../pages/CustomizePage.vue';
 import MealPlannerPage from '../pages/MealPlanner.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import RegistrationPage from '../pages/RegistrationPage.vue';
@@ -35,12 +35,12 @@ const routes = [
     component: SummaryPage,
     meta: { requiresAuth: true },
   },
-  {
-    path: '/customize',
-    name: 'Customize',
-    component: CustomizePage,
-    meta: { requiresAuth: true },
-  },
+  // {
+  //   path: '/customize',
+  //   name: 'Customize',
+  //   component: CustomizePage,
+  //   meta: { requiresAuth: true },
+  // },
   {
     path: '/mealPlanner',
     name: 'MealPlanner',

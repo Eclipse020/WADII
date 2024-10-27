@@ -38,6 +38,39 @@
             I would like to receive notifications!
           </label>
         </div>
+
+        <!-- Conditional Rendering for Notification Customization -->
+        <div class="notification-form" v-if="user.notifications">
+          <h2 class="form-title">Notification Preferences</h2>
+          <div id="notificationSettingsForm">
+            <div class="form-group">
+              <label for="daysBeforeExpiry">Notify me before an item expires (in days):</label>
+              <input type="number" v-model="notificationSettings.daysBeforeExpiry" class="form-control" min="1" max="30" required />
+            </div>
+            <div class="form-group">
+              <label>Preferred Notification Method:</label>
+              <div>
+                <label>
+                  <input type="checkbox" value="email" v-model="notificationSettings.method" class="notification-checkbox"> Email
+                </label>
+                <label>
+                  <input type="checkbox" value="sms" v-model="notificationSettings.method" class="notification-checkbox"> SMS
+                </label>
+                <label>
+                  <input type="checkbox" value="app" v-model="notificationSettings.method" class="notification-checkbox"> In-App Notification
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="notificationFrequency">How often to notify:</label>
+              <select v-model="notificationSettings.frequency" class="form-control" required>
+                <option value="once">Once</option>
+                <option value="daily">Daily until expired</option>
+                <option value="weekly">Weekly until expired</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
       <button type="submit" class="btn btn-primary">Update Profile</button>
@@ -51,7 +84,6 @@
   </div>
 </template>
 
-
 <script>
 import { db } from '../../services/firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
@@ -62,8 +94,13 @@ export default {
       user: {
         email: '',
         displayName: '',
-        dietaryPreferences: [], // Changed to an array for multiple selections
-        notifications: false, // Default value
+        dietaryPreferences: [], 
+        notifications: false, 
+      },
+      notificationSettings: { 
+        daysBeforeExpiry: 3,
+        method: [],
+        frequency: 'once',
       },
       message: '',
       error: '',
@@ -90,29 +127,43 @@ export default {
       this.message = '';
       this.error = '';
       const user = JSON.parse(localStorage.getItem('user'));
+
       try {
-        await updateDoc(doc(db, 'users', user.uid), {
+        // Prepare the data to update
+        const updateData = {
           displayName: this.user.displayName,
-          dietaryPreferences: this.user.dietaryPreferences, // Update as an array
-          notifications: this.user.notifications, // Include notifications
-        });
+          dietaryPreferences: this.user.dietaryPreferences, 
+          notifications: this.user.notifications, 
+        };
+
+        if (this.user.notifications) {
+          updateData.notificationSettings = {
+            daysBeforeExpiry: this.notificationSettings.daysBeforeExpiry,
+            method: this.notificationSettings.method,
+            frequency: this.notificationSettings.frequency,
+          };
+        }
+
+        await updateDoc(doc(db, 'users', user.uid), updateData);
         this.message = 'Profile updated successfully!';
       } catch (error) {
         this.error = 'Error updating profile: ' + error.message;
       }
     },
-  },
+  }
 };
 </script>
 
 <style scoped>
+/* Profile Settings Page CSS: Start */
 .profile-container {
   max-width: 600px;
   margin: 20px auto;
   padding: 40px 20px;
-  background-color: #f7f7f7;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff; 
+  border-radius: 15px; 
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease; 
 }
 
 .profile-header {
@@ -123,25 +174,37 @@ export default {
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 20px; 
 }
 
 .form-group label {
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: #2c3e50;
+  font-size: 16px; 
+  font-weight: 500; 
+  color: #555;
+  margin-bottom: 8px;
+  display: block; 
+  text-align: left; 
 }
 
 .form-control {
-  font-size: 1rem;
-  padding: 10px;
+  border-radius: 8px; 
+  border: 1px solid #ccc; 
+  padding: 10px; 
+  font-size: 15px; 
+  transition: border-color 0.3s ease; 
+  line-height: 1.6; 
+}
+
+.form-control:focus {
+  border-color: #007bff; 
+  box-shadow: none; 
 }
 
 .dietary-preferences {
   justify-content: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 15px; 
 }
 
 .checkbox-inline {
@@ -155,19 +218,62 @@ export default {
 
 .form-check-label {
   margin-left: 10px;
-  font-size: 1rem;
-}
-
-.alert {
-  margin-top: 15px;
+  font-size: 1rem; 
 }
 
 .btn-primary {
-  background-color: #42b983;
-  border-color: #42b983;
-  padding: 10px 20px;
-  font-size: 1.1rem;
+  background-color: #007bff; 
+  border: none; 
+  border-radius: 8px; 
+  padding: 10px 15px; 
+  font-size: 16px; 
+  font-weight: 600; 
+  transition: background-color 0.3s ease; 
 }
+
+.btn-primary:hover {
+  background-color: #0056b3; 
+}
+
+.btn-block {
+  width: 100%; 
+  margin-top: 20px; 
+}
+
+.alert {
+  margin-top: 15px; 
+}
+
+.notification-form {
+  max-width: 500px; 
+  margin: 20px auto; 
+  background-color: #f8f9fa; 
+  padding: 30px; 
+  border-radius: 15px; 
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease; 
+  text-align: left; 
+}
+
+.notification-form:hover {
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2); 
+}
+
+.notification-form small {
+  display: block;
+  text-align: center; 
+  color: #888; 
+  margin-top: 20px; 
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-container { padding: 20px; } 
+  .form-title { font-size: 22px; } 
+  .btn-primary { font-size: 14px; } 
+}
+/* Profile Settings Page CSS: End */
 </style>
+
 
 
