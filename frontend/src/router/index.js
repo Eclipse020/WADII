@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { auth } from '../services/firebase';
 
-
 // Import Pages
 import HomePage from '../pages/HomePage.vue';
 import FridgePage from '../pages/FridgePage.vue';
@@ -13,73 +12,35 @@ import RegistrationPage from '../pages/RegistrationPage.vue';
 import ResetPasswordPage from '../pages/ResetPasswordPage.vue';
 import ProfileSettingsPage from '../pages/ProfileSettingsPage.vue';
 import LogoutComponent from '../components/Auth/LogoutComponent.vue';
+import RecipeList from '../components/Recipes/RecipeList.vue';
+import RecipeDetails from '../components/Recipes/RecipeDetails.vue';
+import CommunityPage from '../pages/CommunityPage.vue';
 
 // Define routes, grouped logically
 const routes = [
   // General routes
-  {
-    path: '/',
-    name: 'Home',
-    component: HomePage,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/fridge',
-    name: 'Fridge',
-    component: FridgePage,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/summary',
-    name: 'Summary',
-    component: SummaryPage,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/customize',
-    name: 'Customize',
-    component: CustomizePage,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/mealPlanner',
-    name: 'MealPlanner',
-    component: MealPlannerPage,
-    meta: { requiresAuth: true },
-  },
+  { path: '/', name: 'Home', component: HomePage, meta: { requiresAuth: true } },
+  { path: '/fridge', name: 'Fridge', component: FridgePage, meta: { requiresAuth: true } },
+  { path: '/summary', name: 'Summary', component: SummaryPage, meta: { requiresAuth: true } },
+  { path: '/customize', name: 'Customize', component: CustomizePage, meta: { requiresAuth: true } },
+  { path: '/mealPlanner', name: 'MealPlanner', component: MealPlannerPage, meta: { requiresAuth: true } },
+  { path: '/community', name: 'Community', component: CommunityPage, meta: { requiresAuth: true } },
+  
+  // Recipe routes
+  { path: '/recipes', name: 'RecipeList', component: RecipeList, meta: { requiresAuth: true } },
+  { path: '/recipe/:id', name: 'RecipeDetails', component: RecipeDetails, meta: { requiresAuth: true } },
 
   // Authentication routes
-  {
-    path: '/login',
-    name: 'Login',
-    component: LoginPage,
-  },
-  {
-    path: '/register',
-    name: 'Register',
-    component: RegistrationPage,
-  },
-  {
-    path: '/reset-password',
-    name: 'ResetPassword',
-    component: ResetPasswordPage,
-  },
+  { path: '/login', name: 'Login', component: LoginPage },
+  { path: '/register', name: 'Register', component: RegistrationPage },
+  { path: '/reset-password', name: 'ResetPassword', component: ResetPasswordPage },
 
   // User profile-related routes
-  {
-    path: '/profile',
-    name: 'ProfileSettings',
-    component: ProfileSettingsPage,
-    meta: { requiresAuth: true },
-  },
-  // User logs out
-  {
-    path: '/logout',
-    name: 'Logout',
-    component: LogoutComponent,
-    meta: { requiresAuth: true },
-  }
+  { path: '/profile', name: 'ProfileSettings', component: ProfileSettingsPage, meta: { requiresAuth: true } },
+  { path: '/logout', name: 'Logout', component: LogoutComponent, meta: { requiresAuth: true } }
 ];
+
+
 
 // Create and configure the router
 const router = createRouter({
