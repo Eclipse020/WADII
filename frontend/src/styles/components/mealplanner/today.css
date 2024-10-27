@@ -1,0 +1,9 @@
+/* Today's Date Style */
+.calendar-cell.today {
+  background-color: #F6E69B;
+}
+
+/* Clicked Day Border */
+.calendar-cell.clicked {
+  border: 2px solid var(--primary-color);
+}

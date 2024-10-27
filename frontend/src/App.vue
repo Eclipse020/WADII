@@ -22,6 +22,9 @@
         <router-link to="/mealPlanner" class="nav-link">
           <i class="fas fa-calendar-alt"></i> Meal Planner
         </router-link>
+        <router-link to="/Community" class="nav-link">
+          <i class="fas fa-users"></i> Community
+        </router-link>
         <router-link to="/profile" class="nav-link">
           <i class="fas fa-user"></i> Profile
         </router-link>

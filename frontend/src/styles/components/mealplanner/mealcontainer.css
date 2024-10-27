@@ -1,0 +1,50 @@
+/* Meal Container Styles */
+.meal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 25px;
+  max-height: 150px;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+  scrollbar-width: thin;
+}
+
+.meal-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.meal-container::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 3px;
+}
+
+.meal-item {
+  font-size: 13px;
+  padding: 6px 10px;
+  margin: 2px 0;
+  background-color: var(--accent-light);
+  border-left: 3px solid var(--accent-border);
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.2s ease;
+  position: relative;
+  max-width: calc(100% - 4px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.meal-item:hover {
+  background-color: var(--accent-medium);
+  transform: translateX(2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .meal-item {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}

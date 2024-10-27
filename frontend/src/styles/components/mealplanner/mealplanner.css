@@ -1,0 +1,45 @@
+/* MealPlanner Component Styles */
+.meal-planner {
+  font-family: 'Arial', sans-serif;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr minmax(auto, 800px) 1fr;
+  gap: 20px;
+  min-height: 100vh;
+  background-color: var(--background-light);
+}
+
+.left-column {
+  min-height: 100px;
+}
+
+.center-column {
+  width: 100%;
+  text-align: center;
+}
+
+.right-column {
+  padding: 20px 0;
+}
+
+@media (max-width: 1200px) {
+  .meal-planner {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 15px;
+  }
+
+  .left-column {
+    display: none;
+  }
+
+  .center-column {
+    order: 1;
+  }
+
+  .right-column {
+    order: 2;
+  }
+}

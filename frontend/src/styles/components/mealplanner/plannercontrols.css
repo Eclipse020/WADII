@@ -1,0 +1,35 @@
+/* Planner Controls */
+.planner-controls {
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 120px 1fr 120px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  min-height: 80px;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+.center-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 5px;
+}
+
+@media (max-width: 768px) {
+  .planner-controls {
+    grid-template-columns: 80px 1fr 80px;
+    padding: 0 10px;
+  }
+}

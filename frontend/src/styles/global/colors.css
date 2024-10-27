@@ -1,0 +1,16 @@
+:root {
+  --primary-color: #00796b;
+  --primary-dark: #004d40;
+  --danger-color: #ef5350;
+  --danger-dark: #c62828;
+  --border-color: #dee2e6;
+  --background-light: #f8f9fa;
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --accent-light: #e0f7fa;
+  --accent-medium: #b2ebf2;
+  --accent-border: #00acc1;
+  --calendar-header: #f1f5f9;
+  --calendar-weekend: #fafafa;
+  --calendar-today: #e8f5e9;
+}

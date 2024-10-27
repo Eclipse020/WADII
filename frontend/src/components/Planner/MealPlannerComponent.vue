@@ -1,13 +1,14 @@
 <template>
   <div class="meal-planner">
     <div class="left-column">
-      <!-- Reserved for future component -->
-      <RecipeTypeModal
-      :show="showRecipeTypeModal"
-      :selectedDay="selectedDay"
-      @close="closeRecipeTypeModal"
-      @meal-selected="handleMealSelected"
-      @add-recipe="addRecipe"
+      <DayPlanPopup
+        :show="showDayPlanPopup"
+        :selectedDay="selectedDayText"
+        :meals="selectedDayMeals"
+        @close="closeDayPlanPopup"
+        @add-recipe="handleAddRecipe"
+        @clear-day="clearDayMeals"
+        @delete-recipe="deleteRecipe"
       />
     </div>
 
@@ -18,19 +19,7 @@
         <button class="nav-button prev-button" @click="prevMonth">Previous</button>
         
         <div class="center-controls">
-          <p v-if="selectedDay">Selected Day: {{ selectedDay }} {{ formattedMonthYear }}</p>
-          <div v-if="selectedDay" class="button-group">
-            <button class="add-recipe-button" @click="openRecipeModal">
-              Add Recipe
-            </button>
-            <button 
-              v-if="mealPlan[selectedDay] && mealPlan[selectedDay].length > 0"
-              class="clear-day-button" 
-              @click="clearDayMeals"
-            >
-              Clear Day
-            </button>
-          </div>
+          <p v-if="selectedDay">Selected Day: {{ selectedDayText }}</p>
         </div>
 
         <button class="nav-button next-button" @click="nextMonth">Next</button>
@@ -48,25 +37,24 @@
             <tr v-for="(week, weekIndex) in calendar" :key="weekIndex">
               <td class="week-number">{{ weekIndex + 1 }}</td>
               <td
-              v-for="(day, dayIndex) in week"
-              :key="dayIndex"
-              :class="['calendar-cell', { selected: day === selectedDay, today: isToday(day), 'clicked': clickedDay === day }]"
-              @click="selectDay(day), openRecipeModal()"
-            >
-              <span v-if="day" class="date-number">{{ day }}</span>
-              <div v-if="day && mealPlan[day]" class="meal-container">
-                <div 
-                  v-for="(meal, index) in mealPlan[day]" 
-                  :key="meal.uri"
-                  class="meal-item"
-                  @click.stop="openRecipeDetails(meal, day, index)"
-                  :title="meal.label"
-                >
-                  {{ meal.label }}
+                v-for="(day, dayIndex) in week"
+                :key="dayIndex"
+                :class="['calendar-cell', { selected: day === selectedDay, today: isToday(day), 'clicked': clickedDay === day }]"
+                @click="selectDay(day)"
+              >
+                <span v-if="day" class="date-number">{{ day }}</span>
+                <div v-if="day && mealPlan[day]" class="meal-container">
+                  <div 
+                    v-for="(meal, index) in mealPlan[day]" 
+                    :key="meal.uri"
+                    class="meal-item"
+                    @click.stop="openRecipeDetails(meal, day, index)"
+                    :title="meal.label"
+                  >
+                    {{ meal.label }}
+                  </div>
                 </div>
-              </div>
-            </td>
-
+              </td>
             </tr>
           </tbody>
         </table>
@@ -84,6 +72,7 @@
       :show="showRecipeModal"
       :selected-day="selectedDay"
       :month-year="formattedMonthYear"
+      :meal-type="mealType"
       @close="closeRecipeModal"
       @add-recipe="addRecipeToDay"
       @fetch-available-ingredients="fetchAvailableIngredients" 
@@ -109,13 +98,16 @@ import { auth, db } from '../../services/firebase';
 import AddRecipeModal from './AddRecipeModal.vue';
 import RecipeDetailsModal from './RecipeDetailsModal.vue';
 import ShoppingList from './ShoppingList.vue';
-import '@/styles/MealPlannerComponent.css';
+import DayPlanPopup from './DayPlanPopup.vue';
+import '@/styles/main.css';
+
 
 export default {
   components: {
     AddRecipeModal,
     RecipeDetailsModal,
     ShoppingList,
+    DayPlanPopup,
   },
   data() {
     return {
@@ -124,6 +116,7 @@ export default {
       selectedDay: null,
       showRecipeModal: false,
       showRecipeDetails: false,
+      showDayPlanPopup: false,
       selectedRecipe: null,
       selectedRecipeIndex: null,
       mealPlan: {},
@@ -131,8 +124,8 @@ export default {
       shoppingList: [],
       currentUserId: null,
       availableIngredients: [],
-      showRecipeTypeModal: false,
-      mealType: '', // to track selected meal type
+      mealType: '',
+      clickedDay: null,
     };
   },
   computed: {
@@ -141,6 +134,14 @@ export default {
         month: "long",
         year: "numeric",
       });
+    },
+    selectedDayText() {
+      if (!this.selectedDay) return '';
+      const date = new Date(this.currentYear, this.currentMonth, this.selectedDay);
+      return date.toLocaleDateString("en-US", { weekday: 'long' }) + ' ' + this.selectedDay;
+    },
+    selectedDayMeals() {
+      return this.mealPlan[this.selectedDay] || [];
     },
     calendar() {
       const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
@@ -187,7 +188,6 @@ export default {
         querySnapshot.forEach((doc) => {
           const mealData = { id: doc.id, ...doc.data() };
           
-          // Only process if we have valid day data and it matches current month/year
           if (mealData.day && 
               mealData.month === this.currentMonth && 
               mealData.year === this.currentYear) {
@@ -202,6 +202,7 @@ export default {
               day: mealData.day,
               month: mealData.month,
               year: mealData.year,
+              mealType: mealData.mealType,
               createdAt: mealData.createdAt
             });
           }
@@ -240,6 +241,7 @@ export default {
           recipe: recipe,
           month: this.currentMonth,
           year: this.currentYear,
+          mealType: this.mealType,
           createdAt: new Date().toISOString()
         });
 
@@ -252,6 +254,7 @@ export default {
           day: this.selectedDay,
           month: this.currentMonth,
           year: this.currentYear,
+          mealType: this.mealType,
           createdAt: new Date().toISOString()
         });
       } catch (error) {
@@ -260,23 +263,21 @@ export default {
       this.closeRecipeModal();
     },
 
-    async deleteRecipe(day, index) {
-      if (!this.currentUserId || !this.mealPlan[day]) return;
+    async deleteRecipe(recipe, index) {
+      if (!this.currentUserId || !this.mealPlan[this.selectedDay]) return;
 
       try {
-        const recipeToDelete = this.mealPlan[day][index];
-        if (recipeToDelete.id) {
-          await deleteDoc(doc(db, `users/${this.currentUserId}/mealPlans`, recipeToDelete.id));
+        if (recipe.id) {
+          await deleteDoc(doc(db, `users/${this.currentUserId}/mealPlans`, recipe.id));
         }
         
-        this.mealPlan[day].splice(index, 1);
-        if (this.mealPlan[day].length === 0) {
-          delete this.mealPlan[day];
+        this.mealPlan[this.selectedDay].splice(index, 1);
+        if (this.mealPlan[this.selectedDay].length === 0) {
+          delete this.mealPlan[this.selectedDay];
         }
       } catch (error) {
         console.error("Error deleting recipe:", error);
       }
-      this.closeRecipeDetails();
     },
 
     async addToShoppingList() {
@@ -302,13 +303,11 @@ export default {
       if (!this.currentUserId) return;
 
       try {
-        // Delete all existing items
         const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/shoppingList`));
         for (const doc of querySnapshot.docs) {
           await deleteDoc(doc.ref);
         }
 
-        // Add new items
         for (const item of newList) {
           await addDoc(collection(db, `users/${this.currentUserId}/shoppingList`), {
             item: item,
@@ -336,6 +335,7 @@ export default {
       } catch (error) {
         console.error("Error clearing day meals:", error);
       }
+      this.closeDayPlanPopup();
     },
 
     async fetchAvailableIngredients() {
@@ -344,20 +344,28 @@ export default {
       try {
         const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/fridge`));
         const ingredients = querySnapshot.docs.map(doc => doc.data().item);
-        this.$refs.addRecipeModal.availableIngredients = ingredients; // Update the available ingredients in the modal
+        this.$refs.addRecipeModal.availableIngredients = ingredients;
       } catch (error) {
         console.error("Error fetching available ingredients:", error);
       }
     },
 
     selectDay(day) {
+      if (!day) return;
       this.selectedDay = day;
-      this.clickedDay = day; 
-      this.showRecipeTypeModal = true;
+      this.clickedDay = day;
+      this.showDayPlanPopup = true;
+    },
+
+    handleAddRecipe(mealType) {
+      this.mealType = mealType;
+      this.showRecipeModal = true;
+      this.showDayPlanPopup = false;
     },
 
     closeRecipeModal() {
       this.showRecipeModal = false;
+      this.showDayPlanPopup = true;
     },
 
     openRecipeDetails(recipe, day, index) {
@@ -371,6 +379,10 @@ export default {
       this.showRecipeDetails = false;
       this.selectedRecipe = null;
       this.selectedRecipeIndex = null;
+    },
+
+    closeDayPlanPopup() {
+      this.showDayPlanPopup = false;
     },
 
     prevMonth() {
@@ -390,24 +402,11 @@ export default {
         this.currentMonth += 1;
       }
     },
-
-    //For the pop-up
-    closeRecipeTypeModal() {
-      this.showRecipeTypeModal = false;
-    },
-    handleMealSelected(mealType) {
-      this.mealType = mealType; // Save selected meal type
-      this.openRecipeModal(); // Open the recipe modal to add a new recipe
-    },
-    openRecipeModal() {
-      this.showRecipeModal = true;
-    },
   },
   mounted() {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.currentUserId = user.uid;
-        // Load both meal plan and shopping list immediately after getting user ID
         Promise.all([
           this.loadMealPlan(),
           this.loadShoppingList()
