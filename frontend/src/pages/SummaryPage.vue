@@ -18,6 +18,10 @@
         <ul>
             <li v-for="item in summary.deletedItems" :key="item.id">{{ item.name }} (Deleted on: {{ item.deletedAt }})</li>
         </ul>
+        <h4>Expired Items:</h4>
+        <ul>
+            <li v-for="item in summary.expiredItems" :key="item.id">{{ item.name }} (Expired on: {{ item.expiryDate }})</li>
+        </ul>
         <button class="btn btn-secondary" @click="goToInventory">Back to Inventory</button>
     </div>
 </template>
@@ -41,7 +45,8 @@ export default {
                 expiringSoon: 0,
                 categories: {},
                 newlyAdded: [],
-                deletedItems: []
+                deletedItems: [],
+                expiredItemsWOUsing: []
             },
         };
     },
@@ -85,18 +90,15 @@ export default {
                 // Calculate summary
                 this.summary.totalItems = items.length;
 
-
                 this.summary.expiringSoon = items.filter(item => {
                     const expiryDate = new Date(item.expiryDate);
                     return (expiryDate > today && expiryDate <= new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000)));
                 }).length;
 
-
                 this.summary.categories = items.reduce((acc, item) => {
                     acc[item.category] = (acc[item.category] || 0) + 1;
                     return acc;
                 }, {});
-
 
                 // Filter newly added items within the last 3 days
                 const newlyAddedItems = items.filter(item => {
@@ -107,9 +109,7 @@ export default {
                     createdDate: new Date(item.createdDate).toLocaleString()
                 }));
 
-
                 this.summary.newlyAdded = newlyAddedItems;
-
 
                 // Fetch deleted items from Firestore
                 const deletedItemsSnapshot = await getDocs(collection(db, `users/${this.currentUserId}/deletedItems`));
@@ -122,11 +122,19 @@ export default {
                     };
                 });
 
-
                 this.summary.deletedItems = deletedItems.filter(deletedItem => {
                     const deletedAt = new Date(deletedItem.deletedAt);
                     return deletedAt >= threeDaysAgo && deletedAt <= today;
                 });
+
+                // Filter for expired items
+                this.summary.expiredItemsWOUsing = items.filter(item => {
+                    const expiryDate = new Date(item.expiryDate);
+                    return expiryDate < today;
+                }).map(item => ({
+                    ...item,
+                    expiryDate: new Date(item.expiryDate).toLocaleDateString() // Format the expiry date for display
+                }));
 
 
             } catch (error) {

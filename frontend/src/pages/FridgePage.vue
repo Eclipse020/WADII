@@ -415,9 +415,43 @@ export default {
       return string.charAt(0).toUpperCase() + string.slice(1);
     },
 
-
     //Add Item: End
 
+    //Move to bin: Start
+
+    async moveExpiredItemsToBin() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      try {
+        for (const item of this.items) {
+          const expiryDate = new Date(item.expiryDate);
+          expiryDate.setHours(0, 0, 0, 0);
+
+          // Check if the item is expired
+          if (expiryDate < today) {
+            // Move the expired item to the "bin" collection
+            await addDoc(collection(db, `users/${this.currentUserId}/expiredItemsWOUsing`), {
+              ...item,
+              movedToBinAt: new Date().toISOString(), // Optionally add timestamp
+            });
+            
+            // Remove the item from the "items" collection
+            await deleteDoc(doc(db, `users/${this.currentUserId}/items`, item.id));
+            
+            console.log(`Moved expired item to bin: ${item.name}`);
+          }
+        }
+
+        // Refresh the items list after moving expired items
+        await this.getCurrentUserItems();
+
+      } catch (error) {
+        console.error("Error moving expired items to bin:", error);
+      }
+    },
+
+    //Move to bin: End
 
     //Getting ingredients for MealPlanner
     getAvailableIngredients() {
@@ -450,14 +484,11 @@ export default {
 
   },
   mounted() {
-
-
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.currentUserId = user.uid;
-        this.getCurrentUserItems();
-      } else {
-        console.log("No user is signed in.");
+        await this.getCurrentUserItems();
+        await this.moveExpiredItemsToBin(); 
       }
     });
   },
