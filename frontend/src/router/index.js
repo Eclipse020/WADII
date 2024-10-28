@@ -25,6 +25,7 @@ const routes = [
   { path: '/customize', name: 'Customize', component: CustomizePage, meta: { requiresAuth: true } },
   { path: '/mealPlanner', name: 'MealPlanner', component: MealPlannerPage, meta: { requiresAuth: true } },
   { path: '/community', name: 'Community', component: CommunityPage, meta: { requiresAuth: true } },
+  { path: '/postrecipe', name: 'PostRecipe', component: PostRecipePage, meta: { requiresAuth: true } },
   
   // Recipe routes
   { path: '/recipes', name: 'RecipeList', component: RecipeList, meta: { requiresAuth: true } },
