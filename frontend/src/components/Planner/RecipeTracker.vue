@@ -2,7 +2,6 @@
   <div class="recipe-tracker">
     <div class="tracker-card">
       <h4>Recipe Tracker </h4>
-      <!-- <i class="fas fa-pen-square"></i> -->
       <div class="tracker-stats">
         <p class="total-count">Total Recipes Cooked: {{ completedRecipes.length }}</p>
       </div>
@@ -19,29 +18,74 @@
 </template>
 
 <script>
+// Import Firebase
+import { db } from "../../services/firebase";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+
 export default {
   name: 'RecipeTracker',
   data() {
     return {
-      completedRecipes: []
+      completedRecipes: [],
+      currentUserId: null
     }
   },
-  created() {
-    // Load completed recipes from localStorage
-    const savedRecipes = localStorage.getItem('completedRecipes')
-    if (savedRecipes) {
-      this.completedRecipes = JSON.parse(savedRecipes)
+  async created() {
+    const auth = getAuth();
+    this.currentUserId = auth.currentUser?.uid;
+    if (this.currentUserId) {
+      await this.loadCompletedRecipes();
     }
   },
   methods: {
-    addCompletedRecipe(recipe) {
-      const completedRecipe = {
-        ...recipe,
-        completedDate: new Date().toLocaleDateString()
+    async loadCompletedRecipes() {
+      try {
+        const completedRecipesCollection = collection(db, `users/${this.currentUserId}/completedRecipes`);
+        const snapshot = await getDocs(completedRecipesCollection);
+        this.completedRecipes = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      } catch (error) {
+        console.error("Error loading completed recipes:", error);
       }
-      this.completedRecipes.push(completedRecipe)
-      // Save to localStorage
-      localStorage.setItem('completedRecipes', JSON.stringify(this.completedRecipes))
+    },
+    async addCompletedRecipe(recipe) {
+      if (!this.currentUserId) return;
+
+      try {
+        // Check if recipe already exists for today
+        const today = new Date().toLocaleDateString();
+        const existingRecipe = this.completedRecipes.find(r => 
+          r.label === recipe.label && r.completedDate === today
+        );
+
+        if (!existingRecipe) {
+          const completedRecipe = {
+            label: recipe.label,
+            completedDate: today,
+            recipeId: recipe.id || null,
+            userId: this.currentUserId
+          };
+
+          // Add to Firestore
+          const completedRecipesCollection = collection(db, `users/${this.currentUserId}/completedRecipes`);
+          const docRef = await addDoc(completedRecipesCollection, completedRecipe);
+          
+          // Add to local state with Firestore ID
+          this.completedRecipes.push({
+            id: docRef.id,
+            ...completedRecipe
+          });
+          
+          console.log("Recipe successfully added to completed recipes");
+        } else {
+          console.log("Recipe already marked as completed today");
+        }
+      } catch (error) {
+        console.error("Error adding completed recipe:", error);
+      }
     }
   }
 }
