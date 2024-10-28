@@ -103,7 +103,7 @@
     font-weight: bold;
     background-color: #2d6b61;
     color: white;
-    padding: 8px;
+    padding: 8px 10px;
     border-radius: 10px;
 }
 #appFridge {
@@ -309,7 +309,7 @@
     cursor: pointer; 
   }
 
-  #appFridge .categoryTitle {
+#appFridge .categoryHeader {
     margin: 20px 0; 
     padding: 10px 15px; 
     font-size: 1.2rem; 

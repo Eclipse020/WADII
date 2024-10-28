@@ -55,7 +55,7 @@
         </p>
         <!--Categorized Items-->
         <div v-for="(itemsInCategory, category) in finalItems" :key="category" class="col-12">
-          <div class="categoryTitle">
+          <div class="categoryHeader">
             <div class="category-container">
               <h5 class="m-0 flex-grow-1 d-flex align-items-start category-title" @click="toggleCategory(category)">{{ category }}</h5>
               <div id="sortButton">
