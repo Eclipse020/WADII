@@ -1,5 +1,6 @@
 import { addCommunityRecipe, fetchCommunityRecipes, likeRecipe, addComment } from "../services/communityService";
 
+
 export default {
   data() {
     return {
@@ -11,9 +12,11 @@ export default {
   },
   methods: {
     async postRecipe() {
-      await addCommunityRecipe(this.userId, this.newRecipe);
-      this.recipes = await fetchCommunityRecipes();
-    },
+  // Split the ingredients string into an array using commas as separators
+  this.recipe.ingredients = this.recipe.ingredients.split(',').map(ingredient => ingredient.trim());
+  await createRecipe(this.recipe);
+  this.$router.push('/community');
+}
     async like(recipeId) {
       await likeRecipe(recipeId);
       this.recipes = await fetchCommunityRecipes(); // Refresh the recipe list
@@ -80,7 +83,8 @@ export default {
           v-model="recipe.ingredients" 
           placeholder="Ingredients (comma-separated)" 
           class="form-control" 
-          rows="3" 
+          rows="2"
+          @input="handleIngredientInput(recipe.ingredients)"  
           required 
         ></textarea>
       </div>
@@ -91,7 +95,7 @@ export default {
       1. Wash potato
       2. Peel potato etc." 
           class="form-control" 
-          rows="3" 
+          rows="6" 
           required 
         ></textarea>
       </div>
@@ -172,13 +176,25 @@ export default {
         estimatedTime: '',
         calories: '',
         description: '',
-        ingredients: '',
+        ingredients: [],
         steps: '',
+        image: '',
       },
       isEditing: false,
     };
   },
   methods: {
+    async onFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.recipe.image = reader.result; // Store the base64 string in the recipe object
+        };
+        reader.readAsDataURL(file); // Read the image file as a data URL
+      }
+    },    
+
     async fetchDraft(id) {
       const response = await getRecipeById(id);
       this.recipe = response;
@@ -193,6 +209,10 @@ export default {
         this.$router.push('/community/drafts');
       }
     },
+      handleIngredientInput(ingredientsCsv) {
+    // Split the ingredients by commas and trim each one
+    this.recipe.ingredients = ingredientsCsv.split(',').map(item => item.trim());
+  },
     async postRecipe() {
       await createRecipe(this.recipe);
       this.$router.push('/community');

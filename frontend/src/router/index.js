@@ -12,7 +12,6 @@ import RegistrationPage from '../pages/RegistrationPage.vue';
 import ResetPasswordPage from '../pages/ResetPasswordPage.vue';
 import ProfileSettingsPage from '../pages/ProfileSettingsPage.vue';
 import LogoutComponent from '../components/Auth/LogoutComponent.vue';
-import CookingHistory from '../components/History/History.vue';
 import HistoryPage from '../pages/HistoryPage.vue';
 import CalendarPage from '../components/History/CalendarPage.vue';
 import CRecipeDetails from '../components/Community/CRecipeDetails.vue';
@@ -32,7 +31,7 @@ const routes = [
   { path: '/customize', name: 'Customize', component: CustomizePage, meta: { requiresAuth: true } },
   { path: '/mealPlanner', name: 'MealPlanner', component: MealPlannerPage, meta: { requiresAuth: true } },
   { path: '/community', name: 'Community', component: CommunityPage, meta: { requiresAuth: true } },
-  { path: '/history', name: 'History', component: HistoryPage, meta: {requiresAuth: true} },
+  { path: '/history', name: 'History', component: HistoryPage,  meta: { requiresAuth: true } },
   
   // Recipe routes
   { path: '/recipes', name: 'RecipeList', component: RecipeList, meta: { requiresAuth: true } },
@@ -60,11 +59,6 @@ const routes = [
 
   //history + community
 
-  {
-    path: '/history',
-    name: 'CookingHistory',
-    component: CookingHistory,
-  },
   {
     path: '/calendar',
     name: 'CalendarPage',

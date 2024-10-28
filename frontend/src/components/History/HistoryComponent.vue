@@ -3,21 +3,25 @@ import { fetchCookingHistory, addCookingHistory } from "@/services/historyServic
 
 export default {
   name: "CookingHistoryPage",
+  props: {
+    userId: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
-  return {
-    filter: '',
-    history: [],
-    calendarDays: [],
-    currentMonth: new Date().getMonth(),
-    currentYear: new Date().getFullYear(),
-    currentMonthName: new Date().toLocaleString('default', { month: 'long' }),
-    years: this.generateYearRange(),
-    userId: this.$store.state.user.id, // Replace with actual user ID from your auth state management
-  };
-},
+    return {
+      filter: '',
+      history: [],
+      calendarDays: [],
+      currentMonth: new Date().getMonth(),
+      currentYear: new Date().getFullYear(),
+      currentMonthName: new Date().toLocaleString('default', { month: 'long' }),
+      years: this.generateYearRange(),
+    };
+  },
   computed: {
     filteredHistory() {
-      // Check if history is an array before filtering
       return Array.isArray(this.history) ? this.history.filter((entry) =>
         entry.name.toLowerCase().includes(this.filter.toLowerCase())
       ) : [];
@@ -31,12 +35,12 @@ export default {
     async fetchHistory() {
       try {
         const response = await fetchCookingHistory(this.userId);
-        console.log("Fetched history:", response); // Log the response for debugging
-        this.history = Array.isArray(response) ? response : []; // Ensure history is always an array
-        this.generateCalendar(); // Regenerate the calendar after fetching history
+        console.log("Fetched history:", response);
+        this.history = Array.isArray(response) ? response : [];
+        this.generateCalendar();
       } catch (error) {
         console.error('Error fetching history:', error);
-        this.history = []; // Reset history on error
+        this.history = [];
       }
     },
     generateCalendar() {
@@ -89,7 +93,7 @@ export default {
           calories: 300,
         };
         await addCookingHistory(this.userId, newHistory.recipeId, newHistory.date, newHistory.calories);
-        this.fetchHistory(); // Refresh the history list after adding new data
+        this.fetchHistory();
       } catch (error) {
         console.error("Error saving new history:", error);
       }
@@ -100,6 +104,7 @@ export default {
 
 <template>
   <div class="cooking-history">
+    <h2>Your Cooking History</h2>
     <input v-model="filter" placeholder="Search by recipe name" class="search-bar" />
 
     <div class="slider">
@@ -148,126 +153,3 @@ export default {
   </div>
 </template>
 
-<style scoped>
-.cooking-history {
-  max-width: 600px;
-  margin: auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-}
-
-.search-bar {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-}
-
-.slider {
-  margin-bottom: 20px;
-}
-
-.recipe-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.recipe-card {
-  padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #fff;
-  transition: box-shadow 0.3s, transform 0.3s;
-}
-
-.recipe-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transform: translateY(-2px);
-}
-
-.nav-button {
-  background-color: #76c7c0;
-  border: none;
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.nav-button:hover {
-  background-color: #68b2ab;
-}
-
-.calendar {
-  margin-top: 20px;
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.calendar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-  margin-bottom: 10px;
-}
-
-.calendar-dates {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-}
-
-.day-circle {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: #e0e0e0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: background-color 0.3s, transform 0.3s;
-}
-
-.day-circle.filled {
-  background-color: #76c7c0;
-  color: white;
-}
-
-.day-circle:hover {
-  transform: scale(1.1);
-}
-
-.year-selector {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-
-.year-button {
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 5px 10px;
-  margin: 2px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.year-button:hover {
-  background-color: #76c7c0;
-  color: white;
-}
-</style>
