@@ -1,0 +1,404 @@
+/*Summary Page CSS: Start*/
+
+/* General Styles */
+#appSummary {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #343a40;
+    margin: 0;
+    padding: 20px;
+    text-align: left;
+}
+
+
+/* Header Styles */
+#appSummary h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #28a745;
+    text-align: center;
+}
+
+
+#appSummary h3,
+#appSummary h4 {
+    margin: 20px 0 10px;
+    color: #6c757d;
+}
+
+
+#appSummary h3 {
+    font-size: 2rem;
+}
+
+#appSummary h4 {
+    font-size: 1.5rem;
+}
+
+
+/* List Styles */
+#appSummary ul {
+    list-style: none;
+    padding: 0;
+}
+
+
+#appSummary li {
+    padding: 8px;
+    margin-bottom: 5px;
+    background-color: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+}
+
+
+#appSummary li:hover {
+    background-color: #f1f1f1;
+}
+
+
+/* Button Styles */
+#appSummary .btn {
+    margin-top: 20px;
+    display: block;
+    width: 100%;
+    color: #fff;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+
+#appSummary .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+
+#appSummary .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+
+/* Responsive Styles */
+@media (max-width: 576px) {
+    body {
+        padding: 10px;
+    }
+
+    #appSummary h1 {
+        font-size: 2rem;
+    }
+
+    #appSummary h3,
+    #appSummary h4 {
+        font-size: 1.25rem;
+    }
+
+    #appSummary li {
+        font-size: 0.9rem;
+    }
+}
+
+
+/*Summary Page CSS: End*/
+
+
+/*Fridge Page CSS: Start*/
+
+
+/* #appFridge Styles */
+#appFridge {
+    margin: 10px;
+}
+
+/* Header */
+#appFridge header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#appFridge header p {
+    white-space: nowrap;
+    margin: 0;
+}
+
+#appFridge header div {
+    display: flex;
+}
+
+#appFridge header button {
+    white-space: nowrap;
+    margin: 0;
+    margin-left: 10px;
+}
+
+#appFridge header button:first-child {
+    margin-left: 0;
+}
+
+/* Cards */
+#appFridge .filterCard {
+    width: 80%;
+    max-width: 220px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #fff;
+    transition: transform 0.3s;
+}
+
+#appFridge .filterCard:hover {
+    transform: translateY(-4px);
+}
+
+#appFridge .expiring-soon {
+    border: 2px solid red;
+}
+
+#appFridge .card-body {
+    display: flex;
+    flex-direction: column;
+    font-size: 18px;
+    padding: 15px;
+    color: #333;
+    flex-grow: 1;
+}
+
+#appFridge .card-info {
+    flex-grow: 1;
+    margin-bottom: 10px;
+}
+
+#appFridge .card-text {
+    margin: 0;
+    font-size: 16px;
+    color: #555;
+}
+
+#appFridge .expiry-date,
+#appFridge .quantity {
+    font-weight: bold;
+}
+
+#appFridge .cardBtn {
+    max-width: 190px;
+}
+
+#appFridge .card {
+    min-height: 150px;
+}
+
+
+/* Form */
+#appFridge .cardTitle {
+    display: flex;
+    justify-content: space-between;
+}
+
+#appFridge #btnClose {
+    font-weight: bold;
+}
+
+#appFridge h5 {
+    padding-top: 15px;
+}
+
+#appFridge .addCard {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30rem;
+    background: linear-gradient(135deg, #f9f9f9, #ffffff);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    padding: 30px;
+    z-index: 1000;
+    border-radius: 15px;
+    font-family: 'Roboto', sans-serif;
+}
+
+
+#appFridge .addCard,
+.card-body {
+    text-align: left;
+}
+
+#appFridge .btnClose {
+    background-color: #f5f5f5;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#appFridge .btnClose:hover {
+    background-color: #ddd;
+}
+
+#appFridge #btnAdd {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#appFridge #btnAdd:hover {
+    background-color: #45a049;
+}
+
+#appFridge .errorMessage {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Sort Button */
+#appFridge .category-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+
+#appFridge #sortButton {
+    display: flex;
+}
+
+#appFridge .btn2 {
+    margin-left: 10px;
+}
+
+#appFridge .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Align labels at the top */
+#appFridge .mb-3 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/*Fridge Page CSS: End*/
+
+
+/*Customize Page CSS: Start*/
+#appCustomize {
+    font-family: 'Roboto', sans-serif;
+    padding: 40px 0;
+}
+
+
+#appCustomize .notification-form {
+    max-width: 500px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+
+#appCustomize .notification-form:hover {
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+
+#appCustomize .form-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 25px;
+}
+
+
+#appCustomize .form-group label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 8px;
+    display: block;
+}
+
+
+#appCustomize .form-group {
+    margin-bottom: 20px;
+}
+
+
+#appCustomize .form-control {
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+    line-height: 1.6;
+}
+
+
+#appCustomize .form-control:focus {
+    border-color: #007bff;
+    box-shadow: none;
+}
+
+
+#appCustomize .btn-primary {
+    background-color: #007bff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+
+#appCustomize .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+
+#appCustomize .btn-block {
+    width: 100%;
+    margin-top: 20px;
+}
+
+
+#appCustomize .notification-form small {
+    display: block;
+    text-align: center;
+    color: #888;
+    margin-top: 20px;
+}
+
+
+@media (max-width: 768px) {
+    #appCustomize .notification-form {
+        padding: 20px;
+    }
+
+    #appCustomize .form-title {
+        font-size: 22px;
+    }
+
+    #appCustomize .btn-primary {
+        font-size: 14px;
+    }
+}
+
+/*Customize Page CSS: End*/
