@@ -4,10 +4,12 @@
       <div class="content">
         <header class="my-3 d-flex justify-content-end align-items-end">
           <div>
-            <button class="btn btn-success btn-sm me-2" @click="sortByCategory" :disabled="openAddCard">Category &#8597;</button>
-            <button class="btn btn-success btn-sm me-2" @click="navigateTo('summary')" :disabled="openAddCard">View Inventory Summary</button>
+            <button class="btn btn-sm me-2 topButtons" @click="sortByCategory" :disabled="openAddCard">
+              Category <span v-if="isCategoryAscending">&#8593;</span><span v-else>&#8595;</span>
+            </button>
+            <button class="btn btn-sm me-2 topButtons" @click="navigateTo('summary')" :disabled="openAddCard">View Inventory Summary</button>
             <!--Add Product + Edit Product Card-->
-            <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-success btn-sm addButton">
+            <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-sm topButtons">
               Add Product
             </button>
             <div v-else class="card addCard" style="width: 30rem;">
@@ -53,19 +55,19 @@
         </p>
         <!--Categorized Items-->
         <div v-for="(itemsInCategory, category) in finalItems" :key="category" class="col-12">
-          <hr />
-          <div class="category-container">
-            <h5 class="m-0">{{ category }}</h5>
-            <div id="sortButton">
-              <button class="btn btn-sm me-2 btn2" @click="sortCategorizedItems(category, 'quantity')" :disabled="openAddCard">Quantity
-                &#8595;</button>
-              <button class="btn btn-sm btn2" @click="sortCategorizedItems(category, 'expiryDate')" :disabled="openAddCard">Expiry Date
-                &#8595;</button>
+          <div class="categoryTitle">
+            <div class="category-container">
+              <h5 class="m-0 flex-grow-1 d-flex align-items-start category-title" @click="toggleCategory(category)">{{ category }}</h5>
+              <div id="sortButton">
+                <button class="btn btn-sm me-2 btn2" @click="sortCategorizedItems(category, 'quantity')" :disabled="openAddCard">Quantity
+                  &#8595;</button>
+                <button class="btn btn-sm btn2" @click="sortCategorizedItems(category, 'expiryDate')" :disabled="openAddCard">Expiry Date
+                  &#8595;</button>
+              </div>
             </div>
           </div>
-          <hr />
-          <div class="row">
-            <div v-for="item in itemsInCategory" :key="item.id" class="col-sm-6 col-md-4 col-lg-3">
+          <div v-if="!collapsedCategories[category]" class="row g-4">
+            <div v-for="item in itemsInCategory" :key="item.id" class="col-sm-6 col-md-4 col-lg-3 col-xl-2">
               <div class="card mb-4 mx-4 filterCard" :class="{ 'expiring-soon': item.isExpiringSoon }">
                 <div class="card-body">
                   <h6 class="card-title">{{ item.name }}</h6>
@@ -96,28 +98,19 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/components/fridge/fridge.css';
 
-
 export default {
-
-
   name: 'FridgePage',
-
-
   data() {
     return {
-
-
       currentUserId: null,
       //Items retrieved from Database: Start
       items: [],
       //Items retrieved from Database: End
 
-
       //Sort: Start
       sortedItems: {},
       sortOrder: 'asc',
       //Sort: End
-
 
       //Add Items: Start
       openAddCard: false,
@@ -131,16 +124,24 @@ export default {
       itemToEdit: null,
       //Add Items: End
 
-
       categories: ["Dairy", "Fruits", "Vegetables", "Meats", "Seafood", "Grains and Cereals",
         "Nuts and Seeds", "Legumes", "Beverages", "Snacks", "Condiments and Sauces",
         "Herbs and Spices", "Frozen Foods", "Baked Goods", "Canned and Jarred Goods",
         "Deli", "Prepared Meals", "Pantry Staples", "Breakfast Foods", "Sweets and Desserts",
         "Non-Alcoholic Drinks", "Alcoholic Drinks", "Others"],
+      
+      //Collapsed: Start
+      collapsedCategories: {},
+      //Collapsed: End
     };
   },
   methods: {
 
+    //Collapsed: Start
+    toggleCategory(categoryName) {
+      this.collapsedCategories[categoryName] = !this.collapsedCategories[categoryName];
+    },
+    //Collapsed: End
 
     navigateTo(page) {
       if (page === 'summary') {
@@ -149,7 +150,6 @@ export default {
           this.$router.push({ name: 'Customize' });
       }
     },
-
 
     //Get Database: Start
     async getCurrentUserItems() {
@@ -165,7 +165,6 @@ export default {
             const daysUntilExpiry = (expiryDate - today) / (1000 * 60 * 60 * 24);
             itemData.isExpiringSoon = daysUntilExpiry <= 3; // Adjust threshold as needed
 
-
             this.items.push(itemData);
           });
           this.sortItems('name');
@@ -176,9 +175,9 @@ export default {
     },
     //Get Database: End
 
-
     //Sort Items: Start
     sortByCategory() {
+      this.isCategoryAscending = !this.isCategoryAscending;
       if (this.sortOrder === 'asc') {
         this.items.sort((a, b) => a.category.localeCompare(b.category)); // Sort A to Z
         this.sortOrder = 'desc';
@@ -188,13 +187,11 @@ export default {
       }
     },
 
-
     sortItems() {
       this.items.sort((item1, item2) => {
         return item1.name.localeCompare(item2.name);
       });
     },
-
 
     sortCategorizedItems(category, sortBy) {
       if (!this.categorizedItems[category]) {
@@ -215,7 +212,6 @@ export default {
     },
     //Sort Items: End
 
-
     //Add Item: Start
     closeAddCard() {
       this.openAddCard = false;
@@ -223,10 +219,8 @@ export default {
       this.resetForm();
     },
 
-
     async addItem() {
       this.validationError = '';
-
 
       console.log("Adding Item:", {
           name: this.itemName,
@@ -282,7 +276,6 @@ export default {
             createdDate: new Date().toISOString(),
         });
 
-
         const newItem = {
             id: docRef.id,
             name: editedName,
@@ -293,21 +286,17 @@ export default {
             createdDate: new Date().toISOString(),
         };
 
-
         this.items.push(newItem);
         this.sortItems('name');
-
 
         // Reset the form inputs
         this.resetForm();
         this.openAddCard = false;
 
-
       } catch (error) {
         console.error("Error adding item: ", error);
       }
     },
-
 
     resetForm() {
         this.itemId = null;
@@ -321,7 +310,6 @@ export default {
         this.itemToEdit = null;
         this.openAddCard = false;
     },
-
 
     editItem(item) {
         this.isEditing = true;
@@ -372,7 +360,6 @@ export default {
     //   }
     // },
 
-
     async saveEdit() {
       const updatedItem = {
           id: this.itemId,
@@ -383,7 +370,6 @@ export default {
           isExpiringSoon: this.isExpiringSoon || false
       };
 
-
       const selectedDate = new Date(updatedItem.expiryDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -393,7 +379,6 @@ export default {
         return;
       }
 
-
       this.updateItemInFirestore(updatedItem)
         .then(() => {
             this.resetForm();
@@ -402,7 +387,6 @@ export default {
             console.error("Error updating item: ", error);
         });
     },
-
 
     async updateItemInFirestore(item) {
         try {
@@ -425,7 +409,6 @@ export default {
             console.error("Error updating item in Firestore: ", error);
         }
     },
-
 
     capitalizeFirstLetter(string) {
       return string.charAt(0).toUpperCase() + string.slice(1);
@@ -473,7 +456,6 @@ export default {
     }
   },
   computed: {
-
 
     categorizedItems() {
       const categorized = {};
