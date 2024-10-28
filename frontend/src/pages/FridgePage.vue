@@ -110,6 +110,7 @@ export default {
       //Sort: Start
       sortedItems: {},
       sortOrder: 'asc',
+      isCategoryAscending: false,
       //Sort: End
 
       //Add Items: Start
