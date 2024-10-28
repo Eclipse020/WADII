@@ -2,7 +2,7 @@
 
 /* General Styles */
 #appSummary {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     background-color: #f8f9fa;
     color: #343a40;
     margin: 0;
@@ -10,8 +10,6 @@
     text-align: left;
 }
 
-
-/* Header Styles */
 #appSummary h1 {
     font-size: 2.5rem;
     margin-bottom: 20px;
@@ -19,22 +17,24 @@
     text-align: center;
 }
 
-
 #appSummary h3,
 #appSummary h4 {
     margin: 20px 0 10px;
     color: #6c757d;
+    border-bottom: 2px solid #28a745; 
+    padding-bottom: 5px; 
 }
-
 
 #appSummary h3 {
     font-size: 2rem;
+    font-weight: bold; 
 }
 
 #appSummary h4 {
     font-size: 1.5rem;
+    font-weight: bold; 
+    color: #495057; 
 }
-
 
 /* List Styles */
 #appSummary ul {
@@ -42,21 +42,19 @@
     padding: 0;
 }
 
-
 #appSummary li {
-    padding: 8px;
-    margin-bottom: 5px;
+    padding: 10px; 
+    margin-bottom: 8px; 
     background-color: #ffffff;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s;
+    border-radius: 8px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    transition: background-color 0.3s, transform 0.2s;
 }
-
 
 #appSummary li:hover {
     background-color: #f1f1f1;
+    transform: translateY(-2px); 
 }
-
 
 /* Button Styles */
 #appSummary .btn {
@@ -65,23 +63,20 @@
     width: 100%;
     color: #fff;
     font-weight: bold;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s; 
 }
-
 
 #appSummary .btn-secondary {
     background-color: #6c757d;
     border-color: #6c757d;
 }
 
-
 #appSummary .btn-secondary:hover {
     background-color: #5a6268;
     border-color: #545b62;
+    transform: scale(1.05); 
 }
 
-
-/* Responsive Styles */
 @media (max-width: 576px) {
     body {
         padding: 10px;
@@ -100,7 +95,6 @@
         font-size: 0.9rem;
     }
 }
-
 
 /*Summary Page CSS: End*/
 

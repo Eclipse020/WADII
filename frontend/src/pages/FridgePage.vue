@@ -91,7 +91,7 @@
 <script>
 import { db, auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, getDocs, getDoc, addDoc, deleteDoc, doc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/components/fridge/fridge.css';
@@ -334,27 +334,43 @@ export default {
         this.openAddCard = true;
     },
 
-
     async deleteItem(itemId) {
       const itemRef = doc(db, `users/${this.currentUserId}/items`, itemId);
       try {
-        const itemData = await getDoc(itemRef);
-        if (itemData.exists()) {
-            await setDoc(doc(db, `users/${this.currentUserId}/deletedItems`, itemId), {
-                name: itemData.data().name,
-                category: itemData.data().category,
-                deletedAt: new Date().toISOString()
-            });
-            await deleteDoc(itemRef);
-            console.log("Item deleted and logged to deletedItems.");
-            this.items = this.items.filter(item => item.id !== itemId);
-        } else {
-            console.error("Item not found: ", itemId);
-        }
+          const itemData = await getDoc(itemRef);
+          if (itemData.exists()) {
+              await deleteDoc(itemRef);
+              console.log("Item deleted.");
+              this.items = this.items.filter(item => item.id !== itemId);
+          } else {
+              console.error("Item not found: ", itemId);
+          }
       } catch (error) {
-        console.error("Error deleting item: ", error);
+          console.error("Error deleting item: ", error);
       }
-    },
+  },
+
+
+    // async deleteItem(itemId) {
+    //   const itemRef = doc(db, `users/${this.currentUserId}/items`, itemId);
+    //   try {
+    //     const itemData = await getDoc(itemRef);
+    //     if (itemData.exists()) {
+    //         await setDoc(doc(db, `users/${this.currentUserId}/deletedItems`, itemId), {
+    //             name: itemData.data().name,
+    //             category: itemData.data().category,
+    //             deletedAt: new Date().toISOString()
+    //         });
+    //         await deleteDoc(itemRef);
+    //         console.log("Item deleted and logged to deletedItems.");
+    //         this.items = this.items.filter(item => item.id !== itemId);
+    //     } else {
+    //         console.error("Item not found: ", itemId);
+    //     }
+    //   } catch (error) {
+    //     console.error("Error deleting item: ", error);
+    //   }
+    // },
 
 
     async saveEdit() {
@@ -418,7 +434,6 @@ export default {
     //Add Item: End
 
     //Move to bin: Start
-
     async moveExpiredItemsToBin() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -450,7 +465,6 @@ export default {
         console.error("Error moving expired items to bin:", error);
       }
     },
-
     //Move to bin: End
 
     //Getting ingredients for MealPlanner

@@ -14,9 +14,9 @@
         <ul>
             <li v-for="item in summary.newlyAdded" :key="item.id">{{ item.name }}</li>
         </ul>
-        <h4>Recently Deleted Items:</h4>
+        <h4>Recently Used Items:</h4>
         <ul>
-            <li v-for="item in summary.deletedItems" :key="item.id">{{ item.name }} (Deleted on: {{ item.deletedAt }})</li>
+            <li v-for="item in summary.deletedItems" :key="item.id">{{ item.name }} (Used on: {{ item.deletedAt }})</li>
         </ul>
         <h4>Expired Items:</h4>
         <ul>
@@ -127,15 +127,18 @@ export default {
                     return deletedAt >= threeDaysAgo && deletedAt <= today;
                 });
 
-                // Filter for expired items
-                this.summary.expiredItemsWOUsing = items.filter(item => {
-                    const expiryDate = new Date(item.expiryDate);
-                    return expiryDate < today;
-                }).map(item => ({
-                    ...item,
-                    expiryDate: new Date(item.expiryDate).toLocaleDateString() // Format the expiry date for display
-                }));
+                // Fetch expired items from Firestore directly
+                const expiredItemsSnapshot = await getDocs(collection(db, `users/${this.currentUserId}/expiredItemsWOUsing`));
+                const expiredItems = expiredItemsSnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        expiryDate: new Date(data.expiryDate).toLocaleDateString() // Format the expiry date for display
+                    };
+                });
 
+                this.summary.expiredItems = expiredItems;
 
             } catch (error) {
                 console.error("Error fetching summary data: ", error);
