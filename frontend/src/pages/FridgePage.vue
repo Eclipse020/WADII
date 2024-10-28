@@ -82,46 +82,6 @@
             </div>
           </div>
         </div>
-        <!--Add Product + Edit Product Card-->
-        <!-- <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-success addButton">
-          Add Product
-        </button>
-        <div v-else class="card addCard" style="width: 30rem;">
-          <div class="card-body">
-            <div class="cardTitle">
-              <h5 class="card-title">{{ isEditing ? 'Edit Product' : 'Add Product' }} &#129365;&#127815;&#127838;&#129367;
-              </h5>
-              <button @click="closeAddCard" class="btn btn-light btnClose">X</button>
-            </div>
-            <hr />
-            <p v-if="validationError" class="errorMessage">{{ validationError }}</p>
-            <form @submit.prevent="isEditing ? saveEdit() : addItem()">
-              <div class="mb-3">
-                <label class="form-label" for="itemName">Name</label>
-                <input v-model="itemName" class="form-control" type="text" id="itemName" placeholder="Insert Name"
-                  required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="category">Category</label>
-                <select v-model="itemCategory" class="form-select" id="category" required>
-                  <option disabled value="" selected>Please Select</option>
-                  <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="quantity">Quantity</label>
-                <input v-model="itemQuantity" class="form-control" type="number" id="quantity" min="1" placeholder="1"
-                  required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="expiryDate">Expiry Date</label>
-                <input v-model="itemExpiryDate" class="form-control" type="date" id="expiryDate" required />
-              </div>
-              <button type="submit" class="btn btn-success" id="btnAdd">{{ isEditing ? 'Save' : 'Add!' }}</button>
-            </form>
-          </div>
-        </div> -->
-   
       </div>
     </div>
   </div>
