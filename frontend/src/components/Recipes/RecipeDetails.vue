@@ -1,18 +1,17 @@
 <template>
   <div v-if="recipe && recipe.label" class="recipe-container">
     <h2 class="recipe-title">{{ recipe.label }}</h2>
-    <p class="recipe-time">Ready in <strong>{{ recipe.totalTime }}</strong> minutes</p>
+    <p class="recipe-time">Ready in <strong>{{ recipe.totalTime }} minutes</strong></p>
 
     <h3>Ingredients</h3>
     <ul class="ingredient-list">
-      <li v-for="ingredient in recipe.ingredientLines" :key="ingredient" class="ingredient-item">
+      <li v-for="(ingredient, index) in recipe.ingredientLines" :key="index" class="ingredient-item">
         <span :class="{ highlight: fridgeItems.includes(ingredient) }">{{ ingredient }}</span>
       </li>
     </ul>
 
-    <h3>Cooking Instructions</h3>
-    <p v-if="instructions" class="instructions">{{ instructions }}</p>
-    <p v-else class="loading-text">Generating instructions...</p>
+    <h3>Instructions</h3>
+    <div class="instructions" v-html="formattedInstructions"></div>
 
     <div class="button-container">
       <button class="cook-now" @click="cookNow">Cook Now</button>
@@ -27,36 +26,58 @@
 <script>
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 import axios from 'axios';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 export default {
   data() {
     return {
-      recipe: {}, 
+      recipe: {},
       fridgeItems: [],
-      instructions: "", 
+      instructions: "",
+      tips: [],
     };
+  },
+  computed: {
+    formattedInstructions() {
+      // Format instructions for display (replace newline with HTML line breaks)
+      return this.instructions.split('\n').map(line => `<p>${line.trim()}</p>`).join('');
+    },
+    formattedTips() {
+      // Return formatted tips for display
+      return this.tips.map(tip => tip.trim());
+    }
   },
   mounted() {
     const recipeId = this.$route.params.id; 
     if (recipeId) {
-      this.fetchRecipeById(recipeId); 
+      this.fetchRecipeById(recipeId);
     } else {
       console.error("Recipe not found or invalid recipe data.");
     }
   },
   methods: {
+    async signInAndStoreToken(email, password) {
+      const auth = getAuth();
+      try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          const token = await user.getIdToken(true); // Force refresh of the token
+          localStorage.setItem("token", token);
+          console.log("Token saved to localStorage:", token);
+      } catch (error) {
+          console.error("Error signing in:", error);
+      }
+  },
     async fetchInstructions() {
       try {
-        const genAI = new GoogleGenerativeAI(process.env.VUE_APP_API_KEY); 
+        const genAI = new GoogleGenerativeAI(process.env.VUE_APP_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        
-        const prompt = `Write step-by-step instructions for making ${this.recipe.label} using the following ingredients: ${this.recipe.ingredientLines.join(", ")}.`;
 
+        const prompt = `Write step-by-step instructions for making ${this.recipe.label} using the following ingredients: ${this.recipe.ingredientLines.join(", ")}.`;
         const result = await model.generateContent(prompt);
         
-        if (result && result.candidates && result.candidates.length > 0) {
-          this.instructions = result.candidates[0].text || "No instructions available.";
+        if (result && result.response && result.response.candidates && result.response.candidates.length > 0) {
+          this.instructions = result.response.candidates[0].content.parts[0].text || "No instructions available.";
         } else {
           this.instructions = "No instructions generated.";
         }
@@ -70,7 +91,7 @@ export default {
         const response = await axios.get(`https://api.edamam.com/search?r=${recipeId}&app_id=fcbb645c&app_key=475ad8f07b669d07d1b4e5a021a100cc`);
         if (response.data && response.data.length > 0) {
           this.recipe = response.data[0];
-          await this.fetchInstructions(); 
+          await this.fetchInstructions();
         } else {
           console.error("Recipe not found.");
         }
@@ -79,49 +100,31 @@ export default {
       }
     },
     cookNow() {
-      console.log("Recipe cooked!");
-      // Additional logic for cooking can be implemented here
+      this.$router.push({ 
+        name: 'CookNow', 
+        params: { 
+          recipe: this.recipe, 
+          fridgeIngredients: this.fridgeItems 
+        } 
+      });
     },
     async addToFavorites(recipe) {
-  try {
-    const auth = getAuth(); // Get the Auth instance
-    const user = auth.currentUser; // Get the currently signed-in user
-
-    if (!user) {
-      console.error("User is not authenticated.");
-      return;
-    }
-
-    const token = await user.getIdToken(); // Get the ID token
-    const response = await axios.get('http://localhost:8080/api/favorites', {
-      headers: {
-        Authorization: `Bearer ${token}` // Use the retrieved token
+      const token = localStorage.getItem('firebaseToken'); // Use consistent token key
+      console.log(token);
+      try {
+        const response = await axios.put('http://localhost:3000/api/favorites', {
+          recipe // Send the recipe object to update favorites
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the request header
+          },
+        });
+        console.log('Favorites updated:', response.data.message); // Log the success message from the backend
+      } catch (error) {
+        console.error('Error adding to favorites:', error.response ? error.response.data : error.message);
+        // Optionally, show a user-friendly message
       }
-    });
-
-    const favorites = response.data.recipes || [];
-    
-    // Check if the recipe is already a favorite
-    const isFavorite = favorites.some(fav => fav.uri === recipe.uri);
-    if (isFavorite) {
-      console.warn('Recipe is already in favorites');
-      return; // Exit if it's already a favorite
     }
-
-    await axios.put('http://localhost:8080/api/favorites', {
-      recipes: [...favorites, recipe] // Include existing favorites plus the new one
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}` // Use the retrieved token
-      }
-    });
-
-    console.log('Recipe added to favorites');
-    // Optional: Show a success notification to the user
-  } catch (error) {
-    console.error('Error adding recipe to favorites:', error);
-  }
-}
 
   }
 };
@@ -130,14 +133,14 @@ export default {
 <style scoped>
 .recipe-container {
   padding: 20px;
-  background-color: #e8f5e9; /* Light green background for the recipe container */
+  background-color: #e8f5e9;
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .recipe-title {
-  font-family: 'Cursive', sans-serif; /* Aesthetic font for the title */
-  color: #4a8c3a; /* Dark green */
+  font-family: 'Cursive', sans-serif;
+  color: #4a8c3a;
   text-align: center;
   margin-bottom: 15px;
 }
@@ -149,39 +152,48 @@ export default {
 }
 
 .ingredient-list {
-  list-style-type: none; /* Remove bullet points */
+  list-style-type: none;
   padding: 0;
   display: flex;
-  flex-direction: column; /* Stack items vertically */
-  align-items: center; /* Center align the list items */
+  flex-direction: column;
+  align-items: center;
 }
 
 .ingredient-item {
-  margin: 10px 0; /* Space between ingredients */
+  margin: 10px 0;
 }
 
 .highlight {
-  color: #66bb6a; /* Light green for highlighted ingredients */
+  color: #66bb6a;
   font-weight: bold;
 }
 
 .instructions {
-  background-color: #f1f8e9; /* Very light green for instruction background */
+  background-color: #f1f8e9;
   padding: 10px;
   border-radius: 8px;
   margin-bottom: 20px;
 }
 
+.tips-list {
+  list-style-type: none; /* Remove bullet points for tips */
+  padding: 0; /* Remove padding */
+}
+
+.tip-item {
+  margin: 5px 0; /* Space between tips */
+}
+
 .loading-text {
   text-align: center;
   font-style: italic;
-  color: #777; /* Gray color for loading text */
+  color: #777;
 }
 
 .button-container {
   display: flex;
   justify-content: center;
-  gap: 15px; /* Space between buttons */
+  gap: 15px;
 }
 
 button {
@@ -194,20 +206,20 @@ button {
 }
 
 .cook-now {
-  background-color: #4caf50; /* Medium green for cook now button */
-  color: white; /* White text */
+  background-color: #4caf50;
+  color: white;
 }
 
 .cook-now:hover {
-  background-color: #388e3c; /* Darker green on hover */
+  background-color: #388e3c;
 }
 
 .add-favorites {
-  background-color: #66bb6a; /* Light green for add to favorites button */
-  color: white; /* White text */
+  background-color: #66bb6a;
+  color: white;
 }
 
 .add-favorites:hover {
-  background-color: #388e3c; /* Darker green on hover */
+  background-color: #388e3c;
 }
 </style>
