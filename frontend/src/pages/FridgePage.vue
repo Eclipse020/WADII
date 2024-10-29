@@ -59,10 +59,8 @@
             <div class="category-container">
               <h5 class="m-0 flex-grow-1 d-flex align-items-start category-title" @click="toggleCategory(category)">{{ category }}</h5>
               <div id="sortButton">
-                <button class="btn btn-sm me-2 btn2" @click="sortCategorizedItems(category, 'quantity')" :disabled="openAddCard">Quantity
-                  &#8595;</button>
-                <button class="btn btn-sm btn2" @click="sortCategorizedItems(category, 'expiryDate')" :disabled="openAddCard">Expiry Date
-                  &#8595;</button>
+                <button class="btn btn-sm me-2 btn2" @click="sortCategorizedItems(category, 'quantity')" :disabled="openAddCard"> Sort by Quantity </button>
+                <button class="btn btn-sm btn2" @click="sortCategorizedItems(category, 'expiryDate')" :disabled="openAddCard"> Sort by Expiry Date </button>
               </div>
             </div>
           </div>
