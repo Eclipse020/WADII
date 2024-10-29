@@ -1,63 +1,70 @@
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <h2 class="text-center">Welcome to HealthyChef!</h2>
+  <div class="login">
+    <div class="login__container">
+      <div class="login__card">
+        <h2 class="login__title">Welcome to HealthyChef!</h2>
 
-      <!-- Email and Password Login Form -->
-      <form @submit.prevent="loginWithEmail">
-        <div class="form-group">
-          <label for="email">Email: </label>
-          <input
-            type="email"
-            v-model="email"
-            placeholder="Email address"
-            class="form-control"
-            required
-            aria-label="Email"
-          />
+        <!-- Email and Password Login Form -->
+        <form @submit.prevent="loginWithEmail" class="login__form">
+          <div class="login__form-group">
+            <label class="login__label" for="email">Email: </label>
+            <input
+              type="email"
+              v-model="email"
+              placeholder="Email address"
+              class="login__input"
+              required
+              aria-label="Email"
+            />
+          </div>
+
+          <div class="login__form-group">
+            <label class="login__label" for="password">Password: </label>
+            <input
+              type="password"
+              v-model="password"
+              placeholder="Password"
+              class="login__input"
+              required
+              aria-label="Password"
+            />
+            <p class="login__reset-text">
+              Forgot your password? 
+              <router-link to="/reset-password" class="login__link">Reset here</router-link>.
+            </p>
+          </div>
+          
+          <button type="submit" class="login__button login__button--primary">
+            Login
+          </button>
+        </form>
+
+        <!-- Display error message if it exists -->
+        <div v-if="errorMessage" class="login__alert login__alert--error">
+          {{ errorMessage }}
         </div>
 
-        <div class="form-group">
-          <label for="password">Password: </label>
-          <input
-            type="password"
-            v-model="password"
-            placeholder="Password"
-            class="form-control"
-            required
-            aria-label="Password"
-          />
-          <p class="mt-3">Forgot your password? <router-link to="/reset-password">Reset here</router-link>.</p>
-        </div>
+        <div>Or</div>
         
-        <!-- Email Login Button -->
-        <button type="submit" class="btn btn-primary btn-custom btn-block">
-          Login
+        <!-- Google Login Button -->
+        <button @click="loginWithGoogle" class="login__button login__button--google">
+          <i class="fab fa-google"></i> Login with Google
         </button>
-      </form>
 
-      <!-- Display error message if it exists -->
-      <div v-if="errorMessage" class="alert alert-danger mt-3">
-        {{ errorMessage }}
-      </div>
-
-      <!-- Google Login Button -->
-      <button @click="loginWithGoogle" class="btn btn-outline-danger btn-custom btn-block mt-3">
-        <i class="fab fa-google"></i> Login with Google
-      </button>
-
-      <!-- Register Link -->
-      <div class="text-center mt-3">
-        <p>
-          Don’t have an account?
-          <router-link to="/register">Register Here</router-link>
-        </p>
+        <!-- Register Link -->
+        <div class="login__register">
+          <p class="login__register-text">
+            Don't have an account?
+            <router-link to="/register" class="login__link">Register Here</router-link>
+          </p>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+// Script section remains unchanged
 import { auth, db, googleProvider, signInWithPopup } from '../../services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -76,7 +83,6 @@ export default {
         await signInWithEmailAndPassword(auth, this.email, this.password);
         this.$router.push('/');
       } catch (error) {
-        // Handle different authentication errors
         if (error.code === 'auth/wrong-password') {
           this.errorMessage = 'Incorrect password. Please try again.';
         } else if (error.code === 'auth/user-not-found') {
@@ -94,17 +100,15 @@ export default {
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
 
-        // Check if user already exists in Firestore
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (!userDoc.exists()) {
-          // Save user profile in Firestore if it doesn't exist
           await setDoc(doc(db, 'users', user.uid), {
             displayName: user.displayName,
             email: user.email,
             photoURL: user.photoURL,
             uid: user.uid,
-            dietaryPreferences: [], // Initialize as empty array
-            notifications: false, // Default notification preference
+            dietaryPreferences: [],
+            notifications: false,
             createdAt: new Date(),
             updatedAt: new Date(),
           });
@@ -120,24 +124,21 @@ export default {
 };
 </script>
 
-
 <style scoped>
-/* Ensure consistent container styling */
-.alert {
-  color: red;
-  font-weight: bold;
+/* Block: login */
+.login {
+  min-height: 100vh;
+  background-color: #f8f9fa;
 }
 
-.login-container {
+.login__container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f8f9fa; /* Light background */
 }
 
-/* Style the login card similar to other components */
-.login-card {
+.login__card {
   background-color: white;
   padding: 2rem;
   border-radius: 8px;
@@ -146,58 +147,108 @@ export default {
   width: 100%;
 }
 
-h2 {
+.login__title {
   font-weight: bold;
-  color: #42b983; /* Primary color */
-}
-
-.form-group {
+  color: #42b983;
+  text-align: center;
   margin-bottom: 1.5rem;
 }
 
-input {
+.login__form {
+  margin-bottom: 1.5rem;
+}
+
+.login__form-group {
+  margin-bottom: 1.5rem;
+}
+
+.login__label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.login__input {
   padding: 0.75rem;
   border: 1px solid #ced4da;
   border-radius: 4px;
   width: 100%;
 }
 
-/* Custom button styles */
-.btn-custom {
-  background-color: #42b983; /* Primary theme color */
-  color: white;
-  border: none;
+.login__input:focus {
+  outline: none;
+  border-color: #42b983;
+  box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
+}
+
+.login__reset-text {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.login__link {
+  color: #42b983;
+  text-decoration: none;
+}
+
+.login__link:hover {
+  text-decoration: underline;
+}
+
+.login__button {
+  width: 100%;
   padding: 0.75rem;
   font-size: 1rem;
   border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.btn-custom:hover {
-  background-color: #3aa673;
-}
-
-/* Google login button outline style */
-.btn-outline-danger {
-  border-color: #3aa673;
+.login__button--primary {
+  background-color: #42b983;
   color: white;
 }
 
-.btn-outline-danger:hover {
+.login__button--primary:hover {
   background-color: #3aa673;
-  color: white;
 }
 
-.mt-3 {
+.login__button--google {
+  background-color: white;
+  border: 1px solid #3aa673;
+  color: #3aa673;
   margin-top: 1rem;
 }
 
-.text-center {
+.login__button--google:hover {
+  background-color: #3aa673;
+  color: white;
+}
+
+.login__alert {
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+.login__alert--error {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #dc2626;
+}
+
+.login__register {
   text-align: center;
+  margin-top: 1.5rem;
+}
+
+.login__register-text {
+  font-size: 0.875rem;
 }
 
 /* Media query for smaller screens */
 @media (max-width: 768px) {
-  .login-card {
+  .login__card {
     padding: 1.5rem;
   }
 }
