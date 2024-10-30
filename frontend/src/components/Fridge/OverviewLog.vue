@@ -22,13 +22,14 @@
     </div>
 </template>
 
+
 <script>
-import { db, auth } from '../services/firebase';
+import { db, auth } from "../../services/firebase";
 import { useRouter } from 'vue-router';
 import { collection, getDocs } from "firebase/firestore";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../styles/components/fridge/fridge.css';
+import '../../styles/components/fridge/fridge.css';
 
 
 export default {
@@ -140,3 +141,5 @@ export default {
     }
 };
 </script>
+
+
