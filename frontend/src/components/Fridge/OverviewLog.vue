@@ -14,13 +14,18 @@
         <ul>
             <li v-for="item in summary.newlyAdded" :key="item.id">{{ item.name }}</li>
         </ul>
-        <h4>Recently Deleted Items:</h4>
+        <h4>Recently Used Items:</h4>
         <ul>
             <li v-for="item in summary.deletedItems" :key="item.id">{{ item.name }} (Deleted on: {{ item.deletedAt }})</li>
+        </ul>
+        <h4>Expired Items:</h4>
+        <ul>
+            <li v-for="item in summary.expiredItems" :key="item.id">{{ item.name }} (Expired on: {{ item.expiryDate }})</li>
         </ul>
         <button class="btn btn-secondary" @click="goToInventory">Back to Inventory</button>
     </div>
 </template>
+
 
 
 <script>
@@ -41,7 +46,8 @@ export default {
                 expiringSoon: 0,
                 categories: {},
                 newlyAdded: [],
-                deletedItems: []
+                deletedItems: [],
+                expiredItems: [],
             },
         };
     },
@@ -57,7 +63,7 @@ export default {
 
     methods: {
         goToInventory() {
-            this.router.push('/fridge');  // Navigate by path instead of name
+            this.router.push('/fridge');  
         },
 
 
@@ -111,7 +117,7 @@ export default {
                 this.summary.newlyAdded = newlyAddedItems;
 
 
-                // Fetch deleted items from Firestore
+                // Fetch used items from Firestore
                 const deletedItemsSnapshot = await getDocs(collection(db, `users/${this.currentUserId}/deletedItems`));
                 const deletedItems = deletedItemsSnapshot.docs.map(doc => {
                     const data = doc.data();
@@ -128,6 +134,22 @@ export default {
                     return deletedAt >= threeDaysAgo && deletedAt <= today;
                 });
 
+                // Fetch expired items from Firestore
+                const expiredItemsSnapshot = await getDocs(collection(db, `users/${this.currentUserId}/expiredItemsWOUsing`));
+                const expiredItems = expiredItemsSnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        expiryDate: new Date(data.expiryDate).toLocaleString() 
+                    };
+                });
+
+                // Filter expired items based on the expiry date
+                this.summary.expiredItems = expiredItems.filter(expiredItem => {
+                    const expiryDate = new Date(expiredItem.expiryDate);
+                    return expiryDate < today && expiryDate >= threeDaysAgo; 
+                });
 
             } catch (error) {
                 console.error("Error fetching summary data: ", error);
