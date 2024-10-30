@@ -1,31 +1,30 @@
 <template>
-    <div id="appSummary">
-        <h1>Inventory Summary</h1>
-        <h3>Daily Summary</h3>
+    <div class="app-summary">
+        <h1 class="app-summary__title">Inventory Summary</h1>
+        <h3 class="app-summary__section-title app-summary__section-title--h3">Daily Summary</h3>
         <p>Total Items: {{ summary.totalItems }}</p>
         <p>Items Expiring Soon: {{ summary.expiringSoon }}</p>
-        <h4>Category Breakdown:</h4>
-        <ul>
-            <li v-for="(count, category) in summary.categories" :key="category">
+        <h4 class="app-summary__section-title app-summary__section-title--h4">Category Breakdown:</h4>
+        <ul class="app-summary__list">
+            <li class="app-summary__list-item" v-for="(count, category) in summary.categories" :key="category">
                 {{ category }}: {{ count }}
             </li>
         </ul>
-        <h4>Newly Added Items:</h4>
-        <ul>
-            <li v-for="item in summary.newlyAdded" :key="item.id">{{ item.name }}</li>
+        <h4 class="app-summary__section-title app-summary__section-title--h4">Newly Added Items:</h4>
+        <ul class="app-summary__list">
+            <li class="app-summary__list-item" v-for="item in summary.newlyAdded" :key="item.id">{{ item.name }}</li>
         </ul>
-        <h4>Recently Used Items:</h4>
-        <ul>
-            <li v-for="item in summary.deletedItems" :key="item.id">{{ item.name }} (Deleted on: {{ item.deletedAt }})</li>
+        <h4 class="app-summary__section-title app-summary__section-title--h4">Recently Used Items:</h4>
+        <ul class="app-summary__list">
+            <li class="app-summary__list-item" v-for="item in summary.deletedItems" :key="item.id">{{ item.name }} (Deleted on: {{ item.deletedAt }})</li>
         </ul>
-        <h4>Expired Items:</h4>
-        <ul>
-            <li v-for="item in summary.expiredItems" :key="item.id">{{ item.name }} (Expired on: {{ item.expiryDate }})</li>
+        <h4 class="app-summary__section-title app-summary__section-title--h4">Expired Items:</h4>
+        <ul class="app-summary__list">
+            <li class="app-summary__list-item" v-for="item in summary.expiredItems" :key="item.id">{{ item.name }} (Expired on: {{ item.expiryDate }})</li>
         </ul>
-        <button class="btn btn-secondary" @click="goToInventory">Back to Inventory</button>
+        <button class="app-summary__button app-summary__button--secondary" @click="goToInventory">Back to Inventory</button>
     </div>
 </template>
-
 
 
 <script>
@@ -63,7 +62,7 @@ export default {
 
     methods: {
         goToInventory() {
-            this.router.push('/fridge');  
+            this.router.push('/fridge');
         },
 
 
@@ -141,14 +140,14 @@ export default {
                     return {
                         id: doc.id,
                         ...data,
-                        expiryDate: new Date(data.expiryDate).toLocaleString() 
+                        expiryDate: new Date(data.expiryDate).toLocaleString()
                     };
                 });
 
                 // Filter expired items based on the expiry date
                 this.summary.expiredItems = expiredItems.filter(expiredItem => {
                     const expiryDate = new Date(expiredItem.expiryDate);
-                    return expiryDate < today && expiryDate >= threeDaysAgo; 
+                    return expiryDate < today && expiryDate >= threeDaysAgo;
                 });
 
             } catch (error) {
@@ -163,5 +162,3 @@ export default {
     }
 };
 </script>
-
-

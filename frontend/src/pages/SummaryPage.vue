@@ -11,7 +11,7 @@ import FridgeOverview from '../components/Fridge/OverviewLog.vue'
 export default defineComponent({
     name: 'OverviewPage',
     components: {
-        FridgeOverview 
+        FridgeOverview
     }
 })
 </script>

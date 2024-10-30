@@ -1,6 +1,5 @@
 /*Summary Page CSS: Start*/
-
-#appSummary {
+.app-summary {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     background-color: #f8f9fa;
     color: #343a40;
@@ -9,37 +8,37 @@
     text-align: left;
 }
 
-#appSummary h1 {
+.app-summary__title {
     font-size: 2.5rem;
     margin-bottom: 20px;
     color: #28a745;
     text-align: center;
 }
 
-#appSummary h3, #appSummary h4 {
+.app-summary__section-title {
     margin: 20px 0 10px;
     border-bottom: 2px solid #28a745; 
     padding-bottom: 5px; 
     font-weight: bold; 
 }
 
-#appSummary h3 {
+.app-summary__section-title--h3 {
     font-size: 2rem;
     color: #6c757d;
 }
 
-#appSummary h4 {
+.app-summary__section-title--h4 {
     font-size: 1.5rem;
     color: #495057; 
 }
 
 /* List Styles */
-#appSummary ul {
+.app-summary__list {
     list-style: none;
     padding: 0;
 }
 
-#appSummary li {
+.app-summary__list-item {
     padding: 10px; 
     margin-bottom: 8px; 
     background-color: #ffffff;
@@ -48,13 +47,13 @@
     transition: background-color 0.3s, transform 0.2s;
 }
 
-#appSummary li:hover {
+.app-summary__list-item:hover {
     background-color: #f1f1f1;
     transform: translateY(-2px); 
 }
 
 /* Button Styles */
-#appSummary .btn {
+.app-summary__button {
     margin-top: 20px;
     display: block;
     width: 100%;
@@ -63,39 +62,34 @@
     transition: background-color 0.3s, transform 0.2s; 
 }
 
-#appSummary .btn-secondary {
+.app-summary__button--secondary {
     background-color: #6c757d;
-    border-color: #6c757d;
+    padding: 5px;
+    border-radius: 5px;
 }
 
-#appSummary .btn-secondary:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
-    transform: scale(1.05); 
-}
 
 @media (max-width: 576px) {
     body {
         padding: 10px;
     }
 
-    #appSummary h1 {
+    .app-summary__title {
         font-size: 2rem;
     }
 
-    #appSummary h3,
-    #appSummary h4 {
+    .app-summary__section-title,
+    .app-summary__section-title--h4 {
         font-size: 1.25rem;
     }
 
-    #appSummary li {
+    .app-summary__list-item {
         font-size: 0.9rem;
     }
 }
 /*Summary Page CSS: End*/
 
 /*Fridge Page CSS: Start*/
-
 #appFridge {
     margin: 10px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
@@ -179,7 +173,6 @@
 #appFridge .card {
     min-height: 150px;
 }
-
 
 /* Form */
 #appFridge .cardTitle {
@@ -314,7 +307,5 @@
     transition: transform 0.2s; 
     border-radius: 15px;
 }
-  
-
 /*Fridge Page CSS: End*/
 

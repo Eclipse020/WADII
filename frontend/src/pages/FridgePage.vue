@@ -9,7 +9,7 @@ import { defineComponent } from 'vue';
 import AddItem from '../components/Fridge/AddItem.vue';
 
 export default defineComponent({
-  name: 'AddItemPage',  
+  name: 'AddItemPage',
   components: {
     AddItem
   }
