@@ -157,7 +157,7 @@ export default {
 
           // Redirect or show a success message
           alert('Registration successful!');
-          this.$router.push('/')
+          this.$router.push('/profile')
         } catch (error) {
           console.error('Error registering user:', error);
           alert('Failed to register. Please try again.');
@@ -167,7 +167,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-
-</style>
