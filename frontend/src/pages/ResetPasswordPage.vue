@@ -3,9 +3,6 @@
     <div>
       <ResetPasswordComponent />
     </div>
-    <p class="mt-3">
-      Back to login page: <router-link to="/login">Login Page</router-link>.
-    </p>
   </template>
   
   <script>

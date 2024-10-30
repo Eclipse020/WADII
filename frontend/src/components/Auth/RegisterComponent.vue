@@ -169,58 +169,5 @@ export default {
 </script>
 
 <style scoped>
-.register__card {
-  max-width: 400px;
-  width: 100%;
-}
 
-.register__title {
-  font-weight: bold;
-  color: #42b983;
-}
-
-.register__form {
-  display: flex;
-  flex-direction: column;
-}
-
-.register__form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.register__label {
-  font-weight: 500;
-}
-
-.register__input:focus {
-  border-color: #42b983;
-  outline: none;
-}
-
-.register__toggle-btn {
-  padding: 0.5rem 1rem;
-}
-
-.register__error {
-  font-weight: bold;
-}
-
-.register__checkbox-label {
-  cursor: pointer;
-}
-
-.register__submit-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.register__login-link a {
-  color: #42b983;
-  text-decoration: none;
-}
-
-.register__login-link a:hover {
-  text-decoration: underline;
-}
 </style>
