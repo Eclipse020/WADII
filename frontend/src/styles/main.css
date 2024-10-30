@@ -25,4 +25,7 @@
 @import './components/auth/register.css';
 @import './components/auth/reset.css';
 
+/* Profile Settings component */
+@import './components/profile/profilesettings.css';
+
 
