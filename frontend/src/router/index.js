@@ -15,6 +15,7 @@ import LogoutComponent from '../components/Auth/LogoutComponent.vue';
 import RecipeList from '../components/Recipes/RecipeList.vue';
 import RecipeDetails from '../components/Recipes/RecipeDetails.vue';
 import CommunityPage from '../pages/CommunityPage.vue';
+import DashboardSummary from '../components/Dashboard/DashboardSummary.vue';
 
 // Define routes, grouped logically
 const routes = [
@@ -25,6 +26,7 @@ const routes = [
   { path: '/customize', name: 'Customize', component: CustomizePage, meta: { requiresAuth: true } },
   { path: '/mealPlanner', name: 'MealPlanner', component: MealPlannerPage, meta: { requiresAuth: true } },
   { path: '/community', name: 'Community', component: CommunityPage, meta: { requiresAuth: true } },
+  { path: '/dashboard', name: 'Dashboard', component: DashboardSummary, meta: { requiresAuth: true } },
   
   // Recipe routes
   { path: '/recipes', name: 'RecipeList', component: RecipeList, meta: { requiresAuth: true } },
