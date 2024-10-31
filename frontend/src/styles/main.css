@@ -19,4 +19,13 @@
 @import './components/mealplanner/recipetracker.css';
 @import './components/home/homepage.css';
 
+/* Auth components */
+@import './components/auth/login.css';
+@import './components/auth/logout.css';
+@import './components/auth/register.css';
+@import './components/auth/reset.css';
+
+/* Profile Settings component */
+@import './components/profile/profilesettings.css';
+
 

@@ -1,217 +1,169 @@
 <template>
-  <div class="container">
-    <h2>Register</h2>
-    <form @submit.prevent="register">
-      <!-- Email -->
-      <div class="form-group">
-        <label>Email: </label>
-        <input 
-        type="email" 
-        v-model="email"
-        placeholder="Email" 
-        class="form-control" 
-        required 
-        aria-label="Email"
-        />
-      </div>
+  <div class="register d-flex justify-content-center align-items-center min-vh-100 bg-light">
+    <div class="register__card card p-4 shadow-sm">
+      <h2 class="register__title card-title text-center mb-4">Register</h2>
+      <form class="register__form" @submit.prevent="handleSubmit">
+        <div class="register__form-group mb-3">
+          <label for="email" class="register__label form-label">Email:</label>
+          <input
+            id="email"
+            type="email"
+            v-model="formData.email"
+            class="register__input form-control"
+            placeholder="Email"
+            required
+            aria-label="Email"
+          />
+        </div>
 
-      <!-- Password -->
-      <div class="form-group">
-        <label>Password: </label>
-        <input
-          :type="passwordVisible ? 'text' : 'password'"
-          v-model="password"
-          placeholder="Password"
-          class="form-control"
-          required
-          aria-label="Password"
-        />
-      </div>
+        <div class="register__form-group mb-3">
+          <label for="displayName" class="register__label form-label">Display Name:</label>
+          <input
+            id="displayName"
+            type="text"
+            v-model="formData.displayName"
+            class="register__input form-control"
+            placeholder="Display Name"
+            aria-label="Display Name"
+          />
+        </div>
 
-      <!-- Confirm Password -->
-      <div class="form-group">
-        <label>Confirm Password: </label>
-        <input
-          :type="passwordVisible ? 'text' : 'password'"
-          v-model="confirmPassword"
-          placeholder="Confirm Password"
-          class="form-control"
-          required
-          aria-label="Confirm Password"
-        />
-      </div>
-      <!-- Show/Hide Password fields -->
-      <div>
-        <button type="button" class="btn btn-outline-secondary" @click="togglePasswordVisibility">
-            {{ passwordVisible ? 'Hide Passwords' : 'Show Passwords' }}
-          </button>
-      </div>
-      <!-- If password field don't match, show error -->
-      <div v-if="passwordError" class="text-danger mt-2">
-        Passwords do not match!
-      </div>
-      <!-- Receive notifications checkbox -->
-      <div class="form-group">
-        <label>Do you want to receive notifications?</label>
-        <label>
-          <input type="checkbox" v-model="notifications" /> Yes, I would like to receive notifications.
-        </label>
-        <!-- Register button -->
-      </div>
-      <button type="submit" class="btn btn-primary" :disabled="passwordsDontMatch">
-        Register
-      </button>
-    </form>
-    <p>Already have an account? <router-link to="/login">Login</router-link></p>
+
+        <div class="register__form-group mb-3">
+          <label for="password" class="register__label form-label">Password:</label>
+          <input
+            id="password"
+            :type="passwordVisible ? 'text' : 'password'"
+            v-model="formData.password"
+            class="register__input form-control"
+            placeholder="Password"
+            required
+            aria-label="Password"
+          />
+          <!-- Show password length error message -->
+          <div v-if="passwordLengthError" class="register__error alert alert-danger mt-2">
+            Password must be between 6 and 4096 characters.
+          </div>
+        </div>
+
+        <div class="register__form-group mb-3">
+          <label for="confirmPassword" class="register__label form-label">Confirm Password:</label>
+          <input
+            id="confirmPassword"
+            :type="passwordVisible ? 'text' : 'password'"
+            v-model="formData.confirmPassword"
+            class="register__input form-control"
+            placeholder="Confirm Password"
+            required
+            aria-label="Confirm Password"
+          />
+          <!-- Show password match error message -->
+          <div v-if="passwordMatchError" class="register__error alert alert-danger mt-2">
+            Passwords do not match.
+          </div>
+        </div>
+
+        <button 
+          type="button"
+          class="register__toggle-btn btn btn-outline-secondary mb-3"
+          @click="passwordVisible = !passwordVisible"
+        >
+          {{ passwordVisible ? 'Hide Passwords' : 'Show Passwords' }}
+        </button>
+
+        <div class="register__form-group form-check mb-3">
+          <div>
+            <input
+              type="checkbox"
+              id="notifications"
+              v-model="formData.notifications"
+              class="register__checkbox form-check-input"
+            />
+            <label for="notifications" class="register__checkbox-label form-check-label">
+              I would like to receive notifications.
+            </label>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="register__submit-btn btn btn-success w-100"
+          :disabled="passwordLengthError || passwordMatchError"
+        >
+          Register
+        </button>
+      </form>
+
+      <p class="register__login-link text-center mt-3">
+        Already have an account? <a href="/login">Login</a>
+      </p>
+    </div>
   </div>
 </template>
 
 <script>
+import { auth, db } from '@/services/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../../services/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export default {
+  name: 'RegisterForm',
   data() {
-    return {
+  return {
+    formData: {
       email: '',
       password: '',
-      notifications: false, // New data property for notifications
-      confirmPassword: '', // For password confirmation
-      passwordError: false,
-      passwordVisible: false, // To toggle password visibility
+      confirmPassword: '',
+      displayName: '', // New field for display name
+      notifications: false,
+    },
+    passwordVisible: false,
     };
   },
-  watch: {
-    // Watch for changes in the password and confirmPassword fields and check if they match
-    password() {
-      this.validatePasswords();
-    },
-    confirmPassword() {
-      this.validatePasswords();
-    },
-  },
   computed: {
-    passwordsDontMatch() {
-      return this.password !== this.confirmPassword;
+    passwordLengthError() {
+      const { password } = this.formData;
+      return password.length < 6 || password.length > 4096;
     },
+    passwordMatchError() {
+      const { password, confirmPassword } = this.formData;
+      return password && confirmPassword && password !== confirmPassword;
+    }
   },
   methods: {
-    togglePasswordVisibility() {
-      this.passwordVisible = !this.passwordVisible;
-    },
-    validatePasswords() {
-      // Directly update passwordError based on whether passwords match
-      this.passwordError = this.password !== this.confirmPassword;
-    },
-    async register() {
-      this.validatePasswords(); // Ensure passwords are validated before submitting
+    async handleSubmit() {
+      if (!this.passwordLengthError && !this.passwordMatchError) {
+        try {
+          // Create a new user with Firebase Auth
+          const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            this.formData.email,
+            this.formData.password
+          );
 
-      if (this.passwordError) {
-        return;
+          // Get the newly created user
+          const user = userCredential.user;
+
+          // Set the user data in Firestore
+          await setDoc(doc(db, 'users', user.uid), {
+            email: this.formData.email,
+            dietaryPreferences: [],
+            displayName: this.formData.displayName || '', // Add display name if applicable
+            notifications: this.formData.notifications,
+            photoURL: user.photoURL || '', // Add photoURL if needed
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+
+          // Redirect or show a success message
+          alert('Registration successful!');
+          this.$router.push('/profile')
+        } catch (error) {
+          console.error('Error registering user:', error);
+          alert('Failed to register. Please try again.');
+        }
       }
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
-        const user = userCredential.user;
-
-        // Save user profile in Firestore, including notifications preference
-        await setDoc(doc(db, 'users', user.uid), {
-          email: this.email,
-          displayName: this.email.split('@')[0], // Example to set display name
-          dietaryPreferences: [], // Default to empty array
-          notifications: this.notifications, // Save notification preference
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-
-        this.$router.push('/login');
-      } catch (error) {
-        console.error('Registration error:', error.message);
-      }
-    }
-  }
-};
+    },
+  },
+}
 </script>
-
-<style scoped>
-.text-danger {
-  color: red; /* You can adjust the color or add more styles */
-  font-weight: bold;
-  margin-top: 5px;
-}
-
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f8f9fa; /* Light background */
-}
-
-/* Style the login card similar to other components */
-.login-card {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
-}
-
-h2 {
-  font-weight: bold;
-  color: #42b983; /* Primary color */
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-input {
-  padding: 0.75rem;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  width: fit-content;
-}
-
-/* Custom button styles */
-.btn-custom {
-  background-color: #42b983; /* Primary theme color */
-  color: white;
-  border: none;
-  padding: 0.75rem;
-  font-size: 1rem;
-  border-radius: 4px;
-}
-
-.btn-custom:hover {
-  background-color: #3aa673;
-}
-
-/* Google login button outline style */
-.btn-outline-danger {
-  border-color: #3aa673;
-  color: white;
-}
-
-.btn-outline-danger:hover {
-  background-color: #3aa673;
-  color: white;
-}
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-.text-center {
-  text-align: center;
-}
-
-/* Media query for smaller screens */
-@media (max-width: 768px) {
-  .login-card {
-    padding: 1.5rem;
-  }
-}
-</style>

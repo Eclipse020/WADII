@@ -1,29 +1,60 @@
-<!-- src/components/LogoutComponent.vue -->
 <template>
-    <div class="logout-container">
-      <p>Logging out, please wait...</p>
+  <div class="logout">
+    <div class="logout__container">
+      <div class="logout__card">
+        <!-- Loading State -->
+        <div v-if="isLoading" class="logout__content">
+          <div class="logout__spinner"></div>
+          <p class="logout__message">Logging out, please wait...</p>
+        </div>
+
+        <!-- Error State -->
+        <div v-if="error" class="logout__content">
+          <div class="logout__alert logout__alert--error">
+            {{ error }}
+          </div>
+          <button @click="retryLogout" class="logout__button">
+            Try Again
+          </button>
+        </div>
+      </div>
     </div>
-  </template>
-  
-  <script>
-  import { auth } from '@/services/firebase'; // Import Firebase auth
-  
-  export default {
-    async created() {
+  </div>
+</template>
+
+<script>
+import { auth } from '@/services/firebase';
+
+export default {
+  data() {
+    return {
+      isLoading: true,
+      error: null
+    };
+  },
+  methods: {
+    async retryLogout() {
+      this.error = null;
+      this.isLoading = true;
+      await this.performLogout();
+    },
+    async performLogout() {
       try {
-        await auth.signOut(); // Sign out the user
-        this.$router.push('/login'); // Redirect to login page after logout
+        await auth.signOut();
+        this.$router.push('/login');
       } catch (error) {
         console.error('Logout failed:', error);
+        this.error = 'Failed to log out. Please try again.';
+        this.isLoading = false;
       }
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .logout-container {
-    text-align: center;
-    margin-top: 50px;
+    }
+  },
+  async created() {
+    await this.performLogout();
   }
-  </style>
-  
+};
+</script>
+
+<style scoped>
+
+</style>
