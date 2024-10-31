@@ -1,6 +1,6 @@
 /*Summary Page CSS: Start*/
 .app-summary {
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     background-color: #f8f9fa;
     color: #343a40;
     margin: 0;
@@ -93,15 +93,19 @@
 /*Fridge Page CSS: Start*/
 .app-fridge {
     margin: 10px;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .app-fridge__button--top,.app-fridge__button--top:disabled  {
-    font-weight: bold;
     background-color: #2d6b61;
     color: white;
     padding: 8px 10px;
     border-radius: 10px;
+}
+
+.app-fridge__button--top:hover {
+    background-color: #2d6b61;
+    color: white;
 }
 
 .app-fridge__header {
@@ -226,8 +230,9 @@
 
 .app-fridge__card-text {
     margin: 0;
-    font-size: 16px;
+    font-size: 13px;
     color: #555;
+    margin-bottom: 10px;
 }
 
 .app-fridge__card-btn {
@@ -255,7 +260,6 @@
 
 .appFridge__button--sort {
     margin-left: 10px;
-    font-weight: bold;
     outline: none;
     box-shadow: none;
     border: none;

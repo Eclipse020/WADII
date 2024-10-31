@@ -68,7 +68,7 @@
                             <h6 class="card-title">{{ item.name }}</h6>
                             <div class="card-info">
                                 <p class="app-fridge__card-text">Expiry Date: {{ item.expiryDate }}</p>
-                                <p class="app-fridge__card-text mb-0">Quantity: {{ item.quantity }}</p>
+                                <p class="app-fridge__card-text">Quantity: {{ item.quantity }}</p>
                             </div>
                             <div class="mt-auto d-flex flex-column">
                                 <button class="btn btn-secondary btn-sm mb-1 app-fridge__card-btn " @click="editItem(item)" :disabled="openAddCard">Edit</button>
