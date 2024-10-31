@@ -2,18 +2,19 @@
   <div class="dashboard">
     <div v-if="summary.expiringSoon > 0" class="notification-bar">
       <p class="notification-bar__message">
-        Note: You have {{ summary.expiringSoon }} item<span v-if="summary.expiringSoon > 1">s</span> expiring soon! Please check the fridge inventory.
+        Note: You have {{ summary.expiringSoon }} item<span v-if="summary.expiringSoon > 1">s</span> expiring soon!
+        Please check the fridge inventory.
+      </p>
+    </div>
+    <div v-else class="notification-bar">
+      <p class="notification-bar__message">
+        There are no items nearing expiration.
       </p>
     </div>
     <h2 class="dashboard__title">Your Fridge Dashboard</h2>
     <div class="dashboard__controls">
       <label for="chartSelector" class="dashboard__label">View Data:</label>
-      <select
-        id="chartSelector"
-        class="dashboard__selector"
-        v-model="selectedChart"
-        @change="renderChart"
-      >
+      <select id="chartSelector" class="dashboard__selector" v-model="selectedChart" @change="renderChart">
         <option value="items">Items by Category</option>
         <option value="usedItems">Used Items</option>
         <option value="expiredItems">Expired Items</option>
@@ -23,6 +24,7 @@
       <canvas v-if="selectedChart === 'items'" ref="itemsChart" class="dashboard__chart"></canvas>
       <canvas v-if="selectedChart === 'usedItems'" ref="usedItemsChart" class="dashboard__chart"></canvas>
       <canvas v-if="selectedChart === 'expiredItems'" ref="expiredItemsChart" class="dashboard__chart"></canvas>
+      <br><p class="mt-2 notification-bar__message">{{message}}</p>
     </div>
   </div>
 </template>
@@ -43,10 +45,10 @@ export default {
         totalItems: 0,
         expiringSoon: 0,
         categories: {},
-        newlyAdded: [],
-        usedItems: 0, // Renamed to track used items
-        expiredItems: [],
+        usedItems: 0,
+        expiredItemsCount: 0,
       },
+      message: '',
       selectedChart: "items",
     };
   },
@@ -64,6 +66,7 @@ export default {
           throw new Error("User not authenticated");
         }
 
+        // Fetch all items from the main items collection
         const itemsSnapshot = await getDocs(
           collection(db, `users/${this.currentUserId}/items`)
         );
@@ -73,24 +76,50 @@ export default {
         }));
 
         this.summary.totalItems = items.length;
+
+        // Count items expiring soon (within the next 3 days)
         this.summary.expiringSoon = items.filter((item) => {
           const expiryDate = new Date(item.expiryDate);
           return expiryDate > today && expiryDate <= threeDaysFromNow;
         }).length;
 
-        // Count used items
-        this.summary.usedItems = items.filter(item => item.used).length; // Assume `used` is a field indicating if an item has been used
+        // Fetch expired items from the expiredItemsWOUsing collection
+        const expiredItemsSnapshot = await getDocs(
+          collection(db, `users/${this.currentUserId}/expiredItemsWOUsing`)
+        );
+        const expiredItems = expiredItemsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
+        // Count expired items
+        this.summary.expiredItemsCount = expiredItems.length; // Store expired items count
+
+        // Fetch used items from the deletedItems collection
+        const deletedItemsSnapshot = await getDocs(
+          collection(db, `users/${this.currentUserId}/deletedItems`)
+        );
+        const deletedItems = deletedItemsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Count used items
+        this.summary.usedItems = deletedItems.length; // Count used items
+
+        // Count categories from the main items collection
         this.summary.categories = items.reduce((acc, item) => {
           acc[item.category] = (acc[item.category] || 0) + 1;
           return acc;
         }, {});
 
+        // Render chart or perform other UI updates
         this.renderChart();
       } catch (error) {
         console.error("Error fetching summary data: ", error);
       }
     },
+
     renderChart() {
       let canvas;
       switch (this.selectedChart) {
@@ -153,7 +182,7 @@ export default {
               datasets: [
                 {
                   label: "Count",
-                  data: [this.summary.usedItems, this.summary.totalItems - this.summary.usedItems],
+                  data: [this.summary.usedItems, this.summary.totalItems],
                   backgroundColor: this.getChartColors(2),
                 },
               ],
@@ -165,17 +194,22 @@ export default {
           this.chartInstance = new Chart(ctx, {
             type: "doughnut",
             data: {
-              labels: ["Total Items", "Expiring Soon"],
+              labels: ["Expired Items", "Used Items"],
               datasets: [
                 {
                   label: "Count",
-                  data: [this.summary.totalItems - this.summary.expiringSoon, this.summary.expiringSoon],
+                  data: [this.summary.expiredItemsCount, this.summary.usedItems],
                   backgroundColor: this.getChartColors(2),
                 },
               ],
             },
             options: chartOptions,
           });
+          if (this.summary.expiredItemsCount > this.summary.usedItems) {
+            this.message = "🌟 Tip: It looks like you have some items that went unused. Consider planning your meals to reduce waste and enjoy more delicious meals!";
+          } else {
+            this.message = "Awesome! You're doing a fantastic job using more items than you're wasting!";
+          }
           break;
       }
     },
@@ -197,13 +231,14 @@ export default {
 
 <style scoped>
 .dashboard {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 1.5rem auto;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 1.5rem auto;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
+    height: 620px; 
 }
 
 .dashboard:hover {
