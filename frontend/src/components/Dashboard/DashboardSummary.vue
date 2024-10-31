@@ -1,12 +1,14 @@
 <template>
   <div class="dashboard">
     <div v-if="summary.expiringSoon > 0" class="notification-bar">
+      <i class="fas fa-exclamation-circle notification-icon"></i>
       <p class="notification-bar__message">
         Note: You have {{ summary.expiringSoon }} item<span v-if="summary.expiringSoon > 1">s</span> expiring soon!
         Please check the fridge inventory.
       </p>
     </div>
     <div v-else class="notification-bar">
+      <i class="fas fa-check-circle notification-icon"></i>
       <p class="notification-bar__message">
         There are no items nearing expiration.
       </p>
@@ -15,14 +17,21 @@
     <div class="dashboard__controls">
       <label for="chartSelector" class="dashboard__label">View Data:</label>
       <select id="chartSelector" class="dashboard__selector" v-model="selectedChart" @change="renderChart">
-        <option value="items">Items by Category</option>
-        <option value="usedItems">Used Items</option>
-        <option value="expiredItems">Expired Items</option>
+        <option value="items">Fridge Items</option>
+        <option value="expiredItems">Items Insight</option>
+      </select>
+      <label for="monthSelector" class="dashboard__label">Select Month:</label>
+      <select :disabled= "selectedChart === 'items'"
+        id="monthSelector" 
+        class="dashboard__selector" 
+        v-model="selectedMonth" 
+        @change="fetchSummaryData"
+      >
+        <option v-for="(month, index) in monthNames" :key="index" :value="index" :disabled="isMonthInFuture(index)">{{ month }}</option>
       </select>
     </div>
     <div class="dashboard__chart-container">
       <canvas v-if="selectedChart === 'items'" ref="itemsChart" class="dashboard__chart"></canvas>
-      <canvas v-if="selectedChart === 'usedItems'" ref="usedItemsChart" class="dashboard__chart"></canvas>
       <canvas v-if="selectedChart === 'expiredItems'" ref="expiredItemsChart" class="dashboard__chart"></canvas>
       <br><p class="mt-2 notification-bar__message">{{message}}</p>
     </div>
@@ -50,13 +59,25 @@ export default {
       },
       message: '',
       selectedChart: "items",
+      selectedMonth: new Date().getMonth(), // Default to current month
+      monthNames: [
+        "January", "February", "March", "April", "May", "June", 
+        "July", "August", "September", "October", "November", "December"
+      ],
+      hasDataForMonth: false,
     };
   },
   methods: {
+    isMonthInFuture(monthIndex) {
+      const currentMonth = new Date().getMonth(); // Get the current month (0-11)
+      // Compare the index with the current month to see if it's in the future
+      return monthIndex > currentMonth;
+    },
+
     async fetchSummaryData() {
       const today = new Date();
-      const threeDaysFromNow = new Date(today);
-      threeDaysFromNow.setDate(today.getDate() + 3);
+      const startDate = new Date(today.getFullYear(), this.selectedMonth, 1);
+      const endDate = new Date(today.getFullYear(), this.selectedMonth + 1, 0); // Last day of selected month
 
       try {
         const user = auth.currentUser;
@@ -78,6 +99,8 @@ export default {
         this.summary.totalItems = items.length;
 
         // Count items expiring soon (within the next 3 days)
+        const threeDaysFromNow = new Date(today);
+        threeDaysFromNow.setDate(today.getDate() + 3);
         this.summary.expiringSoon = items.filter((item) => {
           const expiryDate = new Date(item.expiryDate);
           return expiryDate > today && expiryDate <= threeDaysFromNow;
@@ -92,8 +115,11 @@ export default {
           ...doc.data(),
         }));
 
-        // Count expired items
-        this.summary.expiredItemsCount = expiredItems.length; // Store expired items count
+        // Count expired items based on selected month
+        this.summary.expiredItemsCount = expiredItems.filter(item => {
+          const expiryDate = new Date(item.expiryDate);
+          return expiryDate >= startDate && expiryDate <= endDate;
+        }).length;
 
         // Fetch used items from the deletedItems collection
         const deletedItemsSnapshot = await getDocs(
@@ -104,10 +130,13 @@ export default {
           ...doc.data(),
         }));
 
-        // Count used items
-        this.summary.usedItems = deletedItems.length; // Count used items
+        // Count used items based on selected month
+        this.summary.usedItems = deletedItems.filter(item => {
+          const deleteDate = new Date(item.deletedAt);
+          return deleteDate >= startDate && deleteDate <= endDate;
+        }).length;
 
-        // Count categories from the main items collection
+        // Count categories from the filtered items
         this.summary.categories = items.reduce((acc, item) => {
           acc[item.category] = (acc[item.category] || 0) + 1;
           return acc;
@@ -174,22 +203,6 @@ export default {
             options: chartOptions,
           });
           break;
-        case "usedItems":
-          this.chartInstance = new Chart(ctx, {
-            type: "doughnut",
-            data: {
-              labels: ["Used Items", "Remaining Items"],
-              datasets: [
-                {
-                  label: "Count",
-                  data: [this.summary.usedItems, this.summary.totalItems],
-                  backgroundColor: this.getChartColors(2),
-                },
-              ],
-            },
-            options: chartOptions,
-          });
-          break;
         case "expiredItems":
           this.chartInstance = new Chart(ctx, {
             type: "doughnut",
@@ -205,103 +218,111 @@ export default {
             },
             options: chartOptions,
           });
-          if (this.summary.expiredItemsCount > this.summary.usedItems) {
-            this.message = "🌟 Tip: It looks like you have some items that went unused. Consider planning your meals to reduce waste and enjoy more delicious meals!";
-          } else {
-            this.message = "Awesome! You're doing a fantastic job using more items than you're wasting!";
-          }
+          break;
+        default:
+          console.warn("Unknown chart type:", this.selectedChart);
           break;
       }
+
+      // Update motivational message based on the ratio of used to expired items
+      this.updateMotivationalMessage();
     },
-    getChartColors(count) {
+
+    getChartColors(numColors) {
       const colors = [];
-      for (let i = 0; i < count; i++) {
-        colors.push(
-          `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.6)`
-        );
+      const baseColor = [0, 51, 102]; // A darker base color
+      const colorStep = Math.floor(255 / numColors); // Adjust step based on number of colors
+
+      for (let i = 0; i < numColors; i++) {
+        const r = Math.max(0, baseColor[0] + i * colorStep);
+        const g = Math.max(0, baseColor[1] + i * colorStep);
+        const b = Math.max(0, baseColor[2] + i * colorStep);
+        colors.push(`rgba(${r}, ${g}, ${b}, 0.8)`); // Set opacity to 0.8 for a slightly transparent effect
       }
+      
       return colors;
     },
+
+    updateMotivationalMessage() {
+      if (this.summary.expiredItemsCount > this.summary.usedItems) {
+        this.message = "Let's reduce waste! Remember to use items before they expire!";
+      } else {
+        this.message = "Great job! You're using items effectively!";
+      }
+    },
   },
+
   mounted() {
-    this.fetchSummaryData();
+    this.fetchSummaryData(); // Fetch summary data when the component mounts
   },
+
+  computed: {
+    isDisabled() {
+      return this.selectedChart === 'items'; // Disable if selectedChart is 'items'
+    },
+  }
 };
 </script>
 
 <style scoped>
 .dashboard {
-    padding: 2rem;
-    max-width: 800px;
-    margin: 1.5rem auto;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease;
-    height: 620px; 
-}
-
-.dashboard:hover {
-  transform: translateY(-5px);
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .notification-bar {
-  background-color: #ffebcc;
-  color: #d97a00;
-  padding: 1rem;
-  text-align: center;
-  font-weight: 600;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  background-color: #e9f7f9;
 }
 
 .notification-bar__message {
-  margin: 0;
-  font-size: 1rem;
+  margin-left: 10px;
+  margin-top: 13px;
+  font-size: 16px;
+}
+
+.notification-icon {
+  font-size: 20px;
+  color: #007bff;
 }
 
 .dashboard__title {
-  font-size: 2rem;
-  color: #4a4a4a;
-  text-align: center;
-  font-weight: 600;
-  margin-bottom: 2rem;
+  font-size: 24px;
+  margin-bottom: 20px;
 }
 
 .dashboard__controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.5rem;
+  display: block;
+  margin-bottom: 20px;
 }
 
 .dashboard__label {
-  font-size: 1.1rem;
-  color: #777;
-  margin-right: 0.75rem;
+  font-weight: bold;
 }
 
 .dashboard__selector {
-  width: 220px;
-  padding: 0.6rem;
-  font-size: 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  background-color: #f9f9f9;
-  color: #333;
-  transition: background-color 0.2s, box-shadow 0.2s;
+  padding: 5px 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  transition: border-color 0.3s;
 }
 
-.dashboard__selector:focus,
 .dashboard__selector:hover {
-  background-color: #ffffff;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
 }
 
 .dashboard__chart-container {
   position: relative;
-  height: 300px;
+  width: 100%;
+  height: 400px; /* Fixed height for charts */
 }
 
 .dashboard__chart {
