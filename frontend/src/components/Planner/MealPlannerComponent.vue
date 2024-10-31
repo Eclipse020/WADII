@@ -1,53 +1,52 @@
 <template>
-  <div class="meal-planner">
-    <div class="left-column">
+  <div class="planner">
+    <div class="planner__column planner__column--left">
       <RecipeTracker ref="recipeTracker" />
     </div>
 
-    <div class="center-column">
-      <h1>Meal Planner for {{ formattedMonthYear }}</h1>
+    <div class="planner__column planner__column--center">
+      <h1 class="planner__title">Meal Planner for {{ formattedMonthYear }}</h1>
 
-      <div class="planner-controls">
-        <button class="nav-button prev-button" @click="prevMonth">Previous</button>
+      <div class="controls">
+        <button class="nav-button" @click="prevMonth">Previous</button>
         
-        <div class="center-controls">
+        <div class="controls__center">
           <p v-if="selectedDay">Selected Day: {{ selectedDayText }}</p>
         </div>
 
-        <button class="nav-button next-button" @click="nextMonth">Next</button>
+        <button class="nav-button" @click="nextMonth">Next</button>
       </div>
 
-      <div class="calendar-wrapper">
-        <table class="calendar-table">
+      <div class="calendar">
+        <table class="calendar__table">
           <thead>
             <tr>
-              <th>Wk</th>
-              <th v-for="day in weekDays" :key="day">{{ day }}</th>
+              <th class="calendar__header">Wk</th>
+              <th v-for="day in weekDays" :key="day" class="calendar__header">{{ day }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(week, weekIndex) in calendar" :key="weekIndex">
-              <td class="week-number">{{ weekIndex + 1 }}</td>
+              <td class="calendar__week">{{ weekIndex + 1 }}</td>
               <td
                 v-for="(day, dayIndex) in week"
                 :key="dayIndex"
                 :class="[
-                  'calendar-cell', 
+                  'calendar__cell', 
                   { 
-                    selected: day === selectedDay, 
-                    today: isToday(day), 
-                    'clicked': clickedDay === day,
-                    'past-date': isPastDate(day)
+                    'calendar__cell--selected': day === selectedDay, 
+                    'calendar__cell--today': isToday(day), 
+                    'calendar__cell--past': isPastDate(day)
                   }
                 ]"
                 @click="handleDayClick(day)"
               >
-                <span v-if="day" class="date-number">{{ day }}</span>
-                <div v-if="day && mealPlan[day]" class="meal-container">
+                <span v-if="day" class="calendar__date">{{ day }}</span>
+                <div v-if="day && mealPlan[day]" class="calendar__meal-container">
                   <div 
                     v-for="(meal, index) in mealPlan[day]" 
                     :key="meal.uri"
-                    class="meal-item"
+                    class="calendar__meal"
                     @click.stop="openRecipeDetails(meal, day, index)"
                     :title="meal.label"
                   >
@@ -61,7 +60,7 @@
       </div>
     </div>
 
-    <div class="right-column">
+    <div class="planner__column planner__column--right">
       <ShoppingList 
         :ingredients="shoppingList" 
         @update="updateShoppingList" 
@@ -537,3 +536,4 @@ export default {
   },
 };
 </script>
+

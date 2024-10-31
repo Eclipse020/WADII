@@ -1,35 +1,46 @@
-/* Planner Controls */
-.planner-controls {
-  margin-bottom: 5px;
+/* Block: controls */
+.controls {
   display: grid;
   grid-template-columns: 120px 1fr 120px;
   align-items: center;
   gap: 10px;
-  padding: 0 20px;
-  min-height: 40px;
-  position: sticky;
-  top: 0;
-  /* background: white; */
-  z-index: 1;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
 }
 
-.center-controls {
+.controls__center {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
 }
 
-.button-group {
+.controls__group {
   display: flex;
   gap: 10px;
   justify-content: center;
   margin-top: 5px;
 }
 
+.controls .nav-button {
+  width: 100%;
+  height: 36px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.controls .nav-button:hover {
+  background-color: var(--primary-dark);
+}
+
 @media (max-width: 768px) {
-  .planner-controls {
+  .controls {
     grid-template-columns: 80px 1fr 80px;
-    padding: 0 10px;
+    padding: 10px;
   }
 }

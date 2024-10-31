@@ -1,5 +1,5 @@
-/* MealPlanner Component Styles */
-.meal-planner {
+/* Block: planner */
+.planner {
   font-family: 'Arial', sans-serif;
   max-width: 1600px;
   margin: 0 auto;
@@ -11,46 +11,59 @@
   background-color: var(--background-light);
 }
 
-.left-column {
+.planner__column {
   min-height: 100px;
+}
+
+.planner__column--left {
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
 }
 
-.center-column {
+.planner__column--center {
   width: 100%;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.right-column {
-  /* padding: 20px 0; */
+.planner__column--right {
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
 }
 
-.past-day {
-  background-color: #e0e0e0; /* Gray out past days */
-  color: #999; /* Dim the text color for past days */
+.planner__title {
+  margin: 0;
+  padding: 10px 0;
+  color: var(--primary-color);
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1px solid #eee;
 }
 
 @media (max-width: 1200px) {
-  .meal-planner {
+  .planner {
     grid-template-columns: 1fr;
     gap: 30px;
     padding: 15px;
   }
 
-  .left-column {
+  .planner__column--left {
     display: none;
   }
 
-  .center-column {
+  .planner__column--center {
     order: 1;
   }
 
-  .right-column {
+  .planner__column--right {
     order: 2;
     justify-content: center;
   }

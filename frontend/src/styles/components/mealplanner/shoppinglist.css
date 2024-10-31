@@ -1,4 +1,4 @@
-/* Shopping List Styles */
+/* Shopping List Block */
 .shopping-list {
   background-color: white;
   border-radius: 8px;
@@ -6,41 +6,19 @@
   border: 1px solid var(--border-color);
   padding: 1.25rem;
   max-width: 400px;
-  /* Remove margin: 0 auto to let grid handle alignment */
   font-family: 'Arial', sans-serif;
   color: #004d40;
   font-size: 20px;
 }
 
-.shopping-list h3 {
+.shopping-list__title {
   font-size: 20px;
   margin-bottom: 15px;
   color: #004d40;
 }
 
-/* List item styles */
-.shopping-list .list-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  margin-bottom: 4px;
-  background-color: var(--background-light);
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
-  font-size: 13px;
-  width: calc(100% - 24px);
-}
-
-/* Maintain hover effect */
-.shopping-list .list-item:hover {
-  background-color: var(--accent-light);
-  transform: translateX(2px);
-}
-
-/* Input group styles */
-.shopping-list .input-group {
+/* Input Group */
+.shopping-list__input-group {
   display: flex;
   gap: 6px;
   margin-top: 0;
@@ -51,8 +29,7 @@
   border-top: 1px solid var(--border-color);
 }
 
-/* Form control styles */
-.shopping-list .form-control {
+.shopping-list__input {
   flex: 1;
   padding: 8px 10px;
   border: 1px solid var(--border-color);
@@ -61,50 +38,141 @@
   transition: all 0.2s ease;
 }
 
-/* Focus effect */
-.shopping-list .form-control:focus {
+.shopping-list__input:focus {
   border-color: var(--accent-border);
   outline: none;
   box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.2);
 }
 
-/* Ingredient list styles */
-.ingredient-list {
+/* Ingredient List */
+.shopping-list__ingredients {
   list-style: none;
   padding: 0;
   margin-top: 1rem;
 }
 
-/* Standardizing remove button size */
-.btn-danger {
+.shopping-list__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 8px;
+  margin-bottom: 8px;
+  background-color: var(--background-light);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  font-size: 13px;
+}
+
+.shopping-list__item:hover {
+  background-color: var(--accent-light);
+  transform: translateX(2px);
+}
+
+/* Buttons */
+.shopping-list__button {
   font-size: 13px;
   height: auto;
   border: none;
 }
 
-/* Clear All button styles */
-.btn-warning {
-  font-size: 13px;
-  height: auto;
-  border: none;
+.shopping-list__button--remove {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.shopping-list__button--clear {
   width: 100%;
-  background-color: #F6E69B;
-  color: #333;
+  background-color: #00796b;;
+  color: white;
 }
 
+.shopping-list__button-group {
+  display: flex;
+  gap: 4px;
+}
+
+.shopping-list__button--edit {
+  background-color: var(--accent-color, #4CAF50);
+  color: white;
+}
+
+.shopping-list__button--save {
+  background-color: var(--success-color, #4CAF50);
+  color: white;
+}
+
+.shopping-list__button--cancel {
+  background-color: var(--secondary-color, #808080);
+  color: white;
+}
+
+.shopping-list__button--confirm {
+  background-color: var(--danger-color, #dc3545);
+  color: white;
+}
+
+.shopping-list__input--edit {
+  flex: 1;
+  margin-right: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+/* Modal styles */
+.shopping-list__modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.shopping-list__modal-content {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+}
+
+.shopping-list__modal-title {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--text-color, #333);
+}
+
+.shopping-list__modal-text {
+  margin-bottom: 1.5rem;
+  color: var(--text-color, #333);
+}
+
+.shopping-list__modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Media Queries */
 @media (max-width: 768px) {
   .shopping-list {
     padding: 1rem;
   }
 
-  .shopping-list .list-item {
+  .shopping-list__item {
     padding: 6px 10px;
     font-size: 12px;
   }
 }
 
 @media (max-width: 480px) {
-  .shopping-list .list-item {
+  .shopping-list__item {
     padding: 5px 8px;
   }
 }
+

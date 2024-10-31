@@ -2,21 +2,16 @@
 @import './global/colors.css';
 @import './global/typography.css';
 
-/* Base Components */
-@import './components/buttons.css';
-@import './components/card.css';
-
 /* Meal Planner Components */
 @import './components/mealplanner/plannercontrols.css';
 @import './components/mealplanner/calendar.css';
 @import './components/mealplanner/today.css';
 @import './components/mealplanner/mealplanner.css';
-@import './components/mealplanner/mealcontainer.css';
 @import './components/mealplanner/shoppinglist.css';
-@import './components/mealplanner/modal.css';
-@import './components/mealplanner/ingredientlist.css';
 @import './components/mealplanner/DayPlanPopup.css';
 @import './components/mealplanner/recipetracker.css';
+@import './components/mealplanner/RecipeDetailsModal.css';
+@import './components/mealplanner/AddRecipeModal.css';
 @import './components/home/homepage.css';
 
 /* Auth components */
