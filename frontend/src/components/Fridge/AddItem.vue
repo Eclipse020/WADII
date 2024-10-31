@@ -100,7 +100,7 @@
 <script>
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { onSnapshot, collection, getDoc, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { getDocs, collection, getDoc, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/components/fridge/fridge.css';
@@ -167,25 +167,24 @@ export default {
       if (this.currentUserId) {
         try {
           const itemsCollection = collection(db, `users/${this.currentUserId}/items`);
+          const querySnapshot = await getDocs(itemsCollection); // Fetch items once
 
-          // Listen for real-time updates
-          onSnapshot(itemsCollection, (querySnapshot) => {
-            this.items = []; // Clear the current items
-            querySnapshot.forEach((doc) => {
-              const itemData = { id: doc.id, ...doc.data() };
-              const expiryDate = new Date(itemData.expiryDate);
-              const daysUntilExpiry = (expiryDate - today) / (1000 * 60 * 60 * 24);
-              itemData.isExpiringSoon = daysUntilExpiry <= 3; // Adjust threshold as needed
+          this.items = []; // Clear the current items
+          querySnapshot.forEach((doc) => {
+            const itemData = { id: doc.id, ...doc.data() };
+            const expiryDate = new Date(itemData.expiryDate);
+            const daysUntilExpiry = (expiryDate - today) / (1000 * 60 * 60 * 24);
+            itemData.isExpiringSoon = daysUntilExpiry <= 3; // Adjust threshold as needed
 
-              this.items.push(itemData);
-            });
-            this.sortItems('name'); // Call sort after updating items
+            this.items.push(itemData);
           });
+          this.sortItems('name'); // Call sort after updating items
         } catch (error) {
           console.error("Error fetching items: ", error);
         }
       }
     },
+
     //Get Database: End
 
     //Sort Items: Start
