@@ -17,9 +17,9 @@
 
 .app-summary__section-title {
     margin: 20px 0 10px;
-    border-bottom: 2px solid #28a745; 
-    padding-bottom: 5px; 
-    font-weight: bold; 
+    border-bottom: 2px solid #28a745;
+    padding-bottom: 5px;
+    font-weight: bold;
 }
 
 .app-summary__section-title--h3 {
@@ -29,7 +29,7 @@
 
 .app-summary__section-title--h4 {
     font-size: 1.5rem;
-    color: #495057; 
+    color: #495057;
 }
 
 /* List Styles */
@@ -39,17 +39,17 @@
 }
 
 .app-summary__list-item {
-    padding: 10px; 
-    margin-bottom: 8px; 
+    padding: 10px;
+    margin-bottom: 8px;
     background-color: #ffffff;
-    border-radius: 8px; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-summary__list-item:hover {
     background-color: #f1f1f1;
-    transform: translateY(-2px); 
+    transform: translateY(-2px);
 }
 
 /* Button Styles */
@@ -59,7 +59,8 @@
     width: 100%;
     color: #fff;
     font-weight: bold;
-    transition: background-color 0.3s, transform 0.2s; 
+    transition: background-color 0.3s, transform 0.2s;
+    border: none;
 }
 
 .app-summary__button--secondary {
@@ -67,7 +68,6 @@
     padding: 5px;
     border-radius: 5px;
 }
-
 
 @media (max-width: 576px) {
     body {
@@ -87,15 +87,16 @@
         font-size: 0.9rem;
     }
 }
+
 /*Summary Page CSS: End*/
 
 /*Fridge Page CSS: Start*/
-#appFridge {
+.app-fridge {
     margin: 10px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
-#appFridge .topButtons{
+.app-fridge__button--top,.app-fridge__button--top:disabled  {
     font-weight: bold;
     background-color: #2d6b61;
     color: white;
@@ -103,93 +104,27 @@
     border-radius: 10px;
 }
 
-
-#appFridge header {
+.app-fridge__header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#appFridge header p {
-    white-space: nowrap;
-    margin: 0;
-}
-
-#appFridge header div {
-    display: flex;
-}
-
-#appFridge header button {
-    white-space: nowrap;
-    margin: 0;
-    margin-left: 10px;
-}
-
-/* Cards */
-#appFridge .filterCard {
-    width: 100%;
-    max-width: 220px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    background-color: #fff;
-    transition: transform 0.3s;
-}
-
-#appFridge .filterCard:hover {
-    transform: translateY(-4px);
-}
-
-#appFridge .expiring-soon {
-    border: 2px solid red;
-}
-
-#appFridge .card-body {
-    display: flex;
-    flex-direction: column;
-    font-size: 18px;
-    padding: 15px;
-    color: #333;
-    flex-grow: 1;
-}
-
-#appFridge .card-info {
-    flex-grow: 1;
-    margin-bottom: 10px;
-}
-
-#appFridge .card-text {
-    margin: 0;
-    font-size: 16px;
-    color: #555;
-}
-
-#appFridge .cardBtn {
-    max-width: 190px;
-}
-
-#appFridge .card {
-    min-height: 150px;
+    justify-content: end;
 }
 
 /* Form */
-#appFridge .cardTitle {
+.app-fridge__card-title {
     display: flex;
     justify-content: space-between;
     margin-left: 5px;
 }
 
-#appFridge #btnClose {
+.app-fridge__button--close {
     font-weight: bold;
 }
 
-#appFridge h5 {
+.app-fridge__title {
     padding-top: 15px;
 }
 
-#appFridge .addCard {
+.app-fridge__add-card {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -201,24 +136,33 @@
     padding: 30px;
     z-index: 1000;
     border-radius: 15px;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
-.addCard label {
+.mb-3 {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.app-fridge__add-card label {
+    display: block; 
+    margin-bottom: 0.5rem; 
     font-size: 15px;
-    margin-left: 2px;
+    padding-left: 2px;
 }
 
-.addCard .form-control {
+.app-fridge__add-card .form-control,
+.app-fridge__add-card .form-select {
     font-size: 15px;
 }
 
-#appFridge .addCard,
-.card-body {
+
+.app-fridge__add-card,
+.app-fridge__card-body {
     text-align: left;
 }
 
-#appFridge .btnClose {
+.app-fridge__button--close {
     background-color: #f5f5f5;
     border: none;
     padding: 8px 12px;
@@ -226,11 +170,11 @@
     transition: background-color 0.3s;
 }
 
-#appFridge .btnClose:hover {
+.app-fridge__button--close:hover {
     background-color: #ddd;
 }
 
-#appFridge #btnAdd {
+.app-fridge__button--add {
     background-color: #4CAF50;
     color: #fff;
     border: none;
@@ -241,11 +185,11 @@
     transition: background-color 0.3s;
 }
 
-#appFridge #btnAdd:hover {
+.app-fridge__button--add:hover {
     background-color: #45a049;
 }
 
-#appFridge .errorMessage {
+.app-fridge__error-message {
     color: red;
     font-weight: bold;
     margin-bottom: 10px;
@@ -253,20 +197,63 @@
     text-align: center;
 }
 
+/* Cards */
+.app-fridge__filter-card {
+    width: 100%;
+    max-width: 220px;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #fff;
+    transition: transform 0.3s;
+    text-align: left;
+}
+
+.app-fridge__filter-card:hover {
+    transform: translateY(-4px);
+}
+
+.app-fridge__expiring-soon {
+    border: 2px solid red;
+}
+
+.app-fridge__card-info {
+    flex-grow: 1;
+    margin-bottom: 10px;
+}
+
+.app-fridge__card-text {
+    margin: 0;
+    font-size: 16px;
+    color: #555;
+}
+
+.app-fridge__card-btn {
+    margin-top: 5px;
+    max-width: 190px;
+}
+
+.app-fridge__card {
+    min-height: 150px;
+}
+
+
 /* Sort Button */
-#appFridge .category-container {
+.appFridge__category-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 10px 0;
 }
 
-#appFridge #sortButton {
+.appFridge__sort-button {
     display: flex;
     outline: none;
 }
 
-#appFridge .btn2 {
+.appFridge__button--sort {
     margin-left: 10px;
     font-weight: bold;
     outline: none;
@@ -274,13 +261,13 @@
     border: none;
 }
 
-#appFridge .btn:disabled {
+.appFridge__button--sort:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
 /* Align labels at the top */
-#appFridge .mb-3 {
+.appFridge__form-group {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -288,24 +275,24 @@
 
 /*Categorize items*/
 
-#appFridge .category-title {
-    display: inline-block; 
+.appFridge__category-title {
+    display: inline-block;
     padding: 2px 5px;
-    transition: background-color 0.3s; 
-  }
-  
-#appFridge .category-title:hover {
-    cursor: pointer; 
-  }
+    transition: background-color 0.3s;
+}
 
-#appFridge .categoryHeader {
-    margin: 20px 0; 
-    padding: 10px 15px; 
-    font-size: 1.2rem; 
-    color: #333; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-    transition: transform 0.2s; 
+.appFridge__category-title:hover {
+    cursor: pointer;
+}
+
+.appFridge__category-header {
+    margin: 20px 0;
+    padding: 10px 15px;
+    font-size: 1.2rem;
+    color: #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
     border-radius: 15px;
 }
-/*Fridge Page CSS: End*/
 
+/*Fridge Page CSS: End*/
