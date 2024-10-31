@@ -23,7 +23,7 @@
                 <form @submit.prevent="isEditing ? saveEdit() : addItem()">
                   <div class="mb-3">
                     <label for="itemName">Name</label>
-                    <input v-model="itemName" class="form-control" type="text" id="itemName" placeholder="Insert Name" required />
+                    <input v-model="itemName" class="form-control" type="text" id="itemName" maxlength="20" placeholder="Insert Name" required />
                   </div>
                   <div class="mb-3">
                     <label for="category">Category</label>
