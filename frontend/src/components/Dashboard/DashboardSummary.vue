@@ -1,72 +1,276 @@
 <template>
-    <div class="summary">
-      <h1>Your Dashboard</h1>
-      <section class="fridge-contents">
-        <h2>Fridge Contents</h2>
-        <ul>
-          <li v-for="item in fridgeContents" :key="item.id">{{ item.name }}</li>
-        </ul>
-      </section>
-      <section class="recipe-recommendations">
-        <h2>Recommended Recipes</h2>
-        <ul>
-          <li v-for="recipe in recommendedRecipes" :key="recipe.uri">
-            {{ recipe.label }}
-            <button @click="viewDetails(recipe)">View Details</button>
-          </li>
-        </ul>
-      </section>
+  <div class="dashboard">
+    <div v-if="summary.expiringSoon > 0" class="notification-bar">
+      <p class="notification-bar__message">
+        Note: You have {{ summary.expiringSoon }} item<span v-if="summary.expiringSoon > 1">s</span> expiring soon! Please check the fridge inventory.
+      </p>
     </div>
-  </template>
-  
-  <script>
-  import { fetchFridgeContents, fetchRecommendedRecipes } from '../../services/api';
-  
-  export default {
-    data() {
-      return {
-        fridgeContents: [],
-        recommendedRecipes: [],
+    <h2 class="dashboard__title">Your Fridge Dashboard</h2>
+    <div class="dashboard__controls">
+      <label for="chartSelector" class="dashboard__label">View Data:</label>
+      <select
+        id="chartSelector"
+        class="dashboard__selector"
+        v-model="selectedChart"
+        @change="renderChart"
+      >
+        <option value="items">Items by Category</option>
+        <option value="usedItems">Used Items</option>
+        <option value="expiredItems">Expired Items</option>
+      </select>
+    </div>
+    <div class="dashboard__chart-container">
+      <canvas v-if="selectedChart === 'items'" ref="itemsChart" class="dashboard__chart"></canvas>
+      <canvas v-if="selectedChart === 'usedItems'" ref="usedItemsChart" class="dashboard__chart"></canvas>
+      <canvas v-if="selectedChart === 'expiredItems'" ref="expiredItemsChart" class="dashboard__chart"></canvas>
+    </div>
+  </div>
+</template>
+
+<script>
+import { db, auth } from "../../services/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { Chart, registerables } from "chart.js/auto";
+
+Chart.register(...registerables);
+
+export default {
+  data() {
+    return {
+      currentUserId: null,
+      chartInstance: null,
+      summary: {
+        totalItems: 0,
+        expiringSoon: 0,
+        categories: {},
+        newlyAdded: [],
+        usedItems: 0, // Renamed to track used items
+        expiredItems: [],
+      },
+      selectedChart: "items",
+    };
+  },
+  methods: {
+    async fetchSummaryData() {
+      const today = new Date();
+      const threeDaysFromNow = new Date(today);
+      threeDaysFromNow.setDate(today.getDate() + 3);
+
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          this.currentUserId = user.uid;
+        } else {
+          throw new Error("User not authenticated");
+        }
+
+        const itemsSnapshot = await getDocs(
+          collection(db, `users/${this.currentUserId}/items`)
+        );
+        const items = itemsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        this.summary.totalItems = items.length;
+        this.summary.expiringSoon = items.filter((item) => {
+          const expiryDate = new Date(item.expiryDate);
+          return expiryDate > today && expiryDate <= threeDaysFromNow;
+        }).length;
+
+        // Count used items
+        this.summary.usedItems = items.filter(item => item.used).length; // Assume `used` is a field indicating if an item has been used
+
+        this.summary.categories = items.reduce((acc, item) => {
+          acc[item.category] = (acc[item.category] || 0) + 1;
+          return acc;
+        }, {});
+
+        this.renderChart();
+      } catch (error) {
+        console.error("Error fetching summary data: ", error);
+      }
+    },
+    renderChart() {
+      let canvas;
+      switch (this.selectedChart) {
+        case "items":
+          canvas = this.$refs.itemsChart;
+          break;
+        case "usedItems":
+          canvas = this.$refs.usedItemsChart;
+          break;
+        case "expiredItems":
+          canvas = this.$refs.expiredItemsChart;
+          break;
+        default:
+          console.warn("Unknown chart type:", this.selectedChart);
+          return;
+      }
+
+      const ctx = canvas.getContext("2d");
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      const width = canvas.clientWidth * devicePixelRatio;
+      const height = canvas.clientHeight * devicePixelRatio;
+      canvas.width = width;
+      canvas.height = height;
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+
+      if (this.chartInstance) {
+        this.chartInstance.destroy();
+      }
+
+      const categories = Object.keys(this.summary.categories);
+      const data = Object.values(this.summary.categories);
+      const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
       };
+
+      switch (this.selectedChart) {
+        case "items":
+          this.chartInstance = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: categories,
+              datasets: [
+                {
+                  label: "Items by Category",
+                  data: data,
+                  backgroundColor: this.getChartColors(data.length),
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: chartOptions,
+          });
+          break;
+        case "usedItems":
+          this.chartInstance = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: ["Used Items", "Remaining Items"],
+              datasets: [
+                {
+                  label: "Count",
+                  data: [this.summary.usedItems, this.summary.totalItems - this.summary.usedItems],
+                  backgroundColor: this.getChartColors(2),
+                },
+              ],
+            },
+            options: chartOptions,
+          });
+          break;
+        case "expiredItems":
+          this.chartInstance = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: ["Total Items", "Expiring Soon"],
+              datasets: [
+                {
+                  label: "Count",
+                  data: [this.summary.totalItems - this.summary.expiringSoon, this.summary.expiringSoon],
+                  backgroundColor: this.getChartColors(2),
+                },
+              ],
+            },
+            options: chartOptions,
+          });
+          break;
+      }
     },
-    methods: {
-      async loadFridgeContents() {
-        try {
-          this.fridgeContents = await fetchFridgeContents();
-        } catch (error) {
-          console.error('Error fetching fridge contents:', error);
-        }
-      },
-      async loadRecommendedRecipes() {
-        try {
-          this.recommendedRecipes = await fetchRecommendedRecipes();
-        } catch (error) {
-          console.error('Error fetching recommended recipes:', error);
-        }
-      },
-      viewDetails(recipe) {
-        this.$router.push({ name: 'RecipeDetails', params: { recipe } });
-      },
+    getChartColors(count) {
+      const colors = [];
+      for (let i = 0; i < count; i++) {
+        colors.push(
+          `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.6)`
+        );
+      }
+      return colors;
     },
-    mounted() {
-      this.loadFridgeContents();
-      this.loadRecommendedRecipes();
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .summary {
-    padding: 20px;
-  }
-  
-  .fridge-contents,
-  .recipe-recommendations {
-    margin: 20px 0;
-  }
-  
-  h1, h2 {
-    color: #333;
-  }
-  </style>
-  
+  },
+  mounted() {
+    this.fetchSummaryData();
+  },
+};
+</script>
+
+<style scoped>
+.dashboard {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 1.5rem auto;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.dashboard:hover {
+  transform: translateY(-5px);
+}
+
+.notification-bar {
+  background-color: #ffebcc;
+  color: #d97a00;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.notification-bar__message {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.dashboard__title {
+  font-size: 2rem;
+  color: #4a4a4a;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.dashboard__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard__label {
+  font-size: 1.1rem;
+  color: #777;
+  margin-right: 0.75rem;
+}
+
+.dashboard__selector {
+  width: 220px;
+  padding: 0.6rem;
+  font-size: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  color: #333;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.dashboard__selector:focus,
+.dashboard__selector:hover {
+  background-color: #ffffff;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard__chart-container {
+  position: relative;
+  height: 300px;
+}
+
+.dashboard__chart {
+  width: 100%;
+  height: 100%;
+}
+</style>
