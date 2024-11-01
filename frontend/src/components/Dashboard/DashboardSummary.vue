@@ -194,6 +194,7 @@ export default {
     },
 
     renderChart() {
+      this.message = "";
       if (this.isRendering) return;
       this.isRendering = true;
 
