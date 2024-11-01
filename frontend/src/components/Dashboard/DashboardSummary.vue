@@ -268,6 +268,8 @@ export default {
               },
               options: chartOptions,
             });
+            // Update motivational message based on the ratio of used to expired items
+            this.updateMotivationalMessage();
             break;
           }
 
@@ -275,9 +277,6 @@ export default {
             console.warn("Unknown chart type:", this.selectedChart);
             break;
         }
-
-        // Update motivational message based on the ratio of used to expired items
-        this.updateMotivationalMessage();
       } catch (error) {
         console.error("Error rendering chart:", error);
       } finally {
