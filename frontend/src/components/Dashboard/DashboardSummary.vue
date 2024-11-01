@@ -14,27 +14,41 @@
       </p>
     </div>
     <h2 class="dashboard__title">Your Fridge Dashboard</h2>
-    <div class="dashboard__controls">
-      <label for="chartSelector" class="dashboard__label">View Data:</label>
-      <select id="chartSelector" class="dashboard__selector" v-model="selectedChart" @change="renderChart">
-        <option value="items">Fridge Items</option>
-        <option value="expiredItems">Items Insight</option>
-      </select>
-      <label for="monthSelector" class="dashboard__label">Select Month:</label>
-      <select :disabled= "selectedChart === 'items'"
-        id="monthSelector" 
-        class="dashboard__selector" 
-        v-model="selectedMonth" 
-        @change="fetchSummaryData"
-      >
-        <option v-for="(month, index) in monthNames" :key="index" :value="index" :disabled="isMonthInFuture(index)">{{ month }}</option>
-      </select>
+    <div class="dashboard__controls row">
+      <div class="col-6">
+        <label for="chartSelector" class="dashboard__label">View Data:</label>
+        <select id="chartSelector" class="dashboard__selector" v-model="selectedChart" @change="renderChart">
+          <option value="items">Fridge Items</option>
+          <option value="expiredItems">Items Insight</option>
+        </select>
+      </div>
+      <div class="col-6">
+        <label for="monthSelector" class="dashboard__label">Select Month:</label>
+        <select :disabled= "selectedChart === 'items'"
+          id="monthSelector" 
+          class="dashboard__selector" 
+          v-model="selectedMonth" 
+          @change="fetchSummaryData"
+        >
+          <option v-for="(month, index) in monthNames" :key="index" :value="index" :disabled="isMonthInFuture(index)">{{ month }}</option>
+        </select>
+      </div>
     </div>
     <div class="dashboard__chart-container">
-      <p v-if="!hasDataForMonthItem || !hasDataForMonthExpired" class="notification-bar__message">No data available.</p>
-      <canvas v-if="hasDataForMonthItem && selectedChart === 'items'" ref="itemsChart" class="dashboard__chart"></canvas>
-      <canvas v-if="hasDataForMonthExpired && selectedChart === 'expiredItems'" ref="expiredItemsChart" class="dashboard__chart"></canvas>
-      <br><p class="mt-2 notification-bar__message">{{message}}</p>
+      <!-- Fridge Items Chart -->
+      <div v-if="selectedChart === 'items'" class="dashboard__chart">
+        <canvas v-if="hasDataForMonthItem" ref="itemsChart"></canvas>
+        <p v-else class="notification-bar__message">No data available for Fridge Items.</p>
+      </div>
+      
+      <!-- Items Insight Chart -->
+      <div v-if="selectedChart === 'expiredItems'" class="dashboard__chart">
+        <canvas v-if="hasDataForMonthExpired" ref="expiredItemsChart"></canvas>
+        <p v-else class="notification-bar__message">No data available for Items Insight.</p>
+      </div>
+
+      <!-- Message -->
+      <p class="mt-3 notification-bar__message">{{ message }}</p>
     </div>
   </div>
 </template>
@@ -43,6 +57,8 @@
 import { db, auth } from "../../services/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { Chart, registerables } from "chart.js/auto";
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 Chart.register(...registerables);
 
@@ -67,9 +83,18 @@ export default {
       ],
       hasDataForMonthItem: false,
       hasDataForMonthExpired: false,
+      isRendering: false,
     };
   },
   methods: {
+    debounce(func, delay) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+      };
+    },
+    
     isMonthInFuture(monthIndex) {
       const currentMonth = new Date().getMonth(); // Get the current month (0-11)
       // Compare the index with the current month to see if it's in the future
@@ -83,11 +108,10 @@ export default {
 
       try {
         const user = auth.currentUser;
-        if (user) {
-          this.currentUserId = user.uid;
-        } else {
+        if (!user) {
           throw new Error("User not authenticated");
         }
+        this.currentUserId = user.uid;
 
         // Fetch all items from the main items collection
         const itemsSnapshot = await getDocs(
@@ -99,10 +123,7 @@ export default {
         }));
 
         this.summary.totalItems = items.length;
-
-        if (this.summary.totalItems > 0) {
-          this.hasDataForMonthItem = true;
-        }
+        this.hasDataForMonthItem = this.summary.totalItems > 0;
 
         // Count items expiring soon (within the next 3 days)
         const threeDaysFromNow = new Date(today);
@@ -142,9 +163,8 @@ export default {
           return deleteDate >= startDate && deleteDate <= endDate;
         }).length;
 
-        if (this.summary.expiredItemsCount > 0 || this.summary.usedItems > 0) {
-          this.hasDataForMonthExpired = true;
-        }
+        // Determine if there is data for expired items
+        this.hasDataForMonthExpired = this.summary.expiredItemsCount > 0 || this.summary.usedItems > 0;
 
         // Count categories from the filtered items
         this.summary.categories = items.reduce((acc, item) => {
@@ -153,9 +173,8 @@ export default {
         }, {});
 
         // Render chart or perform other UI updates
-        if ((this.selectedChart === 'items' && this.hasDataForMonthItem) || 
-            (this.selectedChart === 'expiredItems' && this.hasDataForMonthExpired)) {
-          this.renderChart();
+        if (this.hasDataForMonthItem || this.hasDataForMonthExpired) {
+          this.renderChart(); // Call renderChart after all data is fetched
         }
       } catch (error) {
         console.error("Error fetching summary data: ", error);
@@ -163,84 +182,107 @@ export default {
     },
 
     renderChart() {
-      if (this.selectedChart === "items" && !this.hasDataForMonthItem) {
+      if (this.isRendering) return;
+      this.isRendering = true;
+
+      // Check for data availability before rendering
+      if (
+        (this.selectedChart === "items" && !this.hasDataForMonthItem) ||
+        (this.selectedChart === "expiredItems" && !this.hasDataForMonthExpired)
+      ) {
+        console.warn("No data available for the selected chart:", this.selectedChart);
+        this.isRendering = false;
         return;
-      } else if (this.selectedChart === "expiredItems" && !this.hasDataForMonthExpired) {
+      }
+
+      // Retrieve the appropriate canvas based on the selected chart type
+      let canvas = this.$refs[this.selectedChart === "items" ? "itemsChart" : "expiredItemsChart"];
+      
+      // Check if the canvas is available
+      if (!canvas) {
+        console.warn("Canvas not available for selected chart:", this.selectedChart);
+        this.isRendering = false;
         return;
       }
-      let canvas;
-      switch (this.selectedChart) {
-        case "items":
-          canvas = this.$refs.itemsChart;
-          break;
-        case "expiredItems":
-          canvas = this.$refs.expiredItemsChart;
-          break;
-        default:
-          console.warn("Unknown chart type:", this.selectedChart);
-          return;
+
+      try {
+        const ctx = canvas.getContext("2d");
+
+        // Set canvas dimensions based on device pixel ratio
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        const width = canvas.clientWidth * devicePixelRatio;
+        const height = canvas.clientHeight * devicePixelRatio;
+        canvas.width = width;
+        canvas.height = height;
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+
+        // Destroy the previous chart instance if it exists
+        if (this.chartInstance) {
+          this.chartInstance.destroy();
+        }
+
+        // Prepare the data and options for the chart
+        const chartOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+        };
+
+        // Render the chart based on the selected type
+        switch (this.selectedChart) {
+          case "items": {
+            const categories = Object.keys(this.summary.categories);
+            const data = Object.values(this.summary.categories);
+
+            // Create a new Chart instance for items
+            this.chartInstance = new Chart(ctx, {
+              type: "doughnut",
+              data: {
+                labels: categories,
+                datasets: [
+                  {
+                    label: "Items by Category",
+                    data: data,
+                    backgroundColor: this.getChartColors(data.length),
+                    borderWidth: 1,
+                  },
+                ],
+              },
+              options: chartOptions,
+            });
+            break;
+          }
+
+          case "expiredItems": {
+            // Create a new Chart instance for expired items
+            this.chartInstance = new Chart(ctx, {
+              type: "doughnut",
+              data: {
+                labels: ["Expired Items", "Used Items"],
+                datasets: [
+                  {
+                    label: "Count",
+                    data: [this.summary.expiredItemsCount, this.summary.usedItems],
+                    backgroundColor: this.getChartColors(2),
+                  },
+                ],
+              },
+              options: chartOptions,
+            });
+            break;
+          }
+
+          default:
+            console.warn("Unknown chart type:", this.selectedChart);
+            break;
+        }
+
+        // Update motivational message based on the ratio of used to expired items
+        this.updateMotivationalMessage();
+      } catch (error) {
+        console.error("Error rendering chart:", error);
+      } finally {
+        this.isRendering = false; // Allow new selections after rendering
       }
-
-      const ctx = canvas.getContext("2d");
-      const devicePixelRatio = window.devicePixelRatio || 1;
-      const width = canvas.clientWidth * devicePixelRatio;
-      const height = canvas.clientHeight * devicePixelRatio;
-      canvas.width = width;
-      canvas.height = height;
-      ctx.scale(devicePixelRatio, devicePixelRatio);
-
-      if (this.chartInstance) {
-        this.chartInstance.destroy();
-      }
-
-      const categories = Object.keys(this.summary.categories);
-      const data = Object.values(this.summary.categories);
-      const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-      };
-
-      switch (this.selectedChart) {
-        case "items":
-          this.chartInstance = new Chart(ctx, {
-            type: "doughnut",
-            data: {
-              labels: categories,
-              datasets: [
-                {
-                  label: "Items by Category",
-                  data: data,
-                  backgroundColor: this.getChartColors(data.length),
-                  borderWidth: 1,
-                },
-              ],
-            },
-            options: chartOptions,
-          });
-          break;
-        case "expiredItems":
-          this.chartInstance = new Chart(ctx, {
-            type: "doughnut",
-            data: {
-              labels: ["Expired Items", "Used Items"],
-              datasets: [
-                {
-                  label: "Count",
-                  data: [this.summary.expiredItemsCount, this.summary.usedItems],
-                  backgroundColor: this.getChartColors(2),
-                },
-              ],
-            },
-            options: chartOptions,
-          });
-          break;
-        default:
-          console.warn("Unknown chart type:", this.selectedChart);
-          break;
-      }
-
-      // Update motivational message based on the ratio of used to expired items
-      this.updateMotivationalMessage();
     },
 
     getChartColors(numColors) {
@@ -275,12 +317,20 @@ export default {
     isDisabled() {
       return this.selectedChart === 'items'; // Disable if selectedChart is 'items'
     },
-  }
+  },
+
+  watch: {
+    selectedMonth() {
+      this.fetchSummaryData();
+    }
+  },
+
 };
 </script>
 
 <style scoped>
 .dashboard {
+  height: 700px;
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 8px;
@@ -313,7 +363,6 @@ export default {
 }
 
 .dashboard__controls {
-  display: block;
   margin-bottom: 20px;
 }
 
@@ -337,7 +386,7 @@ export default {
 .dashboard__chart-container {
   position: relative;
   width: 100%;
-  height: 400px; /* Fixed height for charts */
+  height: 400px; 
 }
 
 .dashboard__chart {
