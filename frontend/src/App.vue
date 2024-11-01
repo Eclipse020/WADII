@@ -28,17 +28,15 @@
         <router-link to="/profile" class="nav-link">
           <i class="fas fa-user"></i> Profile
         </router-link>
-        <router-link to="/logout" class="nav-link">
+        <router-link to="/logout" class="nav-link" @click.prevent="logoutUser">
           Logout
         </router-link>
       </nav>
     </header>
 
     <!-- Main Content -->
-    <main class="container-fluid p-0">
-      <div @mousemove="resetTimer" @keydown="resetTimer" @click="resetTimer">
-        <router-view />
-      </div>
+    <main class="container-fluid p-0" @mousemove="resetTimer" @keydown="resetTimer" @click="resetTimer">
+      <router-view />
     </main>
 
     <!-- Conditionally show footer only if user is authenticated -->
@@ -49,38 +47,33 @@
 </template>
 
 <script>
-import { auth } from '@/services/firebase'; // Import Firebase Authentication
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+// import { auth } from '@/services/firebase';
+import { getAuth, onAuthStateChanged, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import './styles/main.css';
 
 export default {
   name: 'App',
   data() {
     return {
-      timeout: null, // Holds the timeout ID
-      idleTimeLimit: 15 * 60 * 1000, // 15 minutes inactivity time limit (in milliseconds)
-      isAuthenticated: false, // Track the authentication state
+      timeout: null,
+      idleTimeLimit: 15 * 60 * 1000, // 15 minutes
+      isAuthenticated: false,
     };
   },
   methods: {
     startTimer() {
-      // Clear any existing timer
       if (this.timeout) clearTimeout(this.timeout);
-
-      // Start a new timer
-      this.timeout = setTimeout(() => {
-        this.logoutUser();
-      }, this.idleTimeLimit); // Logout after 15 minutes of inactivity
+      this.timeout = setTimeout(this.logoutUser, this.idleTimeLimit);
     },
     resetTimer() {
-      // Reset the timer on user activity
-      this.startTimer();
+      if (this.isAuthenticated) this.startTimer();
     },
     logoutUser() {
       const auth = getAuth();
       auth.signOut()
         .then(() => {
-          // Redirect to login after logout
+          clearTimeout(this.timeout); // Clear timer on logout
+          this.isAuthenticated = false;
           this.$router.push('/login');
         })
         .catch((error) => {
@@ -89,24 +82,29 @@ export default {
     },
   },
   mounted() {
-    // Watch for changes in the user's authentication state
-    auth.onAuthStateChanged((user) => {
-      this.isAuthenticated = !!user; // If user exists, set isAuthenticated to true
-    });
-  },
-  created() {
     const auth = getAuth();
-    
-    // Monitor auth state on page load
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in, redirect to homepage
-        this.$router.push('/');
-      } else {
-        // No user signed in, redirect to login
-        this.$router.push('/login');
-      }
-    });
+
+    // Set session persistence
+    setPersistence(auth, browserSessionPersistence)
+      .then(() => {
+        // Watch authentication state
+        onAuthStateChanged(auth, (user) => {
+          this.isAuthenticated = !!user;
+          if (!user) {
+            this.$router.push('/login');
+          } else {
+            this.$router.push('/');
+            this.startTimer(); // Start inactivity timer if logged in
+          }
+        });
+      })
+      .catch((error) => {
+        console.error('Error setting persistence:', error);
+      });
+  },
+  beforeUnmount() {
+    // Clear timeout and remove any global event listeners
+    clearTimeout(this.timeout);
   },
 };
 </script>
