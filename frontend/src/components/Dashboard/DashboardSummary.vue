@@ -22,16 +22,28 @@
           <option value="expiredItems">Items Insight</option>
         </select>
       </div>
-      <div class="col-6">
+      <div class="col-6" v-if="selectedChart === 'expiredItems'">
         <label for="monthSelector" class="dashboard__label">Select Month:</label>
-        <select :disabled= "selectedChart === 'items'"
-          id="monthSelector" 
-          class="dashboard__selector" 
-          v-model="selectedMonth" 
+        <select
+          id="monthSelector"
+          class="dashboard__selector"
+          v-model="selectedMonth"
           @change="fetchSummaryData"
         >
-          <option v-for="(month, index) in monthNames" :key="index" :value="index" :disabled="isMonthInFuture(index)">{{ month }}</option>
+          <option
+            v-for="(month, index) in monthNames"
+            :key="index"
+            :value="index"
+            :disabled="isMonthInFuture(index)"
+          >
+            {{ month }}
+          </option>
         </select>
+      </div>
+
+      <!-- Default month display -->
+      <div class="col-6" v-if="selectedChart === 'items'">
+        <p class="dashboard__month-text">Current Month: {{ monthNames[new Date().getMonth()] }}</p>
       </div>
     </div>
     <div class="dashboard__chart-container">
@@ -334,6 +346,11 @@ export default {
   background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard__month-text {
+  margin-top: 5px;
+  font-size: 15px;
 }
 
 .notification-bar {
