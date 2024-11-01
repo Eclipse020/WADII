@@ -31,8 +31,9 @@
       </select>
     </div>
     <div class="dashboard__chart-container">
-      <canvas v-if="selectedChart === 'items'" ref="itemsChart" class="dashboard__chart"></canvas>
-      <canvas v-if="selectedChart === 'expiredItems'" ref="expiredItemsChart" class="dashboard__chart"></canvas>
+      <p v-if="!hasDataForMonthItem || !hasDataForMonthExpired" class="notification-bar__message">No data available.</p>
+      <canvas v-if="hasDataForMonthItem && selectedChart === 'items'" ref="itemsChart" class="dashboard__chart"></canvas>
+      <canvas v-if="hasDataForMonthExpired && selectedChart === 'expiredItems'" ref="expiredItemsChart" class="dashboard__chart"></canvas>
       <br><p class="mt-2 notification-bar__message">{{message}}</p>
     </div>
   </div>
@@ -64,7 +65,8 @@ export default {
         "January", "February", "March", "April", "May", "June", 
         "July", "August", "September", "October", "November", "December"
       ],
-      hasDataForMonth: false,
+      hasDataForMonthItem: false,
+      hasDataForMonthExpired: false,
     };
   },
   methods: {
@@ -97,6 +99,10 @@ export default {
         }));
 
         this.summary.totalItems = items.length;
+
+        if (this.summary.totalItems > 0) {
+          this.hasDataForMonthItem = true;
+        }
 
         // Count items expiring soon (within the next 3 days)
         const threeDaysFromNow = new Date(today);
@@ -136,6 +142,10 @@ export default {
           return deleteDate >= startDate && deleteDate <= endDate;
         }).length;
 
+        if (this.summary.expiredItemsCount > 0 || this.summary.usedItems > 0) {
+          this.hasDataForMonthExpired = true;
+        }
+
         // Count categories from the filtered items
         this.summary.categories = items.reduce((acc, item) => {
           acc[item.category] = (acc[item.category] || 0) + 1;
@@ -143,20 +153,25 @@ export default {
         }, {});
 
         // Render chart or perform other UI updates
-        this.renderChart();
+        if ((this.selectedChart === 'items' && this.hasDataForMonthItem) || 
+            (this.selectedChart === 'expiredItems' && this.hasDataForMonthExpired)) {
+          this.renderChart();
+        }
       } catch (error) {
         console.error("Error fetching summary data: ", error);
       }
     },
 
     renderChart() {
+      if (this.selectedChart === "items" && !this.hasDataForMonthItem) {
+        return;
+      } else if (this.selectedChart === "expiredItems" && !this.hasDataForMonthExpired) {
+        return;
+      }
       let canvas;
       switch (this.selectedChart) {
         case "items":
           canvas = this.$refs.itemsChart;
-          break;
-        case "usedItems":
-          canvas = this.$refs.usedItemsChart;
           break;
         case "expiredItems":
           canvas = this.$refs.expiredItemsChart;
