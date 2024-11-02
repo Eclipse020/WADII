@@ -94,6 +94,7 @@
 
 <script>
 import { ref, defineComponent } from 'vue';
+import { createRecipe, saveDraft } from '@/services/RecipeService'; // Import the functions
 
 export default defineComponent({
   name: 'PostRecipeComponent',
@@ -103,7 +104,7 @@ export default defineComponent({
       estimatedTime: null,
       calories: null,
       description: '',
-      ingredients: '',
+      ingredients: [],
       steps: ''
     });
     
@@ -122,18 +123,30 @@ export default defineComponent({
       recipe.value.ingredients = ingredients.split(',').map(ing => ing.trim());
     };
 
-    const saveToDrafts = () => {
-      // Logic to save the recipe as a draft
+    const saveToDrafts = async () => {
+      try {
+        await saveDraft(recipe.value); // Save the recipe as a draft
+        console.log('Draft saved successfully');
+      } catch (error) {
+        console.error("Error saving draft:", error);
+      }
     };
 
-    const postRecipe = () => {
-      // Logic to post the recipe
+    const postRecipe = async () => {
+      try {
+        await createRecipe(recipe.value); // Post the recipe
+        console.log('Recipe posted successfully');
+        // Optionally reset the form or redirect
+      } catch (error) {
+        console.error("Error posting recipe:", error);
+      }
     };
 
     return { recipe, isEditing, onFileChange, handleIngredientInput, saveToDrafts, postRecipe };
   }
 });
 </script>
+
 
 <style scoped>
 /* Add any component-specific styles here */
