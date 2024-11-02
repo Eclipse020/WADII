@@ -86,7 +86,7 @@
         }, 300);
       },
       navigateToPostRecipe() {
-        this.$router.push('/postRecipePage');
+        this.$router.push({ name: 'PostRecipe'});
       }
     }
   };

@@ -87,3 +87,43 @@
       </div>
     </div>
   </template>
+
+  <script>
+import { ref, defineComponent } from 'vue';
+
+export default defineComponent({
+  name: 'PostRecipeComponent',
+  setup() {
+    // Initialize `recipe` with default properties
+    const recipe = ref({
+      name: '',
+      estimatedTime: 0,
+      calories: 0,
+      description: '',
+      ingredients: '',
+      steps: ''
+    });
+    
+    const isEditing = ref(false);  // Default isEditing state
+
+    // Define your methods here
+    const onFileChange = (event) => {
+      // Handle file upload here
+    };
+
+    const handleIngredientInput = (ingredients) => {
+      // Handle ingredient input formatting here
+    };
+
+    const saveToDrafts = () => {
+      // Logic to save the recipe as a draft
+    };
+
+    const postRecipe = () => {
+      // Logic to post the recipe
+    };
+
+    return { recipe, isEditing, onFileChange, handleIngredientInput, saveToDrafts, postRecipe };
+  }
+});
+</script>

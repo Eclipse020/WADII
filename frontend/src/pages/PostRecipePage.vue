@@ -1,5 +1,5 @@
 <template>
-    <div class="community-page">
+    <div class="post-recipe-page">
       <PostRecipeComponent />
     </div>
   </template>
