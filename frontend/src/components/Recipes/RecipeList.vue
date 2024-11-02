@@ -167,7 +167,7 @@ export default {
       if (this.cuisine) apiUrl += `&cuisineType=${this.cuisine}`;
       if (this.diet) apiUrl += `&diet=${this.diet}`;
       if (this.selectedHealthLabels) apiUrl += `&health=${this.selectedHealthLabels}`;
-
+      
       if (this.meal) apiUrl += `&mealType=${this.meal}`;
 
       try {
