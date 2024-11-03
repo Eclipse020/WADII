@@ -1,7 +1,7 @@
 <template>
   <div class="recipe-list">
     <div class="header-container">
-      <!-- Search bar -->
+      <!-- Search bar and Post New Recipe Button -->
       <div class="search-container">
         <input 
           type="text" 
@@ -12,7 +12,6 @@
         />
       </div>
       
-      <!-- Post New Recipe Button -->
       <button 
         class="post-recipe-btn"
         @click="navigateToPostRecipe"
@@ -24,11 +23,10 @@
     
     <h2>Recipes</h2>
 
-    <!-- Error Message -->
     <p v-if="fetchError" class="error-message">{{ fetchError }}</p>
 
     <ul>
-      <li v-for="recipe in filteredRecipes" :key="recipe.id" class="recipe-card" @click="openRecipeDetails(recipe.id)">
+      <li v-for="recipe in filteredRecipes" :key="recipe.id" class="recipe-card">
         <img :src="recipe.image" alt="Recipe Image" v-if="recipe.image" class="recipe-image" />
         <div class="recipe-content">
           <h3>{{ recipe.name }}</h3>
@@ -36,28 +34,30 @@
           <p><strong>Calories:</strong> {{ recipe.calories }}</p>
           <p><strong>Estimated Time:</strong> {{ recipe.estimatedTime }} mins</p>
           
-          <!-- Like Functionality -->
-          <div class="like-section">
-            <button @click.stop="toggleLike(recipe)" :class="{ liked: recipe.isLiked }">
-              ❤️ {{ recipe.likeCount }}
+          <div class="interaction-section">
+            <div class="like-section">
+              <button @click.stop="toggleLike(recipe)" :class="{ liked: recipe.isLiked }">
+                ❤️ {{ recipe.likeCount }}
+              </button>
+            </div>
+
+            <button @click.stop="openCommentPopup(recipe)">
+              💬 {{ recipe.comments.length }} Comments
             </button>
           </div>
-
-          <!-- Comment Functionality -->
-          <div class="comment-section">
-            <input v-model="recipe.newComment" placeholder="Add a comment..." />
-            <button @click.stop="addComment(recipe)">Comment</button>
-          </div>
-
-          <!-- Display Comments -->
-          <ul>
-            <li v-for="(comment, index) in recipe.comments" :key="index">{{ comment }}</li>
-          </ul>
         </div>
       </li>
     </ul>
+
+    <!-- Comment Popup -->
+    <CommentPopup 
+      v-if="isCommentPopupOpen" 
+      :comments="currentRecipeComments" 
+      @close="isCommentPopupOpen = false" 
+      @add-comment="addComment" 
+      v-model="newComment" 
+    />
     
-    <!-- No results message -->
     <p v-if="filteredRecipes.length === 0 && searchQuery" class="no-results">
       No recipes found matching your search.
     </p>
@@ -66,13 +66,20 @@
 
 <script>
 import { getRecipes, updateRecipeLikes, saveComment } from '@/services/RecipeService';
+import CommentPopup from '@/components/Community/CommentPopup.vue';
 
 export default {
+  components: {
+    CommentPopup,
+  },
   data() {
     return {
       recipes: [],
       searchQuery: '',
-      fetchError: null
+      fetchError: null,
+      isCommentPopupOpen: false, // Track if the comment popup is open
+      currentRecipeComments: [], // Store comments for the currently open recipe
+      newComment: '', // For binding new comment input
     };
   },
   async mounted() {
@@ -83,8 +90,10 @@ export default {
       try {
         this.recipes = await getRecipes();
         this.recipes.forEach(recipe => {
-          recipe.isLiked = false; // Initialize isLiked for each recipe
-          recipe.newComment = ''; // Initialize newComment for each recipe
+          recipe.isLiked = false;
+          recipe.newComment = '';
+          recipe.likeCount = recipe.likeCount || 0;
+          recipe.comments = recipe.comments || [];
         });
       } catch (error) {
         console.error("Error fetching recipes:", error);
@@ -97,25 +106,30 @@ export default {
     navigateToPostRecipe() {
       this.$router.push({ name: 'PostRecipe' });
     },
-    openRecipeDetails(id) {
-      this.$router.push({name: 'RecipeDetail', params: {id}});
-    },
     async toggleLike(recipe) {
-      recipe.isLiked = !recipe.isLiked;
-      recipe.likeCount += recipe.isLiked ? 1 : -1;
+      const wasLiked = recipe.isLiked;
+      recipe.isLiked = !wasLiked; 
+      recipe.likeCount += recipe.isLiked ? 1 : -1; 
 
-      // Update the like count in your database
-      await updateRecipeLikes(recipe.id, recipe.likeCount);
-    },
-    async addComment(recipe) {
-      if (recipe.newComment.trim()) {
-        recipe.comments.push(recipe.newComment);
-        const commentToAdd = recipe.newComment; // Store comment to add to DB
-        recipe.newComment = '';
-
-        // Save the new comment in your database
-        await saveComment(recipe.id, commentToAdd);
+      try {
+        await updateRecipeLikes(recipe.id, recipe.likeCount);
+      } catch (error) {
+        console.error("Error updating likes:", error);
+        recipe.isLiked = wasLiked; 
+        recipe.likeCount += wasLiked ? -1 : 1; 
       }
+    },
+    openCommentPopup(recipe) {
+      this.currentRecipeComments = recipe.comments; // Load comments for the selected recipe
+      this.isCommentPopupOpen = true; // Open the comment popup
+    },
+    async addComment(comment) {
+      const recipe = this.recipes.find(r => r.comments === this.currentRecipeComments);
+      if (recipe) {
+        recipe.comments.push(comment);
+        await saveComment(recipe.id, comment); // Save the comment in your database
+      }
+      this.newComment = ''; // Reset new comment input
     }
   },
   computed: {
@@ -209,22 +223,29 @@ export default {
   border: 1px solid #ccc; /* Optional: adds a border to the card */
   border-radius: 8px; /* Optional: rounded corners */
   overflow: hidden; /* Ensures child elements stay within the card bounds */
-  height: 300px; /* Set a fixed height for the card */
+  height: auto; /* Let the height adjust to content */
 }
 
 .recipe-image {
-  width: 100%; /* Make the image take the full width of the card */
-  height: 50%; /* Make the image take the top half of the card */
-  object-fit: cover; /* Crop the image to fit the container */
-  object-position: center; /* Center the image */
+  width: 100%; /* Makes the image take the full width of the card */
+  height: auto; /* Maintain aspect ratio */
+  max-height: 200px; /* Set a max height for the image to control its vertical size */
+  object-fit: cover; /* Ensures the image covers the area without distortion */
+  border-radius: 8px; /* Optional: adds rounded corners to the image */
 }
 
 .recipe-content {
   padding: 1rem; /* Adds padding around the content */
+  display: flex;
+  flex-direction: column; /* Arrange child elements vertically */
+  justify-content: space-between; /* Space out content to push the interaction section down */
 }
 
-.like-section {
-  margin: 10px 0;
+.interaction-section {
+  display: flex;
+  align-items: center; /* Align items vertically center */
+  gap: 10px; /* Adjust the gap between like button and comment section */
+  margin-top: auto; /* Pushes the interaction section to the bottom */
 }
 
 .like-section button {
@@ -237,29 +258,6 @@ export default {
 
 .like-section button.liked {
   color: #c0392b;
-}
-
-.comment-section {
-  display: flex;
-  align-items: center;
-  margin: 10px 0;
-}
-
-.comment-section input {
-  flex: 1;
-  padding: 5px;
-  margin-right: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.comment-section button {
-  padding: 5px 10px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 .no-results {
