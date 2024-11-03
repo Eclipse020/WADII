@@ -34,8 +34,8 @@
       </nav>
     </header>
 
-    <!-- Main Content -->
-    <main class="container-fluid p-0">
+     <!-- Main Content -->
+     <main class="container-fluid p-0">
       <div @mousemove="resetTimer" @keydown="resetTimer" @click="resetTimer">
         <router-view />
       </div>
@@ -98,10 +98,12 @@ export default {
     const auth = getAuth();
     
     // Monitor auth state on page load
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         // User is signed in, redirect to homepage
         this.$router.push('/');
+        const token = await user.getIdToken();
+        localStorage.setItem("firebaseToken", token);
       } else {
         // No user signed in, redirect to login
         this.$router.push('/login');

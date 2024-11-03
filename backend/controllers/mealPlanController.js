@@ -1,7 +1,12 @@
-const admin = require('firebase-admin');
-const db = admin.firestore();
+// backend/controllers/mealPlanController.js
 
-exports.getMealPlan = async (req, res) => {
+// import app from '../config/firebaseConfig.js'; // Adjust the path as necessary
+// import { getFirestore } from 'firebase-admin/firestore';
+
+import db from '../config/firebaseConfig.js';
+
+
+const getMealPlan = async (req, res) => {
     try {
         const userId = req.user.uid;
         const mealPlanRef = db.collection('users').doc(userId).collection('mealPlanner').doc('current');
@@ -10,15 +15,10 @@ exports.getMealPlan = async (req, res) => {
         if (!doc.exists) {
             // Initialize with empty meal plan if it doesn't exist
             const emptyMealPlan = {
-                days: [
-                    { name: 'Monday', recipes: [] },
-                    { name: 'Tuesday', recipes: [] },
-                    { name: 'Wednesday', recipes: [] },
-                    { name: 'Thursday', recipes: [] },
-                    { name: 'Friday', recipes: [] },
-                    { name: 'Saturday', recipes: [] },
-                    { name: 'Sunday', recipes: [] },
-                ]
+                days: Array.from({ length: 7 }, (_, i) => ({
+                    name: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][i],
+                    recipes: [],
+                })),
             };
             await mealPlanRef.set(emptyMealPlan);
             return res.json(emptyMealPlan);
@@ -31,14 +31,15 @@ exports.getMealPlan = async (req, res) => {
     }
 };
 
-exports.updateMealPlan = async (req, res) => {
+// Update meal plan
+const updateMealPlan = async (req, res) => {
     try {
         const userId = req.user.uid;
         const { days } = req.body;
-        
+
         await db.collection('users').doc(userId).collection('mealPlanner').doc('current')
             .set({ days }, { merge: true });
-        
+
         res.json({ message: 'Meal plan updated successfully' });
     } catch (error) {
         console.error('Error updating meal plan:', error);
@@ -46,7 +47,8 @@ exports.updateMealPlan = async (req, res) => {
     }
 };
 
-exports.getFavorites = async (req, res) => {
+// Get favorites
+const getFavorites = async (req, res) => {
     try {
         const userId = req.user.uid;
         const favoritesRef = db.collection('users').doc(userId).collection('mealPlanner').doc('favorites');
@@ -64,22 +66,27 @@ exports.getFavorites = async (req, res) => {
     }
 };
 
-exports.updateFavorites = async (req, res) => {
+// Update favorites
+const updateFavorites = async (req, res) => {
+    const userId = req.user.id; // Assuming you have set req.user after authentication
+    const { recipes } = req.body; // Get recipes from request body
+  
     try {
-        const userId = req.user.uid;
-        const { recipes } = req.body;
-        
-        await db.collection('users').doc(userId).collection('mealPlanner').doc('favorites')
-            .set({ recipes }, { merge: true });
-        
-        res.json({ message: 'Favorites updated successfully' });
+      // Assuming you have a user document where you store favorites
+      const userRef = db.collection('users').doc(userId).collection('mealPlanner').doc('favorites');
+      
+      // Update the user's favorites with the new recipes
+      await userRef.set({ recipes }, { merge: true });
+  
+      res.status(200).json({ message: 'Favorites updated successfully!' });
     } catch (error) {
-        console.error('Error updating favorites:', error);
-        res.status(500).json({ error: 'Failed to update favorites' });
+      console.error('Error updating favorites:', error);
+      res.status(500).json({ message: 'Failed to update favorites.' });
     }
-};
+  };
 
-exports.getShoppingList = async (req, res) => {
+// Get shopping list
+const getShoppingList = async (req, res) => {
     try {
         const userId = req.user.uid;
         const shoppingListRef = db.collection('users').doc(userId).collection('mealPlanner').doc('shoppingList');
@@ -97,14 +104,15 @@ exports.getShoppingList = async (req, res) => {
     }
 };
 
-exports.updateShoppingList = async (req, res) => {
+// Update shopping list
+const updateShoppingList = async (req, res) => {
     try {
         const userId = req.user.uid;
         const { items } = req.body;
-        
+
         await db.collection('users').doc(userId).collection('mealPlanner').doc('shoppingList')
             .set({ items }, { merge: true });
-        
+
         res.json({ message: 'Shopping list updated successfully' });
     } catch (error) {
         console.error('Error updating shopping list:', error);
@@ -112,15 +120,14 @@ exports.updateShoppingList = async (req, res) => {
     }
 };
 
-exports.syncWithFridge = async (req, res) => {
+// Sync with fridge
+const syncWithFridge = async (req, res) => {
     try {
         const userId = req.user.uid;
         const { items } = req.body;
-        
-        // Get current fridge inventory
+
         const fridgeRef = db.collection('users').doc(userId).collection('items');
-        
-        // Add new items to fridge
+
         for (const item of items) {
             if (item.purchased) {
                 await fridgeRef.add({
@@ -132,10 +139,20 @@ exports.syncWithFridge = async (req, res) => {
                 });
             }
         }
-        
+
         res.json({ message: 'Inventory synced successfully' });
     } catch (error) {
         console.error('Error syncing with fridge:', error);
         res.status(500).json({ error: 'Failed to sync with fridge' });
     }
+};
+
+export default {
+    getMealPlan,
+    updateMealPlan,
+    getFavorites,
+    updateFavorites,
+    getShoppingList,
+    updateShoppingList,
+    syncWithFridge,
 };

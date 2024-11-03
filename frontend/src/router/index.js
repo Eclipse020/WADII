@@ -14,6 +14,8 @@ import ProfileSettingsPage from '../pages/ProfileSettingsPage.vue';
 import LogoutComponent from '../components/Auth/LogoutComponent.vue';
 import RecipeList from '../components/Recipes/RecipeList.vue';
 import RecipeDetails from '../components/Recipes/RecipeDetails.vue';
+import CookNow from '../components/Recipes/CookNow.vue';
+import FavouritesDisplay from '../components/Recipes/FavouritesDisplay.vue';
 import CommunityPage from '../pages/CommunityPage.vue';
 import DashboardSummary from '../components/Dashboard/DashboardSummary.vue';
 
@@ -31,6 +33,8 @@ const routes = [
   // Recipe routes
   { path: '/recipes', name: 'RecipeList', component: RecipeList, meta: { requiresAuth: true } },
   { path: '/recipe/:id', name: 'RecipeDetails', component: RecipeDetails, meta: { requiresAuth: true } },
+  { path: '/recipe/:id/cook', name: 'CookNow', component: CookNow, meta: { requiresAuth: true } },
+  { path: '/favourites', name: 'Favourites', component: FavouritesDisplay, meta: { requiresAuth: true } },
 
   // Authentication routes
   { path: '/login', name: 'Login', component: LoginPage },

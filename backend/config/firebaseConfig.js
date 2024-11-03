@@ -1,15 +1,12 @@
-// backend/config/firebaseConfig.js
-import { initializeApp } from 'firebase-admin/app';
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import * as serviceAccount from '../serviceAccountKey.json' assert { type: "json" };
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAxtxBAZXRCUn9yIbUtUY15jJs1Dol6B84",
-  authDomain: "wadii-891a7.firebaseapp.com",
-  projectId: "wadii-891a7",
-  storageBucket: "wadii-891a7.appspot.com",
-  messagingSenderId: "751105736650",
-  appId: "1:751105736650:web:6f2560c5ef25bf1aa41933"
-};
+const app = initializeApp({
+  credential: cert(serviceAccount),
+  projectId: "healthychef-a4655"
+});
 
-const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-export default app;
+export default db;
