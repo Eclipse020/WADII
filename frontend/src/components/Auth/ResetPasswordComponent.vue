@@ -1,30 +1,36 @@
 <!-- src/components/Auth/ResetPasswordComponent.vue -->
 <template>
-    <div class="container mt-5">
-      <h2>Reset Your Password</h2>
-      <p>Enter your email address, and we'll send you a link to reset your password.</p>
-      <form @submit.prevent="resetPassword">
-        <div class="form-group">
-          <input
-            type="email"
-            v-model="email"
-            class="form-control"
-            placeholder="Email"
-            required
-          />
-        </div>
-        <button type="submit" class="btn btn-primary mt-3">Send Reset Link</button>
-      </form>
-  
-      <div v-if="message" class="alert alert-success mt-3">
-        {{ message }}
+  <div class="reset-password">
+    <h2 class="reset-password__title">Reset Your Password</h2>
+    <p class="reset-password__description">Enter your email address, and we'll send you a link to reset your password.</p>
+    <form @submit.prevent="resetPassword" class="reset-password__form">
+      <div class="reset-password__form-group">
+        <input
+          type="email"
+          v-model="email"
+          class="reset-password__input"
+          placeholder="Email"
+          required
+        />
       </div>
-  
-      <div v-if="error" class="alert alert-danger mt-3">
-        {{ error }}
-      </div>
+      <button type="submit" class="reset-password__button reset-password__button--primary">Send Reset Link</button>
+    </form>
+
+    <div v-if="message" class="reset-password__alert reset-password__alert--success">
+      {{ message }}
     </div>
-  </template>
+
+    <div v-if="error" class="reset-password__alert reset-password__alert--error">
+      {{ error }}
+    </div>
+
+    <p class="reset-password__register-text">
+      Back to login page:
+      <router-link to="/login" class="reset-password__link">Login Page</router-link>
+    </p>
+  </div>
+</template>
+
   
   <script>
   import { sendPasswordResetEmail } from 'firebase/auth';
@@ -53,4 +59,8 @@
     },
   };
   </script>
+  
+  <style scoped>
+  
+  </style>
   

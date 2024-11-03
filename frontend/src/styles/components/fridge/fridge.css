@@ -55,8 +55,9 @@
 /* Button Styles */
 .app-summary__button {
     margin-top: 20px;
-    display: block;
-    width: 100%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     color: #fff;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.2s;
@@ -101,6 +102,11 @@
     color: white;
     padding: 8px 10px;
     border-radius: 10px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    margin-right: 10px;
 }
 
 .app-fridge__button--top:hover {
@@ -122,6 +128,9 @@
 
 .app-fridge__button--close {
     font-weight: bold;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .app-fridge__title {
@@ -160,7 +169,6 @@
     font-size: 15px;
 }
 
-
 .app-fridge__add-card,
 .app-fridge__card-body {
     text-align: left;
@@ -187,6 +195,11 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    margin-right: 10px;
 }
 
 .app-fridge__button--add:hover {
@@ -238,12 +251,24 @@
 .app-fridge__card-btn {
     margin-top: 5px;
     max-width: 190px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 35px;
+    margin-right: 10px;
 }
 
 .app-fridge__card {
     min-height: 150px;
 }
 
+/* Button container for horizontal layout */
+.app-fridge__button-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
 
 /* Sort Button */
 .appFridge__category-container {
@@ -263,6 +288,10 @@
     outline: none;
     box-shadow: none;
     border: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 35px;
 }
 
 .appFridge__button--sort:disabled {

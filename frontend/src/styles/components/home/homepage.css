@@ -1,106 +1,116 @@
-/* Homepage Styles */
-.home-page {
+/* Block: home */
+.home {
     text-align: center;
     padding: 30px;
-  }
-  
-  /* Typography overrides for homepage */
-  .home-page h1 {
+}
+
+.home__title {
     font-size: 2.3rem;
     margin-bottom: 20px;
     font-weight: 600;
     color: var(--primary-color);
-  }
-  
-  .intro-text {
+}
+
+.home__intro {
     font-size: 1.2rem;
     margin-bottom: 30px;
     font-weight: 300;
     color: var(--text-primary);
-  }
-  
-  /* Features Section */
-  .features {
+}
+
+/* Block: features */
+.features {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
     gap: 20px;
-  }
-  
-  .feature-box {
+}
+
+.features__item {
     background-color: var(--background-light);
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     max-width: 300px;
     text-align: left;
-  }
-  
-  .feature-box h2 {
+}
+
+.features__title {
     font-size: 1.5rem;
     color: var(--primary-color);
     margin-bottom: 10px;
     font-weight: 600;
-  }
-  
-  .feature-box p {
+}
+
+.features__description {
     font-size: 1rem;
     color: var(--text-primary);
     line-height: 1.5;
-  }
-  
-  /* Hero Section */
-  .carousel-section .carousel-item {
-    height: 300px; /* Adjust height as needed */
-  }
-  
-  .carousel-item img {
+}
+
+/* Block: carousel */
+.carousel {
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.carousel__item {
+    height: 300px;
+}
+
+.carousel__image {
     object-fit: cover;
     height: 100%;
-  }
-  
-  .carousel-caption h2 {
-    font-size: 2rem;
-    /* margin-bottom: 20px; */
-    font-weight: 700;
-    color: white;
-  }
-  
-  .carousel-caption p {
-    font-size: 1.3rem;
-    /* margin-bottom: 20px; */
-    font-weight: 700;
-    color: white;
-  }
+}
 
-  /* Carousel Controls */
-  .carousel-control-prev,
-  .carousel-control-next {
-    background-color: #00796b;
+.carousel__caption {
+    font-weight: 700;
+    color: white;
+}
+
+.carousel__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+}
+
+.carousel__text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: white;
+}
+
+.carousel__control {
+    position: absolute;
     width: 50px;
     height: 50px;
     border-radius: 50%;
+    background-color: #00796b;
+    border: none;
     top: 50%;
     transform: translateY(-50%);
     opacity: 0.9;
-  }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
 
-  .carousel-control-prev {
+.carousel__control--prev {
     left: 20px;
-  }
+}
 
-  .carousel-control-next {
+.carousel__control--next {
     right: 20px;
-  }
+}
 
-  .carousel-control-prev:hover,
-  .carousel-control-next:hover {
-    background-color: #00796b;
+.carousel__control:hover {
     opacity: 1;
-  }
-  
-  /* CTA Button */
-  .cta-button {
+    background-color: #00796b;
+}
+
+/* Block: cta */
+.cta {
     height: 32px;
     padding: 20px 30px;
     font-size: 20px;
@@ -114,30 +124,29 @@
     justify-content: center;
     text-decoration: none;
     background-color: var(--primary-color);
-    /* Want to change the button color */
     color: white;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .cta-button:hover {
-    background-color: var(--accent-border);
+}
+
+.cta:hover {
+    background-color: var(--border-color);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .hero-content h2 {
-      font-size: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .carousel__title {
+        font-size: 2rem;
     }
-  
-    .hero-content p {
-      font-size: 1rem;
+
+    .carousel__text {
+        font-size: 1rem;
     }
-  
-    .cta-button {
-      height: 30px;
-      padding: 0 20px;
-      font-size: 12px;
+
+    .cta {
+        height: 30px;
+        padding: 0 20px;
+        font-size: 12px;
     }
-  }
+}
