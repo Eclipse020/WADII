@@ -121,6 +121,7 @@ export default {
           // Delete matching ingredients from the fridge
           for (const ingredient of matchingIngredients) {
             await deleteDoc(doc(db, `users/${user.uid}/items`, ingredient.id));
+            
           }
         }
       } catch (error) {
