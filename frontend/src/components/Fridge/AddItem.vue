@@ -7,15 +7,18 @@
             <button class="btn btn-sm me-2 app-fridge__button--top" @click="sortByCategory" :disabled="openAddCard">
               Category <span v-if="isCategoryAscending">&#8593;</span><span v-else>&#8595;</span>
             </button>
-            <button class="btn btn-sm me-2 app-fridge__button--top" @click="navigateTo('summary')" :disabled="openAddCard">View Inventory Summary</button>
+            <button class="btn btn-sm me-2 app-fridge__button--top" @click="navigateTo('summary')"
+              :disabled="openAddCard">View Inventory Summary</button>
             <!--Add Product + Edit Product Card-->
-            <button v-if="!openAddCard && !isEditing" @click="openAddCard = true" class="btn btn-sm app-fridge__button--top">
+            <button v-if="!openAddCard && !isEditing" @click="openAddCard = true"
+              class="btn btn-sm app-fridge__button--top">
               Add Product
             </button>
             <div v-else class="card app-fridge__add-card">
               <div class="app-fridge__card-body">
                 <div class="app-fridge__card-title">
-                  <h5 class="app-fridge__title">{{ isEditing ? 'Edit Product' : 'Add Product' }} &#129365;&#127815;&#127838;&#129367;</h5>
+                  <h5 class="app-fridge__title">{{ isEditing ? 'Edit Product' : 'Add Product' }}
+                    &#129365;&#127815;&#127838;&#129367;</h5>
                   <button @click="closeAddCard" class="btn btn-light app-fridge__button--close">X</button>
                 </div>
                 <hr />
@@ -23,7 +26,8 @@
                 <form @submit.prevent="isEditing ? saveEdit() : addItem()">
                   <div class="mb-3">
                     <label for="itemName">Name</label>
-                    <input v-model="itemName" class="form-control" type="text" id="itemName" maxlength="20" placeholder="Insert Name" required />
+                    <input v-model="itemName" class="form-control" type="text" id="itemName" maxlength="20"
+                      placeholder="Insert Name" required />
                   </div>
                   <div class="mb-3">
                     <label for="category">Category</label>
@@ -34,13 +38,15 @@
                   </div>
                   <div class="mb-3">
                     <label for="quantity">Quantity</label>
-                    <input v-model="itemQuantity" class="form-control" type="number" id="quantity" min="1" placeholder="1" required />
+                    <input v-model="itemQuantity" class="form-control" type="number" id="quantity" min="1"
+                      placeholder="1" required />
                   </div>
                   <div class="mb-3">
                     <label for="expiryDate">Expiry Date</label>
                     <input v-model="itemExpiryDate" class="form-control" type="date" id="expiryDate" required />
                   </div>
-                  <button type="submit" class="btn btn-success app-fridge__button--add">{{ isEditing ? 'Save' : 'Add!' }}</button>
+                  <button type="submit" class="btn btn-success app-fridge__button--add">{{ isEditing ? 'Save' : 'Add!'
+                    }}</button>
                 </form>
               </div>
             </div>
@@ -52,32 +58,39 @@
         </p>
         <!-- Categorized Items -->
         <div v-for="(itemsInCategory, category) in finalItems" :key="category" class="col-12">
-            <div class="appFridge__category-header">
-                <div class="appFridge__category-container">
-                    <h5 class="m-0 flex-grow-1 d-flex align-items-start appFridge__category-title" @click="toggleCategory(category)">{{ category }}</h5>
-                    <div class="appFridge__sort-button">
-                        <button class="btn btn-sm me-2 appFridge__button--sort" @click="sortCategorizedItems(category, 'quantity')" :disabled="openAddCard"> Sort by Quantity </button>
-                        <button class="btn btn-sm appFridge__button--sort" @click="sortCategorizedItems(category, 'expiryDate')" :disabled="openAddCard"> Sort by Expiry Date </button>
-                    </div>
-                </div>
+          <div class="appFridge__category-header">
+            <div class="appFridge__category-container">
+              <h5 class="m-0 flex-grow-1 d-flex align-items-start appFridge__category-title"
+                @click="toggleCategory(category)">{{ category }}</h5>
+              <div class="appFridge__sort-button">
+                <button class="btn btn-sm me-2 appFridge__button--sort"
+                  @click="sortCategorizedItems(category, 'quantity')" :disabled="openAddCard"> Sort by Quantity
+                </button>
+                <button class="btn btn-sm appFridge__button--sort" @click="sortCategorizedItems(category, 'expiryDate')"
+                  :disabled="openAddCard"> Sort by Expiry Date </button>
+              </div>
             </div>
-            <div v-if="!collapsedCategories[category]" class="row g-4">
-                <div v-for="item in itemsInCategory" :key="item.id" class="col-sm-6 col-md-4 col-lg-3 col-xl-2">
-                    <div class="card mb-4 mx-4 app-fridge__filter-card" :class="{ 'app-fridge__expiring-soon': item.isExpiringSoon }">
-                        <div class="card-body">
-                            <h6 class="card-title">{{ item.name }}</h6>
-                            <div class="card-info">
-                                <p class="app-fridge__card-text">Expiry Date: {{ item.expiryDate }}</p>
-                                <p class="app-fridge__card-text">Quantity: {{ item.quantity }}</p>
-                            </div>
-                            <div class="mt-auto d-flex flex-column">
-                                <button class="btn btn-secondary btn-sm mb-1 app-fridge__card-btn " @click="editItem(item)" :disabled="openAddCard">Edit</button>
-                                <button class="btn btn-danger btn-sm app-fridge__card-btn " @click="deleteItem(item.id)" :disabled="openAddCard">Delete</button>
-                            </div>
-                        </div>
-                    </div>
+          </div>
+          <div v-if="!collapsedCategories[category]" class="row g-4">
+            <div v-for="item in itemsInCategory" :key="item.id" class="col-sm-6 col-md-4 col-lg-3 col-xl-2">
+              <div class="card mb-4 mx-4 app-fridge__filter-card"
+                :class="{ 'app-fridge__expiring-soon': item.isExpiringSoon }">
+                <div class="card-body">
+                  <h6 class="card-title">{{ item.name }}</h6>
+                  <div class="card-info">
+                    <p class="app-fridge__card-text">Expiry Date: {{ item.expiryDate }}</p>
+                    <p class="app-fridge__card-text">Quantity: {{ item.quantity }}</p>
+                  </div>
+                  <div class="mt-auto d-flex flex-column">
+                    <button class="btn btn-secondary btn-sm mb-1 app-fridge__card-btn " @click="editItem(item)"
+                      :disabled="openAddCard">Edit</button>
+                    <button class="btn btn-danger btn-sm app-fridge__card-btn " @click="deleteItem(item.id)"
+                      :disabled="openAddCard">Delete</button>
+                  </div>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
       </div>
     </div>
@@ -87,7 +100,7 @@
 <script>
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { getDocs, collection, getDoc, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/components/fridge/fridge.css';
@@ -150,10 +163,13 @@ export default {
     async getCurrentUserItems() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+
       if (this.currentUserId) {
         try {
-          const querySnapshot = await getDocs(collection(db, `users/${this.currentUserId}/items`));
-          this.items = [];
+          const itemsCollection = collection(db, `users/${this.currentUserId}/items`);
+          const querySnapshot = await getDocs(itemsCollection); // Fetch items once
+
+          this.items = []; // Clear the current items
           querySnapshot.forEach((doc) => {
             const itemData = { id: doc.id, ...doc.data() };
             const expiryDate = new Date(itemData.expiryDate);
@@ -162,12 +178,13 @@ export default {
 
             this.items.push(itemData);
           });
-          this.sortItems('name');
+          this.sortItems('name'); // Call sort after updating items
         } catch (error) {
           console.error("Error fetching items: ", error);
         }
       }
     },
+
     //Get Database: End
 
     //Sort Items: Start
@@ -398,6 +415,8 @@ export default {
         if (index !== -1) {
           this.items[index] = item;
         }
+
+        await this.getCurrentUserItems();
 
       } catch (error) {
         console.error("Error updating item in Firestore: ", error);
