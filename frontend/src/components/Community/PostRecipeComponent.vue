@@ -72,12 +72,6 @@
           </div>
           <div class="d-flex justify-content-center mt-3">
             <button 
-              @click="saveToDrafts" 
-              class="btn btn-secondary mx-2 shadow"
-            >
-              {{ isEditing ? 'Update Draft' : 'Save to Drafts' }}
-            </button>
-            <button 
               @click="postRecipe" 
               class="btn btn-success mx-2 shadow"
             >
