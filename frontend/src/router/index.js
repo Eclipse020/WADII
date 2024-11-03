@@ -15,7 +15,9 @@ import LogoutComponent from '../components/Auth/LogoutComponent.vue';
 import RecipeList from '../components/Recipes/RecipeList.vue';
 import RecipeDetails from '../components/Recipes/RecipeDetails.vue';
 import CommunityPage from '../pages/CommunityPage.vue';
-import PostRecipePage from '../pages/PostRecipePage.vue'
+import PostRecipePage from '../pages/PostRecipePage.vue';
+import RecipeDetailPage from '../pages/RecipeDetailPage.vue'; // Adjust path if needed
+
 
 // Define routes, grouped logically
 const routes = [
@@ -37,9 +39,18 @@ const routes = [
   { path: '/register', name: 'Register', component: RegistrationPage },
   { path: '/reset-password', name: 'ResetPassword', component: ResetPasswordPage },
 
+  {
+    path: '/recipe/:id',
+    name: 'RecipeDetail',
+    component: RecipeDetailPage,
+    props: true, // allows `id` to be passed as a prop
+  },
+
   // User profile-related routes
   { path: '/profile', name: 'ProfileSettings', component: ProfileSettingsPage, meta: { requiresAuth: true } },
   { path: '/logout', name: 'Logout', component: LogoutComponent, meta: { requiresAuth: true } }
+
+  
 ];
 
 

@@ -28,14 +28,32 @@
     <p v-if="fetchError" class="error-message">{{ fetchError }}</p>
 
     <ul>
-      <li v-for="recipe in filteredRecipes" :key="recipe.id">
-        <h3>{{ recipe.name }}</h3>
-        <p><strong>Description:</strong> {{ recipe.description }}</p>
-        <p><strong>Calories:</strong> {{ recipe.calories }}</p>
-        <p><strong>Estimated Time:</strong> {{ recipe.estimatedTime }} mins</p>
-        <p><strong>Ingredients:</strong> {{ recipe.ingredients }}</p>
-        <p><strong>Steps:</strong> {{ recipe.steps }}</p>
-        <img :src="recipe.image" alt="Recipe Image" v-if="recipe.image" />
+      <li v-for="recipe in filteredRecipes" :key="recipe.id" class="recipe-card" @click="openRecipeDetails(recipe.id)">
+        <img :src="recipe.image" alt="Recipe Image" v-if="recipe.image" class="recipe-image" />
+        <div class="recipe-content">
+          <h3>{{ recipe.name }}</h3>
+          <p><strong>Description:</strong> {{ recipe.description }}</p>
+          <p><strong>Calories:</strong> {{ recipe.calories }}</p>
+          <p><strong>Estimated Time:</strong> {{ recipe.estimatedTime }} mins</p>
+          
+          <!-- Like Functionality -->
+          <div class="like-section">
+            <button @click.stop="toggleLike(recipe)" :class="{ liked: recipe.isLiked }">
+              ❤️ {{ recipe.likeCount }}
+            </button>
+          </div>
+
+          <!-- Comment Functionality -->
+          <div class="comment-section">
+            <input v-model="recipe.newComment" placeholder="Add a comment..." />
+            <button @click.stop="addComment(recipe)">Comment</button>
+          </div>
+
+          <!-- Display Comments -->
+          <ul>
+            <li v-for="(comment, index) in recipe.comments" :key="index">{{ comment }}</li>
+          </ul>
+        </div>
       </li>
     </ul>
     
@@ -47,7 +65,7 @@
 </template>
 
 <script>
-import { getRecipes } from '@/services/RecipeService';
+import { getRecipes, updateRecipeLikes, saveComment } from '@/services/RecipeService';
 
 export default {
   data() {
@@ -64,6 +82,10 @@ export default {
     async fetchRecipes() {
       try {
         this.recipes = await getRecipes();
+        this.recipes.forEach(recipe => {
+          recipe.isLiked = false; // Initialize isLiked for each recipe
+          recipe.newComment = ''; // Initialize newComment for each recipe
+        });
       } catch (error) {
         console.error("Error fetching recipes:", error);
         this.fetchError = 'Failed to load recipes. Please try again later.';
@@ -74,6 +96,26 @@ export default {
     },
     navigateToPostRecipe() {
       this.$router.push({ name: 'PostRecipe' });
+    },
+    openRecipeDetails(id) {
+      this.$router.push({name: 'RecipeDetail', params: {id}});
+    },
+    async toggleLike(recipe) {
+      recipe.isLiked = !recipe.isLiked;
+      recipe.likeCount += recipe.isLiked ? 1 : -1;
+
+      // Update the like count in your database
+      await updateRecipeLikes(recipe.id, recipe.likeCount);
+    },
+    async addComment(recipe) {
+      if (recipe.newComment.trim()) {
+        recipe.comments.push(recipe.newComment);
+        const commentToAdd = recipe.newComment; // Store comment to add to DB
+        recipe.newComment = '';
+
+        // Save the new comment in your database
+        await saveComment(recipe.id, commentToAdd);
+      }
     }
   },
   computed: {
@@ -161,22 +203,63 @@ export default {
   padding: 0;
 }
 
-.recipe-list li {
+.recipe-card {
+  position: relative;
+  margin: 1rem; /* Adjust the margin as needed */
+  border: 1px solid #ccc; /* Optional: adds a border to the card */
+  border-radius: 8px; /* Optional: rounded corners */
+  overflow: hidden; /* Ensures child elements stay within the card bounds */
+  height: 300px; /* Set a fixed height for the card */
+}
+
+.recipe-image {
+  width: 100%; /* Make the image take the full width of the card */
+  height: 50%; /* Make the image take the top half of the card */
+  object-fit: cover; /* Crop the image to fit the container */
+  object-position: center; /* Center the image */
+}
+
+.recipe-content {
+  padding: 1rem; /* Adds padding around the content */
+}
+
+.like-section {
+  margin: 10px 0;
+}
+
+.like-section button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  color: #e74c3c;
+}
+
+.like-section button.liked {
+  color: #c0392b;
+}
+
+.comment-section {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.comment-section input {
+  flex: 1;
+  padding: 5px;
+  margin-right: 5px;
   border: 1px solid #ddd;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  transition: transform 0.2s ease;
+  border-radius: 4px;
 }
 
-.recipe-list li:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.recipe-list img {
-  max-width: 100px;
-  border-radius: 5px;
+.comment-section button {
+  padding: 5px 10px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .no-results {
@@ -191,6 +274,7 @@ export default {
   text-align: center;
 }
 
+/* Responsive design adjustments */
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;

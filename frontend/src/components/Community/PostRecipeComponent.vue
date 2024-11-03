@@ -64,9 +64,7 @@
           <div class="mb-3">
             <textarea 
               v-model="recipe.steps" 
-              placeholder="Cooking Steps:
-1. Wash potato
-2. Peel potato etc." 
+              placeholder="Click Enter for a new step" 
               class="form-control" 
               rows="6" 
               required 
@@ -93,60 +91,63 @@
 </template>
 
 <script>
-import { ref, defineComponent } from 'vue';
+import { defineComponent } from 'vue';
 import { createRecipe, saveDraft } from '@/services/RecipeService'; // Import the functions
 
 export default defineComponent({
   name: 'PostRecipeComponent',
-  setup() {
-    const recipe = ref({
-      name: '',
-      estimatedTime: null,
-      calories: null,
-      description: '',
-      ingredients: [],
-      steps: ''
-    });
-    
-    const isEditing = ref(false);
-
-    const onFileChange = (event) => {
+  data() {
+    return {
+      recipe: {
+        name: '',
+        estimatedTime: null,
+        calories: null,
+        description: '',
+        ingredients: [],
+        steps: '',
+        image: ''
+      },
+      isEditing: false,
+    };
+  },
+  methods: {
+    onFileChange(event) {
       const file = event.target.files[0];
       if (file) {
-        // Handle file upload logic here
-        console.log('Selected file:', file);
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.recipe.image = reader.result; // Store the base64 string in the recipe object
+        };
+        reader.readAsDataURL(file); // Read the image file as a data URL
       }
-    };
+    },
 
-    const handleIngredientInput = (ingredients) => {
+    handleIngredientInput(ingredients) {
       // Convert comma-separated ingredients to an array
-      recipe.value.ingredients = ingredients.split(',').map(ing => ing.trim());
-    };
+      this.recipe.ingredients = ingredients.split(',').map(ing => ing.trim());
+    },
 
-    const saveToDrafts = async () => {
+    async saveToDrafts() {
       try {
-        await saveDraft(recipe.value); // Save the recipe as a draft
+        await saveDraft(this.recipe); // Save the recipe as a draft
         console.log('Draft saved successfully');
       } catch (error) {
         console.error("Error saving draft:", error);
       }
-    };
+    },
 
-    const postRecipe = async () => {
+    async postRecipe() {
       try {
-        await createRecipe(recipe.value); // Post the recipe
+        await createRecipe(this.recipe); // Post the recipe
         console.log('Recipe posted successfully');
-        // Optionally reset the form or redirect
+        this.$router.push('/community'); // Redirect to the community page
       } catch (error) {
         console.error("Error posting recipe:", error);
       }
-    };
-
-    return { recipe, isEditing, onFileChange, handleIngredientInput, saveToDrafts, postRecipe };
-  }
+    },
+  },
 });
 </script>
-
 
 <style scoped>
 /* Add any component-specific styles here */
