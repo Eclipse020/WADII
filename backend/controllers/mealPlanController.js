@@ -1,9 +1,10 @@
 // backend/controllers/mealPlanController.js
 
-import app from '../config/firebaseConfig.js'; // Adjust the path as necessary
-import { getFirestore } from 'firebase-admin/firestore';
+// import app from '../config/firebaseConfig.js'; // Adjust the path as necessary
+// import { getFirestore } from 'firebase-admin/firestore';
 
-const db = getFirestore(app);
+import db from '../config/firebaseConfig.js';
+
 
 const getMealPlan = async (req, res) => {
     try {

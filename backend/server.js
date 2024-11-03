@@ -1,6 +1,5 @@
 // backend/server.js
 import express from 'express';
-import cors from 'cors'; // Import CORS
 import firebaseApp from './config/firebaseConfig.js';
 import { getFirestore } from 'firebase-admin/firestore';
 import mealPlanRoutes from './routes/mealPlanRoutes.js';
@@ -14,7 +13,13 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-app.use(cors()); // Use CORS middleware
+
+const cors = require('cors');
+
+app.use(cors({
+  origin: 'http://localhost:8080', // Your Vue.js frontend URL
+  credentials: true
+}));
 app.use(express.json()); // To parse JSON request bodies
 
 app.use('/api', mealPlanRoutes);

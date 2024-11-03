@@ -33,8 +33,8 @@ const routes = [
   // Recipe routes
   { path: '/recipes', name: 'RecipeList', component: RecipeList, meta: { requiresAuth: true } },
   { path: '/recipe/:id', name: 'RecipeDetails', component: RecipeDetails, meta: { requiresAuth: true } },
-  { path: '/recipe/:id', name: 'CookNow', component: CookNow, meta: { requiresAuth: true } },
-  { path: '/recipe/:id', name: 'FavouritesDisplay', component: FavouritesDisplay, meta: { requiresAuth: true } },
+  { path: '/recipe/:id/cook', name: 'CookNow', component: CookNow, meta: { requiresAuth: true } },
+  { path: '/favourites', name: 'Favourites', component: FavouritesDisplay, meta: { requiresAuth: true } },
 
   // Authentication routes
   { path: '/login', name: 'Login', component: LoginPage },
