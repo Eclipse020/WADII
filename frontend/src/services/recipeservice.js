@@ -63,10 +63,12 @@ export async function getRecipeById(id) {
 }
 
 // Function to update the like count of a recipe
-export async function updateRecipeLikes(id, likeCount) {
-  const recipeRef = doc(db, 'recipes', id); // Get a reference to the specific recipe document
-  await updateDoc(recipeRef, { likeCount }); // Update the likeCount field
-}
+export async function updateRecipeLikes(recipeId, likeCount) {
+    const recipeRef = doc(db, 'recipes', recipeId);
+    await updateDoc(recipeRef, {
+      likeCount: likeCount,
+    });
+  }
 
 // Function to save a comment for a recipe
 export async function saveComment(id, comment) {
