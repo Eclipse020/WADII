@@ -3,6 +3,7 @@
 import { initializeApp } from 'firebase/app'; // Correct import for Firebase 9+
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'; // Import Firebase Auth
 import { getFirestore } from 'firebase/firestore'; // Import Firestore (if needed)
+import { getStorage } from "firebase/storage"; // Import getStorage
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -24,4 +25,6 @@ const db = getFirestore(app);
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
 
-export { auth, db, googleProvider, signInWithPopup };
+const storage = getStorage(app); // Initialize storage
+
+export { auth, db, storage, googleProvider, signInWithPopup };
