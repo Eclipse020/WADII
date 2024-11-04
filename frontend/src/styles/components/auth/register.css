@@ -54,6 +54,10 @@
     cursor: pointer;
   }
   
+  .register__submit-btn {
+    color: #00796b;
+    cursor: not-allowed;
+  }
   .register__submit-btn:disabled {
     background-color: #ccc;
     cursor: not-allowed;

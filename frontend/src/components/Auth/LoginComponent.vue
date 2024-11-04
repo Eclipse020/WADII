@@ -64,7 +64,6 @@
 </template>
 
 <script>
-// Script section remains unchanged
 import { auth, db, googleProvider, signInWithPopup } from '../../services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -79,25 +78,39 @@ export default {
     };
   },
   methods: {
+    getErrorMessage(code) {
+      const errorMessages = {
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/user-disabled': 'This account has been disabled. Please contact support.',
+        'auth/user-not-found': 'No account found with this email. Please check your email or sign up.',
+        'auth/wrong-password': 'Incorrect password. Please try again.',
+        'auth/invalid-login-credentials': 'Invalid login credentials. Please check your email and password.',
+        'auth/too-many-requests': 'Too many failed login attempts. Please try again later.',
+        'auth/network-request-failed': 'Network error. Please check your internet connection.',
+        'auth/popup-closed-by-user': 'Google sign-in was cancelled. Please try again.',
+        'auth/operation-not-allowed': 'This login method is not enabled. Please contact support.',
+        'auth/requires-recent-login': 'Please log in again to continue.',
+        'auth/email-already-in-use': 'An account already exists with this email.',
+        'auth/weak-password': 'Password should be at least 6 characters.',
+        'auth/missing-password': 'Please enter your password.',
+        'auth/invalid-credential': 'Invalid credentials. Please check your email and password.',
+        'default': 'An error occurred during login. Please try again.'
+      };
+      return errorMessages[code] || errorMessages.default;
+    },
     async loginWithEmail() {
       try {
+        this.errorMessage = ''; // Clear any existing error messages
         await signInWithEmailAndPassword(auth, this.email, this.password);
         this.$router.push('/');
       } catch (error) {
-        if (error.code === 'auth/wrong-password') {
-          this.errorMessage = 'Incorrect password. Please try again.';
-        } else if (error.code === 'auth/user-not-found') {
-          this.errorMessage = 'No user found with this email address.';
-        } else if (error.code === 'auth/invalid-email') {
-          this.errorMessage = 'Invalid email format. Please check your email.';
-        } else {
-          this.errorMessage = 'Login failed. Have you registered an account?';
-        }
-        console.error(error);
+        this.errorMessage = this.getErrorMessage(error.code);
+        console.error('Login error:', error);
       }
     },
     async loginWithGoogle() {
       try {
+        this.errorMessage = ''; // Clear any existing error messages
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
 
@@ -118,10 +131,10 @@ export default {
 
         this.$router.push('/');
       } catch (error) {
-        console.error('Google Sign-In error', error);
+        this.errorMessage = this.getErrorMessage(error.code);
+        console.error('Google Sign-In error:', error);
       }
     },
   },
 };
 </script>
-
