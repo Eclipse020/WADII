@@ -13,7 +13,7 @@
   text-align: center;
   font-size: 2rem;
   margin-bottom: 30px;
-  color: #42b983;
+  color: #00796b;
 }
 
 .profile-container__form-group {
@@ -41,7 +41,7 @@
 
 .profile-container__input:focus {
   outline: none;
-  border-color: #42b983;
+  border-color: #00796b;
   box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
 }
 
@@ -69,7 +69,7 @@
 }
 
 .profile-container__button {
-  background-color: #42b983;
+  background-color: #00796b;
   color: white;
   border: none;
   border-radius: 8px;
@@ -80,7 +80,7 @@
 }
 
 .profile-container__button:hover {
-  background-color: #42b983;
+  background-color: #00796b;
 }
 
 .profile-container__alert {
