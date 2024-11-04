@@ -35,7 +35,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="container-fluid p-0" @mousemove="resetTimer" @keydown="resetTimer" @click="resetTimer">
+    <main class="container-fluid p-0 content" @mousemove="resetTimer" @keydown="resetTimer" @click="resetTimer">
       <router-view />
     </main>
 
@@ -138,6 +138,10 @@ html, body {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: sticky; /* Change to sticky */
+  top: 0; /* Stick to the top of the viewport */
+  z-index: 1000; /* Ensure it stays above other content */
+  width: 100%; /* Set width to 100% of the viewport */
 }
 
 .logo-heading-container {

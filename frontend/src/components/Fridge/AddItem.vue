@@ -60,8 +60,12 @@
         <div v-for="(itemsInCategory, category) in finalItems" :key="category" class="col-12">
           <div class="appFridge__category-header">
             <div class="appFridge__category-container">
-              <h5 class="m-0 flex-grow-1 d-flex align-items-start appFridge__category-title"
-                @click="toggleCategory(category)">{{ category }}</h5>
+              <h5 class="m-0 flex-grow-1 d-flex align-items-start appFridge__category-title" 
+                  @click="toggleCategory(category)">
+                {{ category }} &nbsp;
+                <span v-if="!collapsedCategories[category]">&#8679;</span>
+                <span v-else>&#8681;</span>
+              </h5>
               <div class="appFridge__sort-button">
                 <button class="btn btn-sm me-2 appFridge__button--sort"
                   @click="sortCategorizedItems(category, 'quantity')" :disabled="openAddCard"> Sort by Quantity
@@ -78,7 +82,7 @@
                 <div class="card-body">
                   <h6 class="card-title">{{ item.name }}</h6>
                   <div class="card-info">
-                    <p class="app-fridge__card-text">Expiry Date: {{ item.expiryDate }}</p>
+                    <p :class="{'app-fridge__expiry-date-expiring-soon': item.isExpiringSoon}" class="app-fridge__card-text">Expiry Date: {{ item.expiryDate }}</p>
                     <p class="app-fridge__card-text">Quantity: {{ item.quantity }}</p>
                   </div>
                   <div class="mt-auto d-flex flex-column">
@@ -142,6 +146,8 @@ export default {
       //Collapsed: Start
       collapsedCategories: {},
       //Collapsed: End
+
+      toggledCategories: [],
     };
   },
   methods: {

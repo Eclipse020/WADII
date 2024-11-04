@@ -236,6 +236,10 @@
     border: 2px solid red;
 }
 
+.app-fridge__expiry-date-expiring-soon {
+    color: red !important;
+}
+
 .app-fridge__card-info {
     flex-grow: 1;
     margin-bottom: 10px;
