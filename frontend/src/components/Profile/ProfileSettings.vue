@@ -138,9 +138,9 @@
           <label class="profile-container__checkbox-inline">
             <input type="checkbox" value="low-sodium" v-model="user.dietaryPreferences" /> Low-Sodium
           </label>
-          <label class="profile-container__checkbox-inline">
+          <!-- <label class="profile-container__checkbox-inline">
             <input type="checkbox" value="none" v-model="user.dietaryPreferences" /> None
-          </label>
+          </label> -->
         </div>
       </div>
 

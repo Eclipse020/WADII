@@ -22,7 +22,7 @@
 
 .login__title {
   font-weight: bold;
-  color: #42b983;
+  color: #00796b;
   text-align: center;
   margin-bottom: 1.5rem;
 }
@@ -49,7 +49,7 @@
 
 .login__input:focus {
   outline: none;
-  border-color: #42b983;
+  border-color: #00796b;
   box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
 }
 
@@ -59,7 +59,7 @@
 }
 
 .login__link {
-  color: #42b983;
+  color: #00796b;
   text-decoration: none;
 }
 
@@ -78,23 +78,23 @@
 }
 
 .login__button--primary {
-  background-color: #42b983;
+  background-color: #00796b;
   color: white;
 }
 
 .login__button--primary:hover {
-  background-color: #3aa673;
+  background-color: #00796b;
 }
 
 .login__button--google {
   background-color: white;
-  border: 1px solid #3aa673;
-  color: #3aa673;
+  border: 1px solid #00796b;
+  color: #00796b;
   margin-top: 1rem;
 }
 
 .login__button--google:hover {
-  background-color: #3aa673;
+  background-color: #00796b;
   color: white;
 }
 
