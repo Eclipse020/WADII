@@ -104,6 +104,7 @@ import { getDocs, collection, getDoc, addDoc, deleteDoc, doc, updateDoc } from "
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/components/fridge/fridge.css';
+import '../../styles/main.css';
 
 export default {
   name: 'FridgePage',

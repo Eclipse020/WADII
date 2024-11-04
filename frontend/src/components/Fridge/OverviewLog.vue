@@ -22,7 +22,7 @@
         <ul class="app-summary__list">
             <li class="app-summary__list-item" v-for="item in summary.expiredItems" :key="item.id">{{ item.name }} (Expired on: {{ item.expiryDate }})</li>
         </ul>
-        <button class="app-summary__button app-summary__button--secondary" @click="goToInventory">Back to Inventory</button>
+        <button style="width: 100%;" class="app-summary__button app-summary__button--secondary" @click="goToInventory">Back to Inventory</button>
     </div>
 </template>
 
@@ -34,6 +34,7 @@ import { collection, getDocs } from "firebase/firestore";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/components/fridge/fridge.css';
+import '../../styles/main.css';
 
 
 export default {
