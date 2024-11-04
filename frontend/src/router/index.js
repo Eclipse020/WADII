@@ -41,7 +41,7 @@ const routes = [
 
   {
     path: '/recipe/:id',
-    name: 'RecipeDetail',
+    name: 'RecipeDetailPage',
     component: RecipeDetailPage,
     props: true, // allows `id` to be passed as a prop
   },
