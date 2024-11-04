@@ -18,6 +18,9 @@ import CookNow from '../components/Recipes/CookNow.vue';
 import FavouritesDisplay from '../components/Recipes/FavouritesDisplay.vue';
 import CommunityPage from '../pages/CommunityPage.vue';
 import DashboardSummary from '../components/Dashboard/DashboardSummary.vue';
+import PostRecipePage from '../pages/PostRecipePage.vue';
+import RecipeDetailPage from '../pages/RecipeDetailPage.vue'; // Adjust path if needed
+
 
 // Define routes, grouped logically
 const routes = [
@@ -29,6 +32,7 @@ const routes = [
   { path: '/mealPlanner', name: 'MealPlanner', component: MealPlannerPage, meta: { requiresAuth: true } },
   { path: '/community', name: 'Community', component: CommunityPage, meta: { requiresAuth: true } },
   { path: '/dashboard', name: 'Dashboard', component: DashboardSummary, meta: { requiresAuth: true } },
+  { path: '/community/postrecipe', name: 'PostRecipe', component: PostRecipePage, meta: { requiresAuth: true } },
   
   // Recipe routes
   { path: '/recipes', name: 'RecipeList', component: RecipeList, meta: { requiresAuth: true } },
@@ -41,9 +45,18 @@ const routes = [
   { path: '/register', name: 'Register', component: RegistrationPage },
   { path: '/reset-password', name: 'ResetPassword', component: ResetPasswordPage },
 
+  {
+    path: '/recipe/:id',
+    name: 'RecipeDetail',
+    component: RecipeDetailPage,
+    props: true, // allows `id` to be passed as a prop
+  },
+
   // User profile-related routes
   { path: '/profile', name: 'ProfileSettings', component: ProfileSettingsPage, meta: { requiresAuth: true } },
   { path: '/logout', name: 'Logout', component: LogoutComponent, meta: { requiresAuth: true } }
+
+  
 ];
 
 
