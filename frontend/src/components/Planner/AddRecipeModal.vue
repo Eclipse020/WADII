@@ -24,6 +24,26 @@
             </div>
           </div>
 
+          <!-- Favorite Recipes Section -->
+          <div v-if="favoriteRecipes.length" class="recipe-modal__favorites mt-3">
+            <h6 class="recipe-modal__favorites-title">Your Favorite Recipes:</h6>
+            <div class="recipe-modal__favorites-list">
+              <div v-for="recipe in favoriteRecipes" :key="recipe.id" class="recipe-modal__recipe-item mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="recipe-modal__recipe-label" :class="{ 'selected': selectedRecipe?.uri === recipe.uri }" @click="selectRecipe(recipe)">
+                    {{ recipe.label }}
+                  </span>
+                  <button
+                    class="recipe-modal__btn-add btn btn-success btn-sm"
+                    @click.stop="addRecipe(recipe)"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div v-if="validIngredients.length" class="recipe-modal__available-ingredients mt-3 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
               <h6 class="recipe-modal__available-ingredients-title me-2">Available Ingredients:</h6>
@@ -162,8 +182,9 @@ export default {
       selectedIngredients: [],
       dietaryPreferences: '',
       selectedRecipe: null,
-      APP_ID: "3293e008",
-      APP_KEY: "715ffcc7f5922cd9e6cc3ab48549c216",
+      favoriteRecipes: [],
+      APP_ID: "fcbb645c",
+      APP_KEY: "475ad8f07b669d07d1b4e5a021a100cc",
       BASE_URL: "https://api.edamam.com/api/recipes/v2"
     };
   },
@@ -184,6 +205,7 @@ export default {
         if (newVal) {
           this.fetchFridgeIngredients();
           this.fetchDietaryPreferences();
+          this.fetchFavoriteRecipes();
         } else {
           this.selectedRecipe = null;
         }
@@ -273,6 +295,30 @@ export default {
       }
     },
 
+    async fetchFavoriteRecipes() {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.error("User is not authenticated");
+        return;
+      }
+
+      try {
+        const favoritesCollection = collection(db, `users/${user.uid}/favorites`);
+        const snapshot = await getDocs(favoritesCollection);
+        
+        this.favoriteRecipes = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        console.log("Fetched favorite recipes:", this.favoriteRecipes);
+      } catch (error) {
+        console.error("Error fetching favorite recipes:", error);
+      }
+    },
+
     useAvailableIngredients() {
       if (this.selectedIngredients.length > 0) {
         this.query = this.selectedIngredients.join(", ");
@@ -298,3 +344,39 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.recipe-modal__favorites {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.recipe-modal__favorites-title {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.recipe-modal__recipe-item {
+  background-color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-modal__recipe-label {
+  cursor: pointer;
+}
+
+.recipe-modal__recipe-label:hover {
+  color: #007bff;
+}
+
+.recipe-modal__recipe-label.selected {
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Existing styles remain unchanged */
+</style>

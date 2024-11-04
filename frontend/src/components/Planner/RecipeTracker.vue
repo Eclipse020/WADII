@@ -31,7 +31,7 @@
           <li v-for="(recipe, index) in filteredRecipes"
               :key="index"
               class="tracker__item">
-            {{ recipe.label }} - {{ recipe.completedDate }}
+            {{ recipe.label }} - {{ recipe.completionDate }}
           </li>
         </ul>
       </div>
@@ -70,7 +70,7 @@ export default {
       const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
 
       return this.completedRecipes.filter(recipe => {
-        const recipeDate = new Date(recipe.completedDate);
+        const recipeDate = new Date(recipe.completionDate);
         switch (this.timeFilter) {
           case 'day':
             return recipeDate >= today;
@@ -134,13 +134,13 @@ export default {
       try {
         const today = new Date().toLocaleDateString();
         const existingRecipe = this.completedRecipes.find(r => 
-          r.label === recipe.label && r.completedDate === today
+          r.label === recipe.label && r.completionDate === today
         );
 
         if (!existingRecipe) {
           const completedRecipe = {
             label: recipe.label,
-            completedDate: today,
+            completionDate: today,
             recipeId: recipe.id || null,
             userId: this.currentUserId
           };
