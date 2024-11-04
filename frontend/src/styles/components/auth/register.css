@@ -21,7 +21,23 @@
   .register__label {
     font-weight: 500;
   }
+
+  .register__button {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: #00796b;
+    transition: background-color 0.2s ease;
+    color: white;
+  }
   
+  .register__button:hover {
+    background-color: #00796b;
+  }
+
   .register__input:focus {
     border-color: #00796b;
     outline: none;
@@ -35,17 +51,9 @@
     border: none;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    text-align: center;
   }
 
-  .register__button {
-    background-color: #00796b;
-    color: white;
-  }
-  
-  .register__button:hover {
-    background-color: #00796b;
-  }
-  
   .register__error {
     font-weight: bold;
   }
@@ -57,6 +65,7 @@
   .register__submit-btn {
     color: #00796b;
     cursor: not-allowed;
+    margin: auto
   }
   .register__submit-btn:disabled {
     background-color: #ccc;

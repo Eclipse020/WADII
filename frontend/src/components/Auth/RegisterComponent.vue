@@ -4,7 +4,7 @@
       <h2 class="register__title text-center mb-4">Register</h2>
       
       <!-- Show general error message -->
-      <div v-if="error" class="alert alert-danger mb-3" role="alert">
+      <div v-if="error" class="register__error alert alert-danger mb-3" role="alert">
         {{ error }}
       </div>
 
@@ -21,7 +21,7 @@
             required
             aria-label="Email"
           />
-          <div v-if="emailError" class="invalid-feedback">
+          <div v-if="emailError" class="register__error alert alert-danger mt-2">
             {{ emailError }}
           </div>
         </div>
@@ -45,12 +45,12 @@
             :type="passwordVisible ? 'text' : 'password'"
             v-model="formData.password"
             class="register__input form-control"
-            :class="{ 'is-invalid': passwordLengthError }"
             placeholder="Password"
             required
             aria-label="Password"
           />
-          <div v-if="passwordLengthError" class="invalid-feedback">
+          <!-- Show password length error message -->
+          <div v-if="passwordLengthError" class="register__error alert alert-danger mt-2">
             Password must be between 6 and 4096 characters.
           </div>
         </div>
@@ -62,19 +62,19 @@
             :type="passwordVisible ? 'text' : 'password'"
             v-model="formData.confirmPassword"
             class="register__input form-control"
-            :class="{ 'is-invalid': passwordMatchError }"
             placeholder="Confirm Password"
             required
             aria-label="Confirm Password"
           />
-          <div v-if="passwordMatchError" class="invalid-feedback">
+          <!-- Show password match error message -->
+          <div v-if="passwordMatchError" class="register__error alert alert-danger mt-2">
             Passwords do not match.
           </div>
         </div>
 
         <button 
           type="button"
-          class="register__toggle-btn btn btn-outline-secondary w-100 mb-3"
+          class="register__toggle-btn register__button"
           @click="passwordVisible = !passwordVisible"
         >
           {{ passwordVisible ? 'Hide Passwords' : 'Show Passwords' }}
@@ -96,7 +96,7 @@
 
         <button 
           type="submit" 
-          class="register__submit-btn btn btn-success w-100"
+          class="register__button"
           :disabled="isSubmitting || passwordLengthError || passwordMatchError"
         >
           <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -208,6 +208,7 @@ export default {
           // Registration successful
           this.$router.push({
             path: '/profile',
+            query: { welcome: 'true' }
           });
         } catch (firestoreError) {
           console.error('Firestore error:', firestoreError);
