@@ -65,7 +65,7 @@
 
         <button 
           type="button"
-          class="register__toggle-btn btn btn-outline-secondary mb-3"
+          class="register__toggle-btn btn btn-success w-100"
           @click="passwordVisible = !passwordVisible"
         >
           {{ passwordVisible ? 'Hide Passwords' : 'Show Passwords' }}
@@ -105,6 +105,7 @@
 import { auth, db } from '@/services/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import '../../styles/main.css';
 
 export default {
   name: 'RegisterForm',

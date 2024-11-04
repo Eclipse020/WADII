@@ -35,6 +35,7 @@
   <script>
   import { sendPasswordResetEmail } from 'firebase/auth';
   import { auth } from '../../services/firebase';
+  import '../../styles/main.css';
   
   export default {
     data() {
@@ -59,8 +60,4 @@
     },
   };
   </script>
-  
-  <style scoped>
-  
-  </style>
   

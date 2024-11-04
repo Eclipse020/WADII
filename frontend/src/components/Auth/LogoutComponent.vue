@@ -24,6 +24,7 @@
 
 <script>
 import { auth } from '@/services/firebase';
+import '../../styles/main.css';
 
 export default {
   data() {
@@ -54,7 +55,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-
-</style>
