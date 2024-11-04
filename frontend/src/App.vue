@@ -122,21 +122,12 @@ export default {
 }
 
 /* General Reset for Body and HTML */
-html, body, #app{
+html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
 }
 
-/* General App Styling */
-#app {
-  font-family: 'Poppins', sans-serif;
-  color: var(--text-primary);
-  text-align: center;
-}
 
 /* Header Styling */
 .app-header {
