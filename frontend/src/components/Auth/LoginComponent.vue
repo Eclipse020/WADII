@@ -68,6 +68,7 @@
 import { auth, db, googleProvider, signInWithPopup } from '../../services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import '../../styles/main.css';
 
 export default {
   data() {

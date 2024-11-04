@@ -2,7 +2,7 @@
 <template>
   <div class="reset-password">
     <h2 class="reset-password__title">Reset Your Password</h2>
-    <p class="reset-password__description">Enter your email address, and we'll send you a link to reset your password.</p>
+    <p class="reset-password__description">Enter your registered email address, and we'll send you a link to reset your password.</p>
     <form @submit.prevent="resetPassword" class="reset-password__form">
       <div class="reset-password__form-group">
         <input
@@ -35,6 +35,7 @@
   <script>
   import { sendPasswordResetEmail } from 'firebase/auth';
   import { auth } from '../../services/firebase';
+  import '../../styles/main.css';
   
   export default {
     data() {
@@ -59,8 +60,4 @@
     },
   };
   </script>
-  
-  <style scoped>
-  
-  </style>
   

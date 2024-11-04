@@ -5,7 +5,7 @@
   
   .register__title {
     font-weight: bold;
-    color: #42b983;
+    color: #00796b;
   }
   
   .register__form {
@@ -23,12 +23,27 @@
   }
   
   .register__input:focus {
-    border-color: #42b983;
+    border-color: #00796b;
     outline: none;
   }
   
   .register__toggle-btn {
-    padding: 0.5rem 1rem;
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .register__button {
+    background-color: #00796b;
+    color: white;
+  }
+  
+  .register__button:hover {
+    background-color: #00796b;
   }
   
   .register__error {
@@ -45,7 +60,7 @@
   }
   
   .register__login-link a {
-    color: #42b983;
+    color: #00796b;
     text-decoration: none;
   }
   

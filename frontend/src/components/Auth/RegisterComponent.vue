@@ -1,7 +1,7 @@
 <template>
   <div class="register d-flex justify-content-center align-items-center min-vh-100 bg-light">
     <div class="register__card card p-4 shadow-sm">
-      <h2 class="register__title card-title text-center mb-4">Register</h2>
+      <h2 class="register__title text-center mb-4">Register</h2>
       <form class="register__form" @submit.prevent="handleSubmit">
         <div class="register__form-group mb-3">
           <label for="email" class="register__label form-label">Email:</label>
@@ -65,7 +65,7 @@
 
         <button 
           type="button"
-          class="register__toggle-btn btn btn-outline-secondary mb-3"
+          class="register__toggle-btn btn btn-success w-100"
           @click="passwordVisible = !passwordVisible"
         >
           {{ passwordVisible ? 'Hide Passwords' : 'Show Passwords' }}
@@ -105,6 +105,7 @@
 import { auth, db } from '@/services/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import '../../styles/main.css';
 
 export default {
   name: 'RegisterForm',
