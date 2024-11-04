@@ -52,9 +52,9 @@
             </div>
           </div>
         </header>
-        <p v-if="!items || items.length === 0">
+        <p class="text-center" v-if="!items || items.length === 0">
           Your Fridge is Empty ~&#127810;<br>
-          <img class="img-fluid" style="width: 300px" src="@/assets/emptyFridge.jpg" alt="Empty Fridge">
+          <img class="img-fluid d-block mx-auto" style="width: 300px;" src="@/assets/emptyFridge.jpg" alt="Empty Fridge">
         </p>
         <!-- Categorized Items -->
         <div v-for="(itemsInCategory, category) in finalItems" :key="category" class="col-12">
