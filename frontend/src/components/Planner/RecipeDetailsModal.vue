@@ -10,6 +10,11 @@
 
         <div class="recipe-modal__info">
           <h3>{{ recipe.label }}</h3>
+          
+          <!-- Using the same image display code from AddRecipeModal -->
+          <div class="recipe-preview-modal__image" v-if="recipe.image">
+            <img :src="recipe.image" :alt="recipe.label" style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; margin: 15px 0;" />
+          </div>
 
           <div class="recipe-modal__details">
             <div class="recipe-modal__nutrition">
@@ -64,10 +69,6 @@
 </template>
 
 <script>
-// import { db } from "../../services/firebase";
-// import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
-// import { getAuth } from "firebase/auth";
-
 export default {
   props: {
     recipe: {
@@ -99,7 +100,6 @@ export default {
       alert("Ingredients added to the shopping list!");
     },
     goToCookingInstructions() {
-      // Navigate to the recipe details page using the recipe URI
       const encodedUri = encodeURIComponent(this.recipe.uri);
       this.$router.push({ 
         name: 'RecipeDetails',

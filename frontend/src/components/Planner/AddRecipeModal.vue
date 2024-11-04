@@ -24,26 +24,6 @@
             </div>
           </div>
 
-          <!-- Favorite Recipes Section -->
-          <div v-if="favoriteRecipes.length" class="recipe-modal__favorites mt-3">
-            <h6 class="recipe-modal__favorites-title">Your Favorite Recipes:</h6>
-            <div class="recipe-modal__favorites-list">
-              <div v-for="recipe in favoriteRecipes" :key="recipe.id" class="recipe-modal__recipe-item mb-2">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="recipe-modal__recipe-label" :class="{ 'selected': selectedRecipe?.uri === recipe.uri }" @click="selectRecipe(recipe)">
-                    {{ recipe.label }}
-                  </span>
-                  <button
-                    class="recipe-modal__btn-add btn btn-success btn-sm"
-                    @click.stop="addRecipe(recipe)"
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div v-if="validIngredients.length" class="recipe-modal__available-ingredients mt-3 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
               <h6 class="recipe-modal__available-ingredients-title me-2">Available Ingredients:</h6>
@@ -68,16 +48,51 @@
                 </li>
               </ul>
             </div>
-            <button type="button" class="recipe-modal__btn-use-ingredients btn btn-info" @click="useAvailableIngredients">Use Available Ingredients</button>
+            <button type="button" class="recipe-modal__btn-use-ingredients btn btn-success" @click="useAvailableIngredients">Use Available Ingredients</button>
+          </div>
+
+          <!-- Updated Favorite Recipes Section -->
+          <div v-if="favoriteRecipes.length" class="recipe-modal__favorites mt-4">
+            <div class="recipe-modal__favorites-header" @click="toggleFavorites">
+              <h6 class="recipe-modal__favorites-title">
+                Your Favorite Recipes
+                <i :class="['fas', showFavorites ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
+              </h6>
+            </div>
+            <div v-if="showFavorites" class="recipe-modal__favorites-content">
+              <div class="recipe-modal__recipe-list">
+                <div v-for="recipe in favoriteRecipes" :key="recipe.id" class="recipe-modal__recipe-item">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span 
+                      class="recipe-modal__recipe-label" 
+                      :class="{ 'selected': selectedRecipe?.uri === recipe.uri }"
+                      @click="selectRecipe(recipe)"
+                    >
+                      {{ recipe.label }}
+                    </span>
+                    <button
+                      class="recipe-modal__btn-add btn btn-success btn-sm"
+                      @click.stop="addRecipe(recipe)"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
 
         <div class="recipe-modal__results mt-4">
           <h6 v-if="recipes.length > 0" class="recipe-modal__results-title mb-3">Search Results:</h6>
           <div v-if="recipes.length > 0" class="recipe-modal__recipe-list">
-            <div v-for="recipe in recipes" :key="recipe.recipe.uri" class="recipe-modal__recipe-item mb-2">
+            <div v-for="recipe in recipes" :key="recipe.recipe.uri" class="recipe-modal__recipe-item">
               <div class="d-flex justify-content-between align-items-center">
-                <span class="recipe-modal__recipe-label" :class="{ 'selected': selectedRecipe?.uri === recipe.recipe.uri }" @click="selectRecipe(recipe.recipe)">
+                <span 
+                  class="recipe-modal__recipe-label" 
+                  :class="{ 'selected': selectedRecipe?.uri === recipe.recipe.uri }"
+                  @click="selectRecipe(recipe.recipe)"
+                >
                   {{ recipe.recipe.label }}
                 </span>
                 <button
@@ -108,21 +123,26 @@
         <div class="recipe-preview-modal__info">
           <h3>{{ selectedRecipe.label }}</h3>
 
+          <!-- Added image display -->
+          <div class="recipe-preview-modal__image" v-if="selectedRecipe.image">
+            <img :src="selectedRecipe.image" :alt="selectedRecipe.label" style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; margin: 15px 0;" />
+          </div>
+
           <div class="recipe-preview-modal__details">
             <div class="recipe-preview-modal__nutrition">
               <h4>Nutrition:</h4>
-              <p><strong>Calories:</strong> {{ Math.round(selectedRecipe.calories) }}</p>
-              <p><strong>Servings:</strong> {{ selectedRecipe.yield }}</p>
+              <p><strong>Calories:</strong> {{ selectedRecipe.calories ? Math.round(selectedRecipe.calories) : 'N/A' }}</p>
+              <p><strong>Servings:</strong> {{ selectedRecipe.yield || 'N/A' }}</p>
               <h5>Nutrients per serving:</h5>
               <ul class="recipe-preview-modal__nutrition-list">
-                <li v-if="selectedRecipe.totalNutrients?.PROCNT">
-                  <i class="fas fa-drumstick-bite"></i> Protein: {{ Math.round(selectedRecipe.totalNutrients.PROCNT.quantity / selectedRecipe.yield) }}g
+                <li v-if="getNutrientValue('PROCNT')">
+                  <i class="fas fa-drumstick-bite"></i> Protein: {{ getNutrientValue('PROCNT') }}g
                 </li>
-                <li v-if="selectedRecipe.totalNutrients?.FAT">
-                  <i class="fas fa-oil-can"></i> Fat: {{ Math.round(selectedRecipe.totalNutrients.FAT.quantity / selectedRecipe.yield) }}g
+                <li v-if="getNutrientValue('FAT')">
+                  <i class="fas fa-oil-can"></i> Fat: {{ getNutrientValue('FAT') }}g
                 </li>
-                <li v-if="selectedRecipe.totalNutrients?.CHOCDF">
-                  <i class="fas fa-bread-slice"></i> Carbs: {{ Math.round(selectedRecipe.totalNutrients.CHOCDF.quantity / selectedRecipe.yield) }}g
+                <li v-if="getNutrientValue('CHOCDF')">
+                  <i class="fas fa-bread-slice"></i> Carbs: {{ getNutrientValue('CHOCDF') }}g
                 </li>
               </ul>
             </div>
@@ -185,7 +205,8 @@ export default {
       favoriteRecipes: [],
       APP_ID: "fcbb645c",
       APP_KEY: "475ad8f07b669d07d1b4e5a021a100cc",
-      BASE_URL: "https://api.edamam.com/api/recipes/v2"
+      BASE_URL: "https://api.edamam.com/api/recipes/v2",
+      showFavorites: false,
     };
   },
   computed: {
@@ -213,6 +234,17 @@ export default {
     }
   },
   methods: {
+    getNutrientValue(nutrientType) {
+      if (!this.selectedRecipe?.totalNutrients?.[nutrientType]?.quantity || !this.selectedRecipe?.yield || this.selectedRecipe.yield === 0) {
+        return 'N/A';
+      }
+      return Math.round(this.selectedRecipe.totalNutrients[nutrientType].quantity / this.selectedRecipe.yield);
+    },
+
+    toggleFavorites() {
+      this.showFavorites = !this.showFavorites;
+    },
+    
     selectRecipe(recipe) {
       this.selectedRecipe = recipe;
     },
@@ -344,39 +376,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.recipe-modal__favorites {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.recipe-modal__favorites-title {
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-
-.recipe-modal__recipe-item {
-  background-color: white;
-  padding: 0.5rem;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.recipe-modal__recipe-label {
-  cursor: pointer;
-}
-
-.recipe-modal__recipe-label:hover {
-  color: #007bff;
-}
-
-.recipe-modal__recipe-label.selected {
-  color: #007bff;
-  font-weight: bold;
-}
-
-/* Existing styles remain unchanged */
-</style>

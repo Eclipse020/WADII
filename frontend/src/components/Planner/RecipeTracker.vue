@@ -18,13 +18,35 @@
       <div class="tracker__list">
         <div class="tracker__header">
           <h4 class="tracker__subtitle">Completed Recipes:</h4>
-          <div class="tracker__filter">
-            <select v-model="timeFilter" class="tracker__select">
-              <option value="all">All Time</option>
-              <option value="day">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-            </select>
+        </div>
+        <div class="tracker__filter">
+          <div class="tracker__date-range">
+            <div class="tracker__date-field">
+              <label>From:</label>
+              <input 
+                type="date" 
+                v-model="dateRange.start"
+                :max="dateRange.end || today"
+                class="tracker__date-input"
+              />
+            </div>
+            <div class="tracker__date-field">
+              <label>To:</label>
+              <input 
+                type="date" 
+                v-model="dateRange.end"
+                :min="dateRange.start"
+                :max="today"
+                class="tracker__date-input"
+              />
+            </div>
+            <button 
+              @click="clearDateRange" 
+              class="tracker__clear-btn"
+              :disabled="!dateRange.start && !dateRange.end"
+            >
+              Clear
+            </button>
           </div>
         </div>
         <ul class="tracker__list-container">
@@ -50,7 +72,10 @@ export default {
     return {
       completedRecipes: [],
       currentUserId: null,
-      timeFilter: 'all',
+      dateRange: {
+        start: null,
+        end: null
+      },
       isCollapsed: false,
       screenWidth: window.innerWidth
     }
@@ -63,24 +88,43 @@ export default {
     window.removeEventListener('resize', this.handleResize);
   },
   computed: {
+    today() {
+      return new Date().toISOString().split('T')[0];
+    },
     filteredRecipes() {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+      if (!this.dateRange.start && !this.dateRange.end) {
+        return this.completedRecipes;
+      }
 
       return this.completedRecipes.filter(recipe => {
-        const recipeDate = new Date(recipe.completionDate);
-        switch (this.timeFilter) {
-          case 'day':
-            return recipeDate >= today;
-          case 'week':
-            return recipeDate >= weekAgo;
-          case 'month':
-            return recipeDate >= monthAgo;
-          default:
-            return true;
+        // Parse the recipe completion date
+        const [month, day, year] = recipe.completionDate.split('/');
+        const recipeDate = new Date(year, month - 1, day);
+        recipeDate.setHours(0, 0, 0, 0);
+
+        // Parse start date if exists
+        let startDate = null;
+        if (this.dateRange.start) {
+          startDate = new Date(this.dateRange.start);
+          startDate.setHours(0, 0, 0, 0);
         }
+
+        // Parse end date if exists
+        let endDate = null;
+        if (this.dateRange.end) {
+          endDate = new Date(this.dateRange.end);
+          endDate.setHours(23, 59, 59, 999); // Set to end of day
+        }
+
+        // Apply date range filter
+        if (startDate && endDate) {
+          return recipeDate >= startDate && recipeDate <= endDate;
+        } else if (startDate) {
+          return recipeDate >= startDate;
+        } else if (endDate) {
+          return recipeDate <= endDate;
+        }
+        return true;
       });
     },
     topRecipes() {
@@ -104,6 +148,10 @@ export default {
     }
   },
   methods: {
+    clearDateRange() {
+      this.dateRange.start = null;
+      this.dateRange.end = null;
+    },
     handleResize() {
       this.screenWidth = window.innerWidth;
       this.isCollapsed = this.screenWidth <= 768;
@@ -164,3 +212,61 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.tracker__filter {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.tracker__date-range {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tracker__date-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tracker__date-field label {
+  font-weight: 500;
+  color: #666;
+}
+
+.tracker__date-input {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.tracker__clear-btn {
+  padding: 6px 12px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.tracker__clear-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tracker__clear-btn:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.tracker__list-container {
+  margin-top: 10px;
+}
+</style>
