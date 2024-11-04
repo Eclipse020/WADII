@@ -5,7 +5,7 @@
         <header class="app-fridge__header">
           <div>
             <button class="btn btn-sm me-2 app-fridge__button--top" @click="sortByCategory" :disabled="openAddCard">
-              Category <span v-if="isCategoryAscending">&#8593;</span><span v-else>&#8595;</span>
+              Category &nbsp; <span v-if="isCategoryAscending">&#8681;</span><span v-else>&#8679;</span>
             </button>
             <button class="btn btn-sm me-2 app-fridge__button--top" @click="navigateTo('summary')"
               :disabled="openAddCard">View Inventory Summary</button>
