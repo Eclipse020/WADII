@@ -83,39 +83,39 @@ export default {
       }
     },
     async toggleFavorite(recipe) {
-    const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === recipe.label);
-    if (recipeIndex !== -1) {
-      // Remove from favorites
-      const recipeId = this.favoriteRecipes[recipeIndex].id;
-      await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
-      this.favoriteRecipes.splice(recipeIndex, 1);
-      alert("Recipe removed from favorites!");
-    } else {
-      // Add to favorites
-      const favoriteRecipe = {
-        label: recipe.label,
-        image: recipe.image,
-        url: recipe.url,
-        ingredientLines: recipe.ingredientLines,
-        totalTime: recipe.totalTime,
-        dateAdded: new Date().toLocaleDateString(),
-        uri: recipe.uri // Ensure you have the URI if it exists
-      };
-      const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-      const docRef = await addDoc(favoritesCollection, favoriteRecipe);
-      this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
-      alert("Recipe added to favorites!");
-    }
-  },
+      const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === recipe.label);
+      if (recipeIndex !== -1) {
+        const recipeId = this.favoriteRecipes[recipeIndex].id;
+        console.log("toggled recipe.id: ", recipeId);
+        await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
+        this.favoriteRecipes.splice(recipeIndex, 1);
+      } else {
+        const favoriteRecipe = {
+          label: recipe.label,
+          image: recipe.image,
+          url: recipe.url,
+          ingredientLines: recipe.ingredientLines,
+          totalTime: recipe.totalTime,
+          uri: recipe.uri // Ensure consistent ID is saved
+        };
+        const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+        const docRef = await addDoc(favoritesCollection, favoriteRecipe);
+        this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
+      }
+    },
     isFavorite(recipe) {
       return this.favoriteRecipes.some(fav => fav.label === recipe.label);
     },
     viewDetails(recipe) {
-    // Use the URI if available, otherwise use another identifier
-    const recipeId = recipe.uri ? encodeURIComponent(recipe.uri) : recipe.id;
-    console.log("Redirecting to Recipe Details with ID:", recipeId);
-    this.$router.push({ name: 'RecipeDetails', params: { id: recipeId } });
-  }
+      // Use the saved recipe ID and construct the proper URI format
+      const recipeId = recipe.recipeId || recipe.id;
+      this.$router.push({ 
+        name: 'RecipeDetails', 
+        params: { 
+          id: recipeId 
+        } 
+      });
+    }
   }
 };
 </script>
