@@ -68,6 +68,7 @@ import { getAuth } from "firebase/auth";
 
 export default {
   name: 'RecipeTracker',
+  emits: ['recipes-loaded'],
   data() {
     return {
       completedRecipes: [],
@@ -172,6 +173,8 @@ export default {
           id: doc.id,
           ...doc.data()
         }));
+        // Emit event after data is loaded
+        this.$emit('recipes-loaded');
       } catch (error) {
         console.error("Error loading completed recipes:", error);
       }
@@ -201,6 +204,8 @@ export default {
             ...completedRecipe
           });
 
+          // Emit event after adding new recipe
+          this.$emit('recipes-loaded');
           console.log("Recipe successfully added to completed recipes");
         } else {
           console.log("Recipe already marked as completed today");

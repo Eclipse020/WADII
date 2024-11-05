@@ -11,26 +11,26 @@
         <div class="recipe-modal__info">
           <h3>{{ recipe.label }}</h3>
           
-          <!-- Using the same image display code from AddRecipeModal -->
-          <div class="recipe-preview-modal__image" v-if="recipe.image">
+          <!-- Updated class name to match AddRecipeModal's implementation -->
+          <div class="recipe-modal__image" v-if="recipe.image">
             <img :src="recipe.image" :alt="recipe.label" style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; margin: 15px 0;" />
           </div>
 
           <div class="recipe-modal__details">
             <div class="recipe-modal__nutrition">
               <h4>Nutrition:</h4>
-              <p><strong>Calories:</strong> {{ Math.round(recipe.calories) }}</p>
-              <p><strong>Servings:</strong> {{ recipe.yield }}</p>
+              <p><strong>Calories:</strong> {{ recipe.calories ? Math.round(recipe.calories) : 'N/A' }}</p>
+              <p><strong>Servings:</strong> {{ recipe.yield || 'N/A' }}</p>
               <h5>Nutrients per serving:</h5>
               <ul class="recipe-modal__nutrition-list">
-                <li v-if="recipe.totalNutrients?.PROCNT">
-                  <i class="fas fa-drumstick-bite"></i> Protein: {{ Math.round(recipe.totalNutrients.PROCNT.quantity / recipe.yield) }}g
+                <li v-if="getNutrientValue('PROCNT')">
+                  <i class="fas fa-drumstick-bite"></i> Protein: {{ getNutrientValue('PROCNT') }}g
                 </li>
-                <li v-if="recipe.totalNutrients?.FAT">
-                  <i class="fas fa-oil-can"></i> Fat: {{ Math.round(recipe.totalNutrients.FAT.quantity / recipe.yield) }}g
+                <li v-if="getNutrientValue('FAT')">
+                  <i class="fas fa-oil-can"></i> Fat: {{ getNutrientValue('FAT') }}g
                 </li>
-                <li v-if="recipe.totalNutrients?.CHOCDF">
-                  <i class="fas fa-bread-slice"></i> Carbs: {{ Math.round(recipe.totalNutrients.CHOCDF.quantity / recipe.yield) }}g
+                <li v-if="getNutrientValue('CHOCDF')">
+                  <i class="fas fa-bread-slice"></i> Carbs: {{ getNutrientValue('CHOCDF') }}g
                 </li>
               </ul>
             </div>
@@ -89,6 +89,12 @@ export default {
     }
   },
   methods: {
+    getNutrientValue(nutrientType) {
+      if (!this.recipe?.totalNutrients?.[nutrientType]?.quantity || !this.recipe?.yield || this.recipe.yield === 0) {
+        return 'N/A';
+      }
+      return Math.round(this.recipe.totalNutrients[nutrientType].quantity / this.recipe.yield);
+    },
     close() {
       this.$emit('close');
     },

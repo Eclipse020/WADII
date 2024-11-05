@@ -40,30 +40,30 @@
 
 <script>
 import { collection, getDocs, deleteDoc, doc, addDoc } from "firebase/firestore";
-import { db, auth } from '../../services/firebase'; // Adjust this path based on your project setup
+import { db, auth } from '../../services/firebase';
 
 export default {
   name: "FavouritesDisplay",
   data() {
     return {
       favoriteRecipes: [],
-      currentUserId: null, // Set this based on your user authentication
+      currentUserId: null,
     };
   },
   async created() {
-    const user = auth.currentUser; // Get the current user from Firebase Auth
+    const user = auth.currentUser;
     if (user) {
-      this.currentUserId = user.uid; // Set the currentUserId to the user's UID
-      console.log("Current User ID:", this.currentUserId); // Log the actual user ID
+      this.currentUserId = user.uid;
+      console.log("Current User ID:", this.currentUserId);
       await this.fetchFavoriteRecipes();
     } else {
       console.error("User not authenticated. Redirecting to login.");
-      this.$router.push('/login'); // Redirect to login if no user is found
+      this.$router.push('/login');
     }
   },
   methods: {
     async fetchFavoriteRecipes() {
-      console.log("Current User ID:", this.currentUserId); // Log current user ID
+      console.log("Current User ID:", this.currentUserId);
       if (!this.currentUserId) {
         console.error("No current user ID found");
         return;
@@ -77,45 +77,54 @@ export default {
           ...doc.data()
         }));
 
-        console.log("Fetched favorite recipes:", this.favoriteRecipes); // Check if data is retrieved
+        console.log("Fetched favorite recipes:", this.favoriteRecipes);
       } catch (error) {
         console.error("Error fetching favorite recipes:", error);
       }
     },
     async toggleFavorite(recipe) {
-    const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === recipe.label);
-    if (recipeIndex !== -1) {
-      // Remove from favorites
-      const recipeId = this.favoriteRecipes[recipeIndex].id;
-      await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
-      this.favoriteRecipes.splice(recipeIndex, 1);
-      alert("Recipe removed from favorites!");
-    } else {
-      // Add to favorites
-      const favoriteRecipe = {
-        label: recipe.label,
-        image: recipe.image,
-        url: recipe.url,
-        ingredientLines: recipe.ingredientLines,
-        totalTime: recipe.totalTime,
-        dateAdded: new Date().toLocaleDateString(),
-        uri: recipe.uri // Ensure you have the URI if it exists
-      };
-      const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-      const docRef = await addDoc(favoritesCollection, favoriteRecipe);
-      this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
-      alert("Recipe added to favorites!");
-    }
-  },
+      const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === recipe.label);
+      if (recipeIndex !== -1) {
+        // Remove from favorites
+        const recipeId = this.favoriteRecipes[recipeIndex].id;
+        await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
+        this.favoriteRecipes.splice(recipeIndex, 1);
+        alert("Recipe removed from favorites!");
+      } else {
+        // Add to favorites with complete nutrition data
+        const favoriteRecipe = {
+          label: recipe.label,
+          image: recipe.image,
+          url: recipe.url,
+          ingredientLines: recipe.ingredientLines,
+          totalTime: recipe.totalTime,
+          dateAdded: new Date().toLocaleDateString(),
+          uri: recipe.uri,
+          mealType: recipe.mealType,
+          calories: recipe.calories || 0,
+          yield: recipe.yield || 1,
+          totalNutrients: {
+            PROCNT: recipe.totalNutrients?.PROCNT || { quantity: 0, unit: 'g' },
+            FAT: recipe.totalNutrients?.FAT || { quantity: 0, unit: 'g' },
+            CHOCDF: recipe.totalNutrients?.CHOCDF || { quantity: 0, unit: 'g' },
+            ...(recipe.totalNutrients || {})
+          }
+        };
+
+        const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+        const docRef = await addDoc(favoritesCollection, favoriteRecipe);
+        this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
+        alert("Recipe added to favorites!");
+      }
+    },
     isFavorite(recipe) {
       return this.favoriteRecipes.some(fav => fav.label === recipe.label);
     },
     viewDetails(recipe) {
-    // Use the URI if available, otherwise use another identifier
-    const recipeId = recipe.uri ? encodeURIComponent(recipe.uri) : recipe.id;
-    console.log("Redirecting to Recipe Details with ID:", recipeId);
-    this.$router.push({ name: 'RecipeDetails', params: { id: recipeId } });
-  }
+      const recipeId = recipe.uri ? encodeURIComponent(recipe.uri) : recipe.id;
+      console.log("Redirecting to Recipe Details with ID:", recipeId);
+      this.$router.push({ name: 'RecipeDetails', params: { id: recipeId } });
+    }
   }
 };
 </script>

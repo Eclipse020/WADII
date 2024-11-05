@@ -55,16 +55,24 @@
     padding: 15px;
   }
 
-  .planner__column--left {
-    display: none;
-  }
-
   .planner__column--center {
     order: 1;
+    width: 100%;
   }
 
   .planner__column--right {
     order: 2;
     justify-content: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .planner__column--left {
+    order: 3;
+    justify-content: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
   }
 }

@@ -6,15 +6,15 @@
           <div class="carousel-inner">
             <div class="carousel-item carousel__item active">
               <img src="https://plus.unsplash.com/premium_photo-1673108852141-e8c3c22a4a22?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="d-block w-100 carousel__image" alt="Healthy Recipes">
-              <div class="carousel-caption d-none d-md-block carousel__caption">
+              <div class="carousel-caption carousel__caption">
                 <h2 class="carousel__title">Cook Healthier, Live Better</h2>
                 <p class="carousel__text">Explore personalized healthy recipes based on your ingredients and dietary preferences.</p>
-                <router-link to="/recipes" class="cta">Discover Recipes</router-link>
+                <router-link to="/recipes" class="cta ">Discover Recipes</router-link>
               </div>
             </div>
             <div class="carousel-item carousel__item">
               <img src="@/assets/cauroselFridge.jpg" class="d-block w-100 carousel__image" alt="Virtual Fridge">
-              <div class="carousel-caption d-none d-md-block carousel__caption">
+              <div class="carousel-caption carousel__caption">
                 <h2 class="carousel__title">Virtual Fridge Management</h2>
                 <p class="carousel__text">Track your ingredients and receive expiry alerts.</p>
                 <router-link to="/fridge" class="cta">Manage Fridge</router-link>
@@ -22,7 +22,7 @@
             </div>
             <div class="carousel-item carousel__item">
               <img src="@/assets/cauroselPlanner.jpg" class="d-block w-100 carousel__image" alt="Plan Your Meal">
-              <div class="carousel-caption d-none d-md-block carousel__caption">
+              <div class="carousel-caption carousel__caption">
                 <h2 class="carousel__title">Plan Your Meals</h2>
                 <p class="carousel__text">Use up what you have and recieve recipes taylored to what you have.</p>
                 <router-link to="/mealplanner" class="cta cta--planner">Plan Your Meals</router-link>
@@ -119,7 +119,3 @@
     }
   };
   </script>
-
-<style scoped>
-/* Removed custom styles as they're now in the homepage.css file */
-</style>

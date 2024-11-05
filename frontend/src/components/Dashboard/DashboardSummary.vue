@@ -20,6 +20,7 @@
         <select id="chartSelector" class="dashboard__selector" v-model="selectedChart" @change="renderChart">
           <option value="items">Fridge Items</option>
           <option value="expiredItems">Items Insight</option>
+          <option value="recipeTrackerDashboard">Recipe Insights</option>
         </select>
       </div>
       <div class="col-6" v-if="selectedChart === 'expiredItems'">
@@ -59,6 +60,11 @@
         <p v-else class="notification-bar__message">No data available for Items Insight.</p>
       </div>
 
+      <!-- Recipe Tracker Dashboard -->
+      <div v-if="selectedChart === 'recipeTrackerDashboard'" class="dashboard__chart recipe-tracker-section">
+        <RecipeTrackerDashboard />
+      </div>
+
       <!-- Message -->
       <p class="mt-3 notification-bar__message">{{ message }}</p>
     </div>
@@ -71,10 +77,14 @@ import { collection, getDocs } from "firebase/firestore";
 import { Chart, registerables } from "chart.js/auto";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import RecipeTrackerDashboard from './RecipeTrackerDashboard.vue';
 
 Chart.register(...registerables);
 
 export default {
+  components: {
+    RecipeTrackerDashboard
+  },
   data() {
     return {
       currentUserId: null,
@@ -88,7 +98,7 @@ export default {
       },
       message: '',
       selectedChart: "items",
-      selectedMonth: new Date().getMonth(), // Default to current month
+      selectedMonth: new Date().getMonth(),
       monthNames: [
         "January", "February", "March", "April", "May", "June", 
         "July", "August", "September", "October", "November", "December"
@@ -108,15 +118,14 @@ export default {
     },
     
     isMonthInFuture(monthIndex) {
-      const currentMonth = new Date().getMonth(); // Get the current month (0-11)
-      // Compare the index with the current month to see if it's in the future
+      const currentMonth = new Date().getMonth();
       return monthIndex > currentMonth;
     },
 
     async fetchSummaryData() {
       const today = new Date();
       const startDate = new Date(today.getFullYear(), this.selectedMonth, 1);
-      const endDate = new Date(today.getFullYear(), this.selectedMonth + 1, 0); // Last day of selected month
+      const endDate = new Date(today.getFullYear(), this.selectedMonth + 1, 0);
 
       try {
         const user = auth.currentUser;
@@ -125,7 +134,6 @@ export default {
         }
         this.currentUserId = user.uid;
 
-        // Fetch all items from the main items collection
         const itemsSnapshot = await getDocs(
           collection(db, `users/${this.currentUserId}/items`)
         );
@@ -137,7 +145,6 @@ export default {
         this.summary.totalItems = items.length;
         this.hasDataForMonthItem = this.summary.totalItems > 0;
 
-        // Count items expiring soon (within the next 3 days)
         const threeDaysFromNow = new Date(today);
         threeDaysFromNow.setDate(today.getDate() + 3);
         this.summary.expiringSoon = items.filter((item) => {
@@ -145,7 +152,6 @@ export default {
           return expiryDate > today && expiryDate <= threeDaysFromNow;
         }).length;
 
-        // Fetch expired items from the expiredItemsWOUsing collection
         const expiredItemsSnapshot = await getDocs(
           collection(db, `users/${this.currentUserId}/expiredItemsWOUsing`)
         );
@@ -154,13 +160,11 @@ export default {
           ...doc.data(),
         }));
 
-        // Count expired items based on selected month
         this.summary.expiredItemsCount = expiredItems.filter(item => {
           const expiryDate = new Date(item.expiryDate);
           return expiryDate >= startDate && expiryDate <= endDate;
         }).length;
 
-        // Fetch used items from the deletedItems collection
         const deletedItemsSnapshot = await getDocs(
           collection(db, `users/${this.currentUserId}/deletedItems`)
         );
@@ -169,24 +173,20 @@ export default {
           ...doc.data(),
         }));
 
-        // Count used items based on selected month
         this.summary.usedItems = deletedItems.filter(item => {
           const deleteDate = new Date(item.deletedAt);
           return deleteDate >= startDate && deleteDate <= endDate;
         }).length;
 
-        // Determine if there is data for expired items
         this.hasDataForMonthExpired = this.summary.expiredItemsCount > 0 || this.summary.usedItems > 0;
 
-        // Count categories from the filtered items
         this.summary.categories = items.reduce((acc, item) => {
           acc[item.category] = (acc[item.category] || 0) + 1;
           return acc;
         }, {});
 
-        // Render chart or perform other UI updates
         if (this.hasDataForMonthItem || this.hasDataForMonthExpired) {
-          this.renderChart(); // Call renderChart after all data is fetched
+          this.renderChart();
         }
       } catch (error) {
         console.error("Error fetching summary data: ", error);
@@ -194,11 +194,12 @@ export default {
     },
 
     renderChart() {
+      if (this.selectedChart === 'recipeTrackerDashboard') return;
+      
       this.message = "";
       if (this.isRendering) return;
       this.isRendering = true;
 
-      // Check for data availability before rendering
       if (
         (this.selectedChart === "items" && !this.hasDataForMonthItem) ||
         (this.selectedChart === "expiredItems" && !this.hasDataForMonthExpired)
@@ -208,10 +209,8 @@ export default {
         return;
       }
 
-      // Retrieve the appropriate canvas based on the selected chart type
       let canvas = this.$refs[this.selectedChart === "items" ? "itemsChart" : "expiredItemsChart"];
       
-      // Check if the canvas is available
       if (!canvas) {
         console.warn("Canvas not available for selected chart:", this.selectedChart);
         this.isRendering = false;
@@ -221,7 +220,6 @@ export default {
       try {
         const ctx = canvas.getContext("2d");
 
-        // Set canvas dimensions based on device pixel ratio
         const devicePixelRatio = window.devicePixelRatio || 1;
         const width = canvas.clientWidth * devicePixelRatio;
         const height = canvas.clientHeight * devicePixelRatio;
@@ -229,24 +227,20 @@ export default {
         canvas.height = height;
         ctx.scale(devicePixelRatio, devicePixelRatio);
 
-        // Destroy the previous chart instance if it exists
         if (this.chartInstance) {
           this.chartInstance.destroy();
         }
 
-        // Prepare the data and options for the chart
         const chartOptions = {
           responsive: true,
           maintainAspectRatio: false,
         };
 
-        // Render the chart based on the selected type
         switch (this.selectedChart) {
           case "items": {
             const categories = Object.keys(this.summary.categories);
             const data = Object.values(this.summary.categories);
 
-            // Create a new Chart instance for items
             this.chartInstance = new Chart(ctx, {
               type: "doughnut",
               data: {
@@ -266,7 +260,6 @@ export default {
           }
 
           case "expiredItems": {
-            // Create a new Chart instance for expired items
             this.chartInstance = new Chart(ctx, {
               type: "doughnut",
               data: {
@@ -281,32 +274,27 @@ export default {
               },
               options: chartOptions,
             });
-            // Update motivational message based on the ratio of used to expired items
             this.updateMotivationalMessage();
             break;
           }
-
-          default:
-            console.warn("Unknown chart type:", this.selectedChart);
-            break;
         }
       } catch (error) {
         console.error("Error rendering chart:", error);
       } finally {
-        this.isRendering = false; // Allow new selections after rendering
+        this.isRendering = false;
       }
     },
 
     getChartColors(numColors) {
       const colors = [];
-      const baseColor = [0, 51, 102]; // A darker base color
-      const colorStep = Math.floor(255 / numColors); // Adjust step based on number of colors
+      const baseColor = [0, 51, 102];
+      const colorStep = Math.floor(255 / numColors);
 
       for (let i = 0; i < numColors; i++) {
         const r = Math.max(0, baseColor[0] + i * colorStep);
         const g = Math.max(0, baseColor[1] + i * colorStep);
         const b = Math.max(0, baseColor[2] + i * colorStep);
-        colors.push(`rgba(${r}, ${g}, ${b}, 0.8)`); // Set opacity to 0.8 for a slightly transparent effect
+        colors.push(`rgba(${r}, ${g}, ${b}, 0.8)`);
       }
       
       return colors;
@@ -322,12 +310,12 @@ export default {
   },
 
   mounted() {
-    this.fetchSummaryData(); // Fetch summary data when the component mounts
+    this.fetchSummaryData();
   },
 
   computed: {
     isDisabled() {
-      return this.selectedChart === 'items'; // Disable if selectedChart is 'items'
+      return this.selectedChart === 'items';
     },
   },
 
@@ -336,7 +324,6 @@ export default {
       this.fetchSummaryData();
     }
   },
-
 };
 </script>
 
@@ -409,5 +396,10 @@ export default {
 .dashboard__chart {
   width: 100%;
   height: 100%;
+}
+
+.recipe-tracker-section {
+  height: 600px;
+  overflow-y: auto;
 }
 </style>

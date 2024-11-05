@@ -62,20 +62,40 @@
             <div v-if="showFavorites" class="recipe-modal__favorites-content">
               <div class="recipe-modal__recipe-list">
                 <div v-for="recipe in favoriteRecipes" :key="recipe.id" class="recipe-modal__recipe-item">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <span 
-                      class="recipe-modal__recipe-label" 
-                      :class="{ 'selected': selectedRecipe?.uri === recipe.uri }"
-                      @click="selectRecipe(recipe)"
-                    >
-                      {{ recipe.label }}
-                    </span>
-                    <button
-                      class="recipe-modal__btn-add btn btn-success btn-sm"
-                      @click.stop="addRecipe(recipe)"
-                    >
-                      Add
-                    </button>
+                  <div class="d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <span 
+                        class="recipe-modal__recipe-label" 
+                        :class="{ 'selected': selectedRecipe?.uri === recipe.uri }"
+                        @click="selectFavoriteRecipe(recipe)"
+                      >
+                        {{ recipe.label }}
+                      </span>
+                      <button
+                        class="recipe-modal__btn-add btn btn-success btn-sm"
+                        @click.stop="addRecipe(recipe)"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    
+                    <!-- Add Nutrition Information -->
+                    <div class="recipe-modal__nutrition-info mt-2" v-if="recipe.totalNutrients">
+                      <small class="text-muted d-block">
+                        Calories: {{ Math.round(recipe.calories / (recipe.yield || 1)) }} per serving
+                      </small>
+                      <div class="d-flex gap-2 mt-1">
+                        <small class="text-muted" v-if="recipe.totalNutrients.PROCNT">
+                          Protein: {{ Math.round(recipe.totalNutrients.PROCNT.quantity / (recipe.yield || 1)) }}g
+                        </small>
+                        <small class="text-muted" v-if="recipe.totalNutrients.FAT">
+                          Fat: {{ Math.round(recipe.totalNutrients.FAT.quantity / (recipe.yield || 1)) }}g
+                        </small>
+                        <small class="text-muted" v-if="recipe.totalNutrients.CHOCDF">
+                          Carbs: {{ Math.round(recipe.totalNutrients.CHOCDF.quantity / (recipe.yield || 1)) }}g
+                        </small>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -249,6 +269,17 @@ export default {
       this.selectedRecipe = recipe;
     },
 
+    selectFavoriteRecipe(recipe) {
+      // Process the favorite recipe to match the structure expected by the preview
+      const processedRecipe = {
+        ...recipe,
+        totalNutrients: recipe.totalNutrients || {},
+        yield: recipe.yield || 1,
+        calories: recipe.calories || 0
+      };
+      this.selectedRecipe = processedRecipe;
+    },
+
     closePreview() {
       this.selectedRecipe = null;
     },
@@ -359,8 +390,25 @@ export default {
     },
 
     addRecipe(recipe) {
-      recipe.mealType = this.mealType.toLowerCase();
-      this.$emit('add-recipe', recipe);
+      // Add meal type and ensure all required nutritional data is included
+      console.log('Original recipe data:', recipe);
+      console.log('Original totalNutrients:', recipe.totalNutrients);
+      const processedRecipe = {
+        ...recipe,
+        mealType: this.mealType.toLowerCase(),
+        // Ensure these properties exist even if they're null/empty
+        calories: recipe.calories || 0,
+        yield: recipe.yield || 1,
+        // Single totalNutrients object with defaults for missing nutrients
+        totalNutrients: {
+          PROCNT: recipe.totalNutrients?.PROCNT || { quantity: 0, unit: 'g' },
+          FAT: recipe.totalNutrients?.FAT || { quantity: 0, unit: 'g' },
+          CHOCDF: recipe.totalNutrients?.CHOCDF || { quantity: 0, unit: 'g' },
+          ...(recipe.totalNutrients || {})
+        }
+      };
+      
+      this.$emit('add-recipe', processedRecipe);
       this.selectedRecipe = null;
     },
     
