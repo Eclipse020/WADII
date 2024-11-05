@@ -85,45 +85,36 @@ export default {
     async toggleFavorite(recipe) {
       const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === recipe.label);
       if (recipeIndex !== -1) {
-        // Remove from favorites
         const recipeId = this.favoriteRecipes[recipeIndex].id;
+        console.log("toggled recipe.id: ", recipeId);
         await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
         this.favoriteRecipes.splice(recipeIndex, 1);
-        alert("Recipe removed from favorites!");
       } else {
-        // Add to favorites with complete nutrition data
         const favoriteRecipe = {
           label: recipe.label,
           image: recipe.image,
           url: recipe.url,
           ingredientLines: recipe.ingredientLines,
           totalTime: recipe.totalTime,
-          dateAdded: new Date().toLocaleDateString(),
-          uri: recipe.uri,
-          mealType: recipe.mealType,
-          calories: recipe.calories || 0,
-          yield: recipe.yield || 1,
-          totalNutrients: {
-            PROCNT: recipe.totalNutrients?.PROCNT || { quantity: 0, unit: 'g' },
-            FAT: recipe.totalNutrients?.FAT || { quantity: 0, unit: 'g' },
-            CHOCDF: recipe.totalNutrients?.CHOCDF || { quantity: 0, unit: 'g' },
-            ...(recipe.totalNutrients || {})
-          }
+          uri: recipe.uri // Ensure consistent ID is saved
         };
-
         const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
         const docRef = await addDoc(favoritesCollection, favoriteRecipe);
         this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
-        alert("Recipe added to favorites!");
       }
     },
     isFavorite(recipe) {
       return this.favoriteRecipes.some(fav => fav.label === recipe.label);
     },
     viewDetails(recipe) {
-      const recipeId = recipe.uri ? encodeURIComponent(recipe.uri) : recipe.id;
-      console.log("Redirecting to Recipe Details with ID:", recipeId);
-      this.$router.push({ name: 'RecipeDetails', params: { id: recipeId } });
+      // Use the saved recipe ID and construct the proper URI format
+      const recipeId = recipe.recipeId || recipe.id;
+      this.$router.push({ 
+        name: 'RecipeDetails', 
+        params: { 
+          id: recipeId 
+        } 
+      });
     }
   }
 };
