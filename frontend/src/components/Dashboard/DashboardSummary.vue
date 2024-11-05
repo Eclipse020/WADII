@@ -14,7 +14,7 @@
       </p>
     </div>
     <h2 class="dashboard__title">Your Fridge Dashboard</h2>
-    <div class="dashboard__controls row">
+    <div class="dashboard__controls row text-center">
       <div class="col-6">
         <label for="chartSelector" class="dashboard__label">View Data:</label>
         <select id="chartSelector" class="dashboard__selector" v-model="selectedChart" @change="renderChart">
@@ -364,6 +364,7 @@ export default {
 .dashboard__title {
   font-size: 24px;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .dashboard__controls {
