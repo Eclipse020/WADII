@@ -30,9 +30,12 @@
       <li v-for="(step, index) in recipe.steps" :key="index">{{ step }}</li>
     </ol>
 
-    <!-- "Cook Now" Button -->
-    <button @click="cookNow" class="btn btn-success mx-2 shadow">Cook Now</button>
-  </div>
+    <!-- "Add to Favorites" Button -->
+    <button @click="toggleFavorite" class="btn btn-success mx-2 shadow"
+    :class="{'btn-success': !isFavorited, 'btn-secondary': isFavorited}">
+      {{ isFavorited ? 'Added to Favorites' : 'Add to Favorites' }}
+    </button>
+    </div>
 </template>
 
 <script>
@@ -48,6 +51,7 @@ export default {
   data() {
     return {
       showFullImage: false, // Controls the full-image modal display
+      isFavorited: false, // Tracks if recipe is favorited
       recipe: {
         ingredients: [],
         steps: [] // Ensure steps are initialized as an array
@@ -67,9 +71,9 @@ export default {
         console.error("Failed to fetch recipe details:", error);
       }
     },
-    cookNow() {
-      console.log("Cooking", this.recipe.name);
-    },
+    toggleFavorite() {
+      this.isFavorited = !this.isFavorited;
+      }
   },
   mounted() {
     this.fetchRecipeDetails(); // Fetch details when component is mounted
@@ -159,4 +163,13 @@ export default {
   object-fit: contain;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
+
+.btn-success {
+  background-color: #28a745; /* Green for 'Add to Favorites' */
+}
+
+.btn-secondary {
+  background-color: #6c757d; /* Grey for 'Added to Favorites' */
+}
+
 </style>
