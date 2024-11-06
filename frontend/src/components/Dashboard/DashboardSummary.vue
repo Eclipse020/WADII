@@ -203,7 +203,6 @@ export default {
         (this.selectedChart === "items" && !this.hasDataForMonthItem) ||
         (this.selectedChart === "expiredItems" && !this.hasDataForMonthExpired)
       ) {
-        console.warn("No data available for the selected chart:", this.selectedChart);
         this.isRendering = false;
         return;
       }
@@ -213,7 +212,6 @@ export default {
       
       // Check if the canvas is available
       if (!canvas) {
-        console.warn("Canvas not available for selected chart:", this.selectedChart);
         this.isRendering = false;
         return;
       }
@@ -287,7 +285,6 @@ export default {
           }
 
           default:
-            console.warn("Unknown chart type:", this.selectedChart);
             break;
         }
       } catch (error) {

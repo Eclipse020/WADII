@@ -52,7 +52,7 @@
             </div>
           </div>
         </header>
-        <p class="text-center" v-if="!items || items.length === 0">
+        <p class="text-center mt-5" v-if="!items || items.length === 0">
           Your Fridge is Empty ~&#127810;<br>
           <img class="img-fluid d-block mx-auto" style="width: 300px;" src="@/assets/emptyFridge.jpg" alt="Empty Fridge">
         </p>
