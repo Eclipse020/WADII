@@ -30,11 +30,20 @@
       <li v-for="(step, index) in recipe.steps" :key="index" class="recipe-details__recipe-step">{{ step }}</li>
     </ol>
 
+    <div class="recipe-details__button-group">
     <!-- "Add to Favorites" Button -->
     <button @click="toggleFavorite" class="recipe-details__btn recipe-details__btn--favorite mx-2 shadow"
     :class="{'recipe-details__btn--success': !isFavorited, 'recipe-details__btn--secondary': isFavorited}">
       {{ isFavorited ? 'Remove from Favorites' : 'Add to Favorites' }}
     </button>
+
+      <button 
+        class="recipe__button recipe__button--primary" 
+        @click="CCookNow"
+      >
+        Mark as completed
+      </button>
+      </div>
   </div>
 </template>
 
@@ -88,6 +97,29 @@ export default {
         console.error("Error loading favorite recipes:", error);
       }
     },
+    async CCookNow() {
+      if (!this.currentUserId) return;
+
+      const completedRecipe = {
+        image: this.recipe.image,
+        id: this.recipe.id,
+        completionDate: new Date().toLocaleDateString()
+      };
+
+      try {
+        const completedRecipesCollection = collection(db, `users/${this.currentUserId}/completedRecipes`);
+        await addDoc(completedRecipesCollection, completedRecipe);
+        this.$router.push({ 
+          name: 'CCookNow', 
+          params: { 
+            recipe: this.recipe, 
+            fridgeIngredients: this.fridgeItems 
+          } 
+        });
+      } catch (error) {
+        console.error("Error marking recipe as completed:", error);
+      }
+    },
     async toggleFavorite() {
       if (!this.currentUserId) return;
 
@@ -104,7 +136,7 @@ export default {
           const favoriteRecipe = {
             label: this.recipe.label,
             image: this.recipe.image,
-            url: this.recipe.url,
+            id: this.recipe.id,
             ingredientLines: this.recipe.ingredientLines,
             totalTime: this.recipe.totalTime,
             dateAdded: new Date().toLocaleDateString()
@@ -224,6 +256,11 @@ export default {
   border: none;
   font-size: 1rem;
   cursor: pointer;
+}
+
+.recipe-details__button-group {
+  display: flex;
+  gap: 10px; /* Add some space between buttons */
 }
 
 .recipe-details__btn--favorite {

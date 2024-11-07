@@ -122,8 +122,9 @@ export default {
   },
     async toggleLike(recipe) {
       const wasLiked = recipe.isLiked;
+      recipe.likeCount += recipe.isLiked ? 1 : -1;
       recipe.isLiked = !wasLiked; 
-      recipe.likeCount += recipe.isLiked ? 1 : -1; 
+       
 
       try {
         await updateRecipeLikes(recipe.id, recipe.likeCount);
