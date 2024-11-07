@@ -19,9 +19,8 @@ import FavouritesDisplay from '../components/Recipes/FavouritesDisplay.vue';
 import CommunityPage from '../pages/CommunityPage.vue';
 import DashboardSummary from '../components/Dashboard/DashboardSummary.vue';
 import PostRecipePage from '../pages/PostRecipePage.vue';
-import RecipeDetailPage from '../pages/RecipeDetailPage.vue'; // Adjust path if needed
-import RecipeDeComponent from '@/components/Community/RecipeDeComponent.vue';
-
+import RecipeDetailPage from '../pages/RecipeDetailPage.vue';
+// import RecipeDeComponent from '../components/Community/RecipeDeComponent.vue';
 
 // Define routes, grouped logically
 const routes = [
@@ -37,7 +36,13 @@ const routes = [
   
   // Recipe routes
   { path: '/recipes', name: 'RecipeList', component: RecipeList, meta: { requiresAuth: true } },
-  { path: '/recipe/:id', name: 'RecipeDetails', component: RecipeDetails, meta: { requiresAuth: true } },
+  { 
+    path: '/recipe/:id', 
+    name: 'RecipeDetails', 
+    component: RecipeDetails, 
+    meta: { requiresAuth: true },
+    props: true 
+  },
   {
     path: '/recipe/:id/cook',
     name: 'CookNow',
@@ -54,27 +59,19 @@ const routes = [
   { path: '/register', name: 'Register', component: RegistrationPage },
   { path: '/reset-password', name: 'ResetPassword', component: ResetPasswordPage },
 
+  // Community Recipe Detail route
   {
-    path: '/recipe/:id',
+    path: '/community/recipe/:id',
     name: 'RecipeDetailPage',
     component: RecipeDetailPage,
-    props: true, // allows `id` to be passed as a prop
+    props: true,
+    meta: { requiresAuth: true }
   },
 
-  {
-    path: '/recipe/:id',
-    name: 'recipe-details',
-    component: RecipeDeComponent,
-    props: true
-  },
   // User profile-related routes
   { path: '/profile', name: 'ProfileSettings', component: ProfileSettingsPage, meta: { requiresAuth: true } },
   { path: '/logout', name: 'Logout', component: LogoutComponent, meta: { requiresAuth: true } }
-
-  
 ];
-
-
 
 // Create and configure the router
 const router = createRouter({

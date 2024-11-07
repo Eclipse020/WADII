@@ -6,7 +6,7 @@
 
 <script>
 import { defineComponent } from 'vue';
-import RecipeDeComponent from '@/components/Community/RecipeDeComponent.vue'; // Adjust the path if necessary
+import RecipeDeComponent from '../components/Community/RecipeDeComponent.vue';
 
 export default defineComponent({
   name: 'RecipeDetailPage',
