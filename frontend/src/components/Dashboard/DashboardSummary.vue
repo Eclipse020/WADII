@@ -66,7 +66,7 @@
       </div>
 
       <!-- Message -->
-      <p class="mt-3 notification-bar__message">{{ message }}</p>
+      <p v-if="selectedChart === 'expiredItems'" class="mt-3 notification-bar__message">{{ message }}</p>
     </div>
   </div>
 </template>
@@ -355,6 +355,7 @@ export default {
   margin-left: 10px;
   margin-top: 13px;
   font-size: 16px;
+  text-align: center;
 }
 
 .notification-icon {
