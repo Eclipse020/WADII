@@ -13,7 +13,7 @@
         There are no items nearing expiration.
       </p>
     </div>
-    <h2 class="dashboard__title">Your Fridge Dashboard</h2>
+    <h1 class="dashboard__title">Dashboard</h1>
     <div class="dashboard__controls row text-center">
       <div class="col-6">
         <label for="chartSelector" class="dashboard__label">View Data:</label>
@@ -66,7 +66,7 @@
       </div>
 
       <!-- Message -->
-      <p class="mt-3 notification-bar__message">{{ message }}</p>
+      <p v-if="selectedChart === 'expiredItems'" class="mt-3 notification-bar__message">{{ message }}</p>
     </div>
   </div>
 </template>
@@ -78,6 +78,7 @@ import { Chart, registerables } from "chart.js/auto";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import RecipeTrackerDashboard from './RecipeTrackerDashboard.vue';
+import '../../styles/components/dashboard/dashboard.css';
 
 Chart.register(...registerables);
 
@@ -327,81 +328,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.dashboard {
-  height: 700px;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard__month-text {
-  margin-top: 5px;
-  font-size: 15px;
-}
-
-.notification-bar {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: 20px;
-  border-radius: 4px;
-  background-color: #e9f7f9;
-}
-
-.notification-bar__message {
-  margin-left: 10px;
-  margin-top: 13px;
-  font-size: 16px;
-}
-
-.notification-icon {
-  font-size: 20px;
-  color: #007bff;
-}
-
-.dashboard__title {
-  font-size: 24px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.dashboard__controls {
-  margin-bottom: 20px;
-}
-
-.dashboard__label {
-  font-weight: bold;
-}
-
-.dashboard__selector {
-  padding: 5px 10px;
-  margin-left: 10px;
-  margin-right: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  transition: border-color 0.3s;
-}
-
-.dashboard__selector:hover {
-  border-color: #007bff;
-}
-
-.dashboard__chart-container {
-  position: relative;
-  width: 100%;
-  height: 400px; 
-}
-
-.dashboard__chart {
-  width: 100%;
-  height: 100%;
-}
-
-.recipe-tracker-section {
-  height: 600px;
-  overflow-y: auto;
-}
-</style>

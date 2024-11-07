@@ -56,15 +56,15 @@
         <!-- Features Section -->
         <div class="features">
           <div class="features__item">
-            <h2 class="features__title">Personalized Recipes</h2>
+            <router-link class="features__title" to="/recipes">Personalized Recipes</router-link>
             <p class="features__description">Receive meal suggestions tailored to your available ingredients and dietary preferences for a balanced diet.</p>
           </div>
           <div class="features__item">
-            <h2 class="features__title">Virtual Fridge Management</h2>
+            <router-link class="features__title" to="/fridge">Virtual Fridge Management</router-link>
             <p class="features__description">Keep track of your ingredients and get notified before they expire with our virtual fridge and expiry alerts.</p>
           </div>
           <div class="features__item">
-            <h2 class="features__title">Reduce Food Waste</h2>
+            <router-link class="features__title" to="/dashboard">Reduce Food Waste</router-link>
             <p class="features__description">Minimize food waste by using what you already have and exploring new recipes based on your inventory.</p>
           </div>
         </div>
