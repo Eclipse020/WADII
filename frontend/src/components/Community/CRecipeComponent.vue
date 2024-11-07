@@ -90,7 +90,7 @@ export default {
       try {
         this.recipes = await getRecipes();
         this.recipes.forEach(recipe => {
-          recipe.isLiked = false;
+          // recipe.isLiked = false;
           recipe.newComment = '';
           recipe.likeCount = recipe.likeCount || 0;
           recipe.comments = recipe.comments || [];
@@ -108,8 +108,8 @@ export default {
     },
     async toggleLike(recipe) {
       const wasLiked = recipe.isLiked;
-      recipe.isLiked = !wasLiked; 
       recipe.likeCount += recipe.isLiked ? 1 : -1; 
+      recipe.isLiked = !wasLiked; 
 
       try {
         await updateRecipeLikes(recipe.id, recipe.likeCount);
