@@ -79,9 +79,8 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, deleteDoc, doc, getDocs } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import axios from 'axios';
-
 
 export default {
   data() {
@@ -195,6 +194,24 @@ export default {
         console.error("Error fetching recipe by ID:", error);
       }
     },
+    async deleteFromMealPlan() {
+      if (!this.currentUserId || !this.recipe.uri) return;
+
+      try {
+        // Query the mealPlans collection to find entries with matching recipe URI
+        const mealPlansRef = collection(db, `users/${this.currentUserId}/mealPlans`);
+        const q = query(mealPlansRef, where("recipe.uri", "==", this.recipe.uri));
+        const querySnapshot = await getDocs(q);
+
+        // Delete all matching entries
+        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+
+        console.log("Recipe removed from meal plan");
+      } catch (error) {
+        console.error("Error removing recipe from meal plan:", error);
+      }
+    },
     async cookNow() {
       if (!this.currentUserId) return;
 
@@ -208,9 +225,14 @@ export default {
       };
 
       try {
+        // Add to completed recipes
         const completedRecipesCollection = collection(db, `users/${this.currentUserId}/completedRecipes`);
         await addDoc(completedRecipesCollection, completedRecipe);
-        console.log(this.recipe, this.fridgeItems, this.recipe.ingredientLines)
+
+        // Delete from meal plan
+        await this.deleteFromMealPlan();
+
+        // Navigate to CookNow page
         this.$router.push({ 
           name: 'CookNow', 
           params: { id: this.$route.params.id },
@@ -254,7 +276,7 @@ export default {
             label: this.recipe.label,
             image: this.recipe.image,
             url: this.recipe.url,
-            uri: this.recipe.uri, // Add the uri property
+            uri: this.recipe.uri,
             ingredientLines: this.recipe.ingredientLines,
             totalTime: this.recipe.totalTime,
             calories: this.recipe.calories || 0,
@@ -561,5 +583,4 @@ export default {
     width: 100%;
   }
 }
-
 </style>

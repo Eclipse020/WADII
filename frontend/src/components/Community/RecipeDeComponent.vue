@@ -39,12 +39,13 @@
 </template>
 
 <script>
-import { getRecipeById } from '@/services/RecipeService'; // Adjust path if necessary
+import { getRecipeById } from '@/services/RecipeService';
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, deleteDoc, doc, getDocs } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 
 export default {
+  name: 'RecipeDeComponent',
   props: {
     recipeId: {
       type: String,
@@ -53,25 +54,41 @@ export default {
   },
   data() {
     return {
-      showFullImage: false, // Controls the full-image modal display
-      isFavorited: false, // Tracks if recipe is favorited
+      showFullImage: false,
+      isFavorited: false,
+      currentUserId: null,
       recipe: {
         ingredients: [],
-        steps: [] // Ensure steps are initialized as an array
+        steps: []
       },
+      favoriteRecipes: []
     };
   },
   methods: {
     async fetchRecipeDetails() {
       try {
-        this.recipe = await getRecipeById(this.recipeId); // Use the passed recipeId prop
+        this.recipe = await getRecipeById(this.recipeId);
 
-        // Split the steps string into an array by line breaks
         if (this.recipe.steps) {
-          this.recipe.steps = this.recipe.steps.split('\n'); // Adjust delimiter if needed
+          this.recipe.steps = this.recipe.steps.split('\n');
         }
+        
+        // Check if this recipe is already in favorites
+        await this.checkIfFavorited();
       } catch (error) {
         console.error("Failed to fetch recipe details:", error);
+      }
+    },
+    async checkIfFavorited() {
+      if (!this.currentUserId) return;
+
+      try {
+        const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+        const q = query(favoritesCollection, where("label", "==", this.recipe.name));
+        const snapshot = await getDocs(q);
+        this.isFavorited = !snapshot.empty;
+      } catch (error) {
+        console.error("Error checking favorite status:", error);
       }
     },
     async loadFavoriteRecipes() {
@@ -89,79 +106,101 @@ export default {
       }
     },
     async toggleFavorite() {
-      if (!this.currentUserId) return;
-
-      this.isFavorited = !this.isFavorited;
-
-      const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === this.recipe.label);
+      if (!this.currentUserId) {
+        console.error("User not authenticated");
+        return;
+      }
 
       try {
-        if (recipeIndex !== -1) {
-          const recipeId = this.favoriteRecipes[recipeIndex].id;
-          await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
-          this.favoriteRecipes.splice(recipeIndex, 1);
+        const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+
+        if (this.isFavorited) {
+          // Find the recipe document to delete
+          const q = query(favoritesCollection, where("label", "==", this.recipe.name));
+          const snapshot = await getDocs(q);
+          
+          if (!snapshot.empty) {
+            const docId = snapshot.docs[0].id;
+            await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, docId));
+          }
         } else {
+          // Create a new favorite with the expected structure
           const favoriteRecipe = {
-            label: this.recipe.label,
+            label: this.recipe.name,
             image: this.recipe.image,
-            url: this.recipe.url,
-            ingredientLines: this.recipe.ingredientLines,
-            totalTime: this.recipe.totalTime,
-            dateAdded: new Date().toLocaleDateString()
+            totalTime: this.recipe.estimatedTime,
+            ingredientLines: this.recipe.ingredients,
+            calories: this.recipe.calories,
+            description: this.recipe.description,
+            steps: this.recipe.steps,
+            dateAdded: new Date().toISOString(),
+            isFromCommunity: true,  // Add flag to identify community recipes
+            communityRecipeId: this.recipeId  // Store the community recipe ID
           };
 
-          const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-          const docRef = await addDoc(favoritesCollection, favoriteRecipe);
-          this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
+          await addDoc(favoritesCollection, favoriteRecipe);
         }
+
+        // Toggle the favorite status
+        this.isFavorited = !this.isFavorited;
+        
+        // Reload the favorites
+        await this.loadFavoriteRecipes();
       } catch (error) {
         console.error("Error toggling favorite status:", error);
       }
     }
   },
-  mounted() {
-    this.fetchRecipeDetails(); // Fetch details when component is mounted
+  async created() {
+    // Set currentUserId as soon as possible
+    const user = auth.currentUser;
+    if (user) {
+      this.currentUserId = user.uid;
+      await this.loadFavoriteRecipes();
+      await this.fetchRecipeDetails();
+    }
+
+    // Listen for auth state changes
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.currentUserId = user.uid;
         await this.loadFavoriteRecipes();
+        await this.fetchRecipeDetails();
       }
     });
-  },
+  }
 };
 </script>
 
 <style scoped>
 .recipe-details {
-  padding: 20px; /* Add padding */
-  display: flex; /* Use flexbox for centering */
-  flex-direction: column; /* Stack elements vertically */
-  align-items: center; /* Center horizontally */
-  text-align: center; /* Center text */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-/* Recipe Image */
 .recipe-details__image-wrapper {
-  width: 100%; /* Set width to full width */
-  height: auto; /* Adjust height automatically */
-  overflow: hidden; /* Hide overflow to maintain crop */
+  width: 100%;
+  height: auto;
+  overflow: hidden;
   cursor: pointer;
-  position: relative; /* Make it position relative for image styling */
+  position: relative;
 }
 
 .recipe-details__image {
-  width: 100%; /* Use full width of the wrapper */
-  height: auto; /* Maintain aspect ratio */
-  object-fit: cover; /* Ensures the image covers the area without stretching */
-  max-height: 300px; /* Set a maximum height to avoid it being too tall */
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  max-height: 300px;
 }
 
-/* Additional Info Styling */
 .recipe-details__additional-info {
-  display: flex; /* Use flexbox for layout */
-  justify-content: center; /* Center items horizontally */
-  gap: 20px; /* Add spacing between items */
-  margin: 20px 0; /* Add margin for spacing */
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
 }
 
 .recipe-details__info-item {
@@ -169,34 +208,31 @@ export default {
   font-weight: 500;
 }
 
-/* Ingredients List */
 .recipe-details__ingredients-list {
-  list-style-type: disc; /* Keep bullet points */
-  padding-left: 20px; /* Add padding for bullets */
-  margin: 20px 0; /* Add margin for spacing */
+  list-style-type: disc;
+  padding-left: 20px;
+  margin: 20px 0;
 }
 
 .recipe-details__ingredient-item {
-  font-size: 20px; /* Increase font size for ingredients */
-  margin: 5px 0; /* Add margin for each ingredient */
-  text-align: left; /* Align text to the left for better readability */
+  font-size: 20px;
+  margin: 5px 0;
+  text-align: left;
 }
 
-/* Recipe Steps */
 .recipe-details__recipe-steps {
-  list-style-position: outside; /* Keep the numbers/bullets outside */
-  padding-left: 20px; /* Add padding for left alignment */
-  margin: 0; /* Remove margin */
-  font-size: 1.2em; /* Adjust font size as desired */
+  list-style-position: outside;
+  padding-left: 20px;
+  margin: 0;
+  font-size: 1.2em;
 }
 
 .recipe-details__recipe-step {
-  margin: 5px 0; /* Optional: add some vertical spacing between steps */
-  line-height: 1.4; /* Adjust line height for better readability */
-  text-align: left; /* Align text to the left */
+  margin: 5px 0;
+  line-height: 1.4;
+  text-align: left;
 }
 
-/* Full-screen modal styles */
 .recipe-details__modal-overlay {
   position: fixed;
   top: 0;
@@ -218,24 +254,29 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Button styles */
 .recipe-details__btn {
   padding: 10px 15px;
   border: none;
   font-size: 1rem;
   cursor: pointer;
+  color: white;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
 }
 
 .recipe-details__btn--favorite {
-  background-color: #28a745; /* Green for 'Add to Favorites' */
+  background-color: #28a745;
 }
 
 .recipe-details__btn--secondary {
-  background-color: #6c757d; /* Grey for 'Added to Favorites' */
+  background-color: #dc3545;
 }
 
 .recipe-details__btn--success {
-  background-color: #28a745; /* Green for 'Add to Favorites' */
+  background-color: #28a745;
 }
 
+.recipe-details__btn:hover {
+  opacity: 0.9;
+}
 </style>

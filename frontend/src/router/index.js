@@ -20,6 +20,7 @@ import CommunityPage from '../pages/CommunityPage.vue';
 import DashboardSummary from '../components/Dashboard/DashboardSummary.vue';
 import PostRecipePage from '../pages/PostRecipePage.vue';
 import RecipeDetailPage from '../pages/RecipeDetailPage.vue'; // Adjust path if needed
+import RecipeDeComponent from '@/components/Community/RecipeDeComponent.vue';
 
 
 // Define routes, grouped logically
@@ -60,6 +61,12 @@ const routes = [
     props: true, // allows `id` to be passed as a prop
   },
 
+  {
+    path: '/recipe/:id',
+    name: 'recipe-details',
+    component: RecipeDeComponent,
+    props: true
+  },
   // User profile-related routes
   { path: '/profile', name: 'ProfileSettings', component: ProfileSettingsPage, meta: { requiresAuth: true } },
   { path: '/logout', name: 'Logout', component: LogoutComponent, meta: { requiresAuth: true } }
