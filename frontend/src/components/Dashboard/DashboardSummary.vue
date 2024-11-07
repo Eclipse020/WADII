@@ -13,7 +13,7 @@
         There are no items nearing expiration.
       </p>
     </div>
-    <h2 class="dashboard__title">Your Fridge Dashboard</h2>
+    <h1 class="dashboard__title">Dashboard</h1>
     <div class="dashboard__controls row text-center">
       <div class="col-6">
         <label for="chartSelector" class="dashboard__label">View Data:</label>
@@ -354,7 +354,7 @@ export default {
 .notification-bar__message {
   margin-left: 10px;
   margin-top: 13px;
-  font-size: 16px;
+  font-size: 20px;
   text-align: center;
 }
 
@@ -364,7 +364,7 @@ export default {
 }
 
 .dashboard__title {
-  font-size: 24px;
+  font-size: 35px;
   margin-bottom: 20px;
   text-align: center;
 }
