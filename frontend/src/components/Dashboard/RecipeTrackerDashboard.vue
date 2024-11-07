@@ -251,23 +251,4 @@ export default {
   height: 400px;
 }
 
-/* canvas {
-  width: 100%;
-  height: 100%;
-}
-
-@media (max-width: 768px) {
-  .stats-row {
-    flex-direction: column;
-  }
-  
-  .most-cooked {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .recipe-image {
-    margin: 0 auto;
-  }
-} */
 </style>
