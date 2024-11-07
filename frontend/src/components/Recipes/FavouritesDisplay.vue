@@ -83,32 +83,78 @@ export default {
       }
     },
     async toggleFavorite(recipe) {
-      const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === recipe.label);
-      if (recipeIndex !== -1) {
-        const recipeId = this.favoriteRecipes[recipeIndex].id;
-        console.log("toggled recipe.id: ", recipeId);
-        await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
-        this.favoriteRecipes.splice(recipeIndex, 1);
-      } else {
-        const favoriteRecipe = {
-          label: recipe.label,
-          image: recipe.image,
-          url: recipe.url,
-          ingredientLines: recipe.ingredientLines,
-          totalTime: recipe.totalTime,
-          uri: recipe.uri // Ensure consistent ID is saved
-        };
-        const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-        const docRef = await addDoc(favoritesCollection, favoriteRecipe);
-        this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
+      try {
+        console.log("Attempting to toggle recipe:", recipe);
+        
+        if (this.isFavorite(recipe)) {
+          // Find the recipe in our local array
+          const recipeToDelete = this.favoriteRecipes.find(fav => fav.label === recipe.label);
+          
+          if (recipeToDelete && recipeToDelete.id) {
+            console.log("Found recipe to delete with ID:", recipeToDelete.id);
+            
+            const docRef = doc(db, `users/${this.currentUserId}/favorites`, recipeToDelete.id);
+            await deleteDoc(docRef);
+            console.log("Document successfully deleted");
+            
+            // Remove from local array
+            const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.id === recipeToDelete.id);
+            if (recipeIndex !== -1) {
+              this.favoriteRecipes.splice(recipeIndex, 1);
+              console.log("Recipe removed from local array");
+            }
+          } else {
+            console.error("Could not find recipe document ID for deletion");
+          }
+        } else {
+          // Save the complete recipe data structure
+          const favoriteRecipe = {
+            ...recipe,  // Keep all original recipe properties
+            label: recipe.label,
+            image: recipe.image,
+            url: recipe.url,
+            ingredientLines: recipe.ingredientLines,
+            totalTime: recipe.totalTime,
+            calories: recipe.calories || 0,
+            yield: recipe.yield || 1,
+            totalNutrients: recipe.totalNutrients || {
+              PROCNT: { quantity: 0, unit: 'g' },
+              FAT: { quantity: 0, unit: 'g' },
+              CHOCDF: { quantity: 0, unit: 'g' }
+            }
+          };
+
+          // Ensure the URI is included
+          if (recipe.uri) {
+            favoriteRecipe.uri = recipe.uri;
+          } else {
+            // If no URI is present, construct it from the recipe URL
+            const urlMatch = recipe.url?.match(/\/recipe\/(.*)/);
+            if (urlMatch) {
+              favoriteRecipe.uri = `http://www.edamam.com/ontologies/edamam.owl#recipe_${urlMatch[1]}`;
+            }
+          }
+
+          console.log("Saving favorite recipe:", favoriteRecipe);
+          
+          const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+          const docRef = await addDoc(favoritesCollection, favoriteRecipe);
+          this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
+        }
+      } catch (error) {
+        console.error("Error in toggleFavorite:", error);
+        throw error;
       }
     },
     isFavorite(recipe) {
       return this.favoriteRecipes.some(fav => fav.label === recipe.label);
     },
     viewDetails(recipe) {
-      // Use the saved recipe ID and construct the proper URI format
-      const recipeId = recipe.recipeId || recipe.id;
+      if (!recipe.uri) {
+        console.error('No recipe URI found');
+        return;
+      }
+      const recipeId = encodeURIComponent(recipe.uri);
       this.$router.push({ 
         name: 'RecipeDetails', 
         params: { 
@@ -119,7 +165,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 .favorites {

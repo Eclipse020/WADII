@@ -1,3 +1,4 @@
+<!-- Previous template section remains unchanged -->
 <template>
   <div v-if="show" class="recipe-modal">
     <div class="recipe-modal__card">
@@ -311,6 +312,11 @@ export default {
         this.recipes = data.hits;
         this.hasSearched = true;
         this.selectedRecipe = null;
+        
+        // Log the structure of an API recipe for debugging
+        if (this.recipes.length > 0) {
+          console.log('API Recipe Structure:', this.recipes[0].recipe);
+        }
       } catch (error) {
         console.error("Error fetching recipes:", error);
       }
@@ -393,8 +399,13 @@ export default {
       // Add meal type and ensure all required nutritional data is included
       console.log('Original recipe data:', recipe);
       console.log('Original totalNutrients:', recipe.totalNutrients);
+      
+      // Check if this is a favorite recipe (it will have an id from Firestore)
+      const isFavoriteRecipe = 'id' in recipe;
+      
       const processedRecipe = {
         ...recipe,
+        uri: recipe.uri, // Explicitly preserve the uri property
         mealType: this.mealType.toLowerCase(),
         // Ensure these properties exist even if they're null/empty
         calories: recipe.calories || 0,
@@ -407,7 +418,13 @@ export default {
           ...(recipe.totalNutrients || {})
         }
       };
+
+      // If this is a favorite recipe, ensure we're not passing the Firestore id
+      if (isFavoriteRecipe) {
+        delete processedRecipe.id;
+      }
       
+      console.log('Processed recipe data:', processedRecipe);
       this.$emit('add-recipe', processedRecipe);
       this.selectedRecipe = null;
     },

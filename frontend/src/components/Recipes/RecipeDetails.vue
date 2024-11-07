@@ -1,3 +1,4 @@
+<!-- Previous template section remains unchanged -->
 <template>
   <div v-if="recipe && recipe.label" class="recipe">
     <!-- Header Section -->
@@ -212,11 +213,11 @@ export default {
         console.log(this.recipe, this.fridgeItems, this.recipe.ingredientLines)
         this.$router.push({ 
           name: 'CookNow', 
-          params: { 
-            recipe: this.recipe, 
-            fridgeIngredients: this.fridgeItems, 
-            requiredIngredients: this.recipe.ingredientLines // Add this line
-          } 
+          params: { id: this.$route.params.id },
+          query: { 
+            requiredIngredients: JSON.stringify(this.recipe.ingredientLines),
+            fridgeIngredients: JSON.stringify(this.fridgeItems)
+          }
         });
       } catch (error) {
         console.error("Error marking recipe as completed:", error);
@@ -239,25 +240,30 @@ export default {
     async toggleFavorite() {
       if (!this.currentUserId) return;
 
-      // Capture the ID from the route
-      const recipeId = this.$route.params.id;
-      const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === this.recipe.label);
-
       try {
+        const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === this.recipe.label);
+
         if (recipeIndex !== -1) {
           // If the recipe is already in favorites, delete it
           const existingRecipeId = this.favoriteRecipes[recipeIndex].id;
           await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, existingRecipeId));
           this.favoriteRecipes.splice(recipeIndex, 1);
         } else {
-          // Add the recipe to favorites
+          // Add the recipe to favorites with all necessary properties
           const favoriteRecipe = {
-            id: recipeId,  // Store the full recipe ID from the URL
             label: this.recipe.label,
             image: this.recipe.image,
             url: this.recipe.url,
+            uri: this.recipe.uri, // Add the uri property
             ingredientLines: this.recipe.ingredientLines,
             totalTime: this.recipe.totalTime,
+            calories: this.recipe.calories || 0,
+            yield: this.recipe.yield || 1,
+            totalNutrients: {
+              PROCNT: this.recipe.totalNutrients?.PROCNT || { quantity: 0, unit: 'g' },
+              FAT: this.recipe.totalNutrients?.FAT || { quantity: 0, unit: 'g' },
+              CHOCDF: this.recipe.totalNutrients?.CHOCDF || { quantity: 0, unit: 'g' }
+            },
             dateAdded: new Date().toLocaleDateString()
           };
 
