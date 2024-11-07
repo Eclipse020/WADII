@@ -1,4 +1,5 @@
 <template>
+  <!-- Template remains unchanged -->
   <div class="favorites">
     <h1 class="favorites__title">🌟 Your Favorite Recipes</h1>
     <div v-if="favoriteRecipes.length === 0" class="favorites__empty">
@@ -13,12 +14,12 @@
         <div class="recipe-card__image-container">
           <img 
             :src="recipe.image" 
-            :alt="recipe.label"
+            :alt="recipe.label || recipe.name"
             class="recipe-card__image"
           />
         </div>
-        <h2 class="recipe-card__title">{{ recipe.label }}</h2>
-        <p class="recipe-card__time">⏰ Total Time: {{ recipe.totalTime }} minutes</p>
+        <h2 class="recipe-card__title">{{ recipe.label || recipe.name }}</h2>
+        <p class="recipe-card__time">⏰ Total Time: {{ recipe.totalTime || recipe.estimatedTime }} minutes</p>
         <div class="recipe-card__actions">
           <button 
             @click="toggleFavorite(recipe)"
@@ -83,54 +84,142 @@ export default {
       }
     },
     async toggleFavorite(recipe) {
-      const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === recipe.label);
-      if (recipeIndex !== -1) {
-        // Remove from favorites
-        const recipeId = this.favoriteRecipes[recipeIndex].id;
-        await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
-        this.favoriteRecipes.splice(recipeIndex, 1);
-        alert("Recipe removed from favorites!");
-      } else {
-        // Add to favorites with complete nutrition data
-        const favoriteRecipe = {
-          label: recipe.label,
-          image: recipe.image,
-          url: recipe.url,
-          ingredientLines: recipe.ingredientLines,
-          totalTime: recipe.totalTime,
-          dateAdded: new Date().toLocaleDateString(),
-          uri: recipe.uri,
-          mealType: recipe.mealType,
-          calories: recipe.calories || 0,
-          yield: recipe.yield || 1,
-          totalNutrients: {
-            PROCNT: recipe.totalNutrients?.PROCNT || { quantity: 0, unit: 'g' },
-            FAT: recipe.totalNutrients?.FAT || { quantity: 0, unit: 'g' },
-            CHOCDF: recipe.totalNutrients?.CHOCDF || { quantity: 0, unit: 'g' },
-            ...(recipe.totalNutrients || {})
+      try {
+        console.log("Attempting to toggle recipe:", recipe);
+        
+        if (this.isFavorite(recipe)) {
+          // Find the recipe in our local array
+          const recipeToDelete = this.favoriteRecipes.find(fav => 
+            fav.label === (recipe.label || recipe.name)
+          );
+          
+          if (recipeToDelete && recipeToDelete.id) {
+            console.log("Found recipe to delete with ID:", recipeToDelete.id);
+            
+            const docRef = doc(db, `users/${this.currentUserId}/favorites`, recipeToDelete.id);
+            await deleteDoc(docRef);
+            console.log("Document successfully deleted");
+            
+            // Remove from local array
+            const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.id === recipeToDelete.id);
+            if (recipeIndex !== -1) {
+              this.favoriteRecipes.splice(recipeIndex, 1);
+              console.log("Recipe removed from local array");
+            }
+          } else {
+            console.error("Could not find recipe document ID for deletion");
           }
-        };
+        } else {
+          // Save the complete recipe data structure
+          const favoriteRecipe = {
+            ...recipe,  // Keep all original recipe properties
+            label: recipe.label || recipe.name,
+            image: recipe.image,
+            url: recipe.url,
+            ingredientLines: recipe.ingredientLines || recipe.ingredients,
+            totalTime: recipe.totalTime || recipe.estimatedTime,
+            calories: recipe.calories || 0,
+            yield: recipe.yield || 1,
+            totalNutrients: recipe.totalNutrients || {
+              PROCNT: { quantity: 0, unit: 'g' },
+              FAT: { quantity: 0, unit: 'g' },
+              CHOCDF: { quantity: 0, unit: 'g' }
+            }
+          };
 
-        const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-        const docRef = await addDoc(favoritesCollection, favoriteRecipe);
-        this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
-        alert("Recipe added to favorites!");
+          // Ensure the URI is included for non-community recipes
+          if (!recipe.isFromCommunity && recipe.uri) {
+            favoriteRecipe.uri = recipe.uri;
+          }
+
+          console.log("Saving favorite recipe:", favoriteRecipe);
+          
+          const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+          const docRef = await addDoc(favoritesCollection, favoriteRecipe);
+          this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
+        }
+      } catch (error) {
+        console.error("Error in toggleFavorite:", error);
+        throw error;
       }
     },
     isFavorite(recipe) {
-      return this.favoriteRecipes.some(fav => fav.label === recipe.label);
+      return this.favoriteRecipes.some(fav => 
+        fav.label === (recipe.label || recipe.name)
+      );
     },
     viewDetails(recipe) {
-      const recipeId = recipe.uri ? encodeURIComponent(recipe.uri) : recipe.id;
-      console.log("Redirecting to Recipe Details with ID:", recipeId);
-      this.$router.push({ name: 'RecipeDetails', params: { id: recipeId } });
+      console.log("Viewing details for recipe:", recipe);
+      
+      // Handle community recipes
+      if (recipe.isFromCommunity || recipe.communityRecipeId) {
+        const recipeId = recipe.communityRecipeId || recipe.id;
+        console.log("Routing to community recipe:", recipeId);
+        
+        this.$router.push({
+          name: 'RecipeDetailPage',  // Changed from 'recipe-details' to 'RecipeDetailPage'
+          params: { id: recipeId }
+        }).catch(err => {
+          console.error("Navigation failed:", err);
+          // Fallback using path
+          this.$router.push(`/recipe/${recipeId}`);
+        });
+        return;
+      }
+
+      // Handle Edamam recipes
+      if (recipe.uri) {
+        console.log("Routing to Edamam recipe with URI:", recipe.uri);
+        const recipeId = encodeURIComponent(recipe.uri);
+        this.$router.push({ 
+          name: 'RecipeDetails', 
+          params: { 
+            id: recipeId 
+          } 
+        });
+        return;
+      }
+
+      // Try to construct URI from URL if available
+      if (recipe.url) {
+        console.log("Constructing URI from URL:", recipe.url);
+        const urlMatch = recipe.url.match(/\/recipe\/(.*)/);
+        if (urlMatch) {
+          const recipeId = encodeURIComponent(`http://www.edamam.com/ontologies/edamam.owl#recipe_${urlMatch[1]}`);
+          this.$router.push({ 
+            name: 'RecipeDetails', 
+            params: { 
+              id: recipeId 
+            } 
+          });
+          return;
+        }
+      }
+
+      // If we have an ID but no URI/URL, treat it as a community recipe
+      if (recipe.id) {
+        console.log("Falling back to recipe ID for routing:", recipe.id);
+        this.$router.push({ 
+          name: 'RecipeDetailPage',  // Changed from 'RecipeDeComponent' to 'RecipeDetailPage'
+          params: { 
+            id: recipe.id
+          } 
+        }).catch(err => {
+          console.error("Navigation failed:", err);
+          // Fallback to path-based routing
+          this.$router.push(`/recipe/${recipe.id}`);
+        });
+        return;
+      }
+
+      console.error('Unable to determine recipe source or construct valid route');
     }
   }
 };
 </script>
 
-
 <style scoped>
+/* Styles remain unchanged */
 .favorites {
   padding: 2rem;
   max-width: 1200px;

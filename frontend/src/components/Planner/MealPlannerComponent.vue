@@ -1,3 +1,4 @@
+<!-- Previous template section remains unchanged -->
 <template>
   <div class="planner">
     <div class="planner__column planner__column--left">
@@ -104,7 +105,7 @@
 
 <script>
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, collection, getDocs, addDoc, deleteDoc, updateDoc } from 'firebase/firestore'; // Add updateDoc import
+import { doc, collection, getDocs, addDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 import AddRecipeModal from './AddRecipeModal.vue';
 import RecipeDetailsModal from './RecipeDetailsModal.vue';
@@ -201,7 +202,7 @@ export default {
           await updateDoc(recipeRef, {
             completed: true
           });
-          await this.loadMealPlan(); // Reload the meal plan to reflect changes
+          await this.loadMealPlan();
         }
       } catch (error) {
         console.error("Error marking recipe as completed:", error);
@@ -228,7 +229,6 @@ export default {
               mealData.month === this.currentMonth && 
               mealData.year === this.currentYear) {
             
-            // Don't load recipes for past dates
             const mealDate = new Date(mealData.year, mealData.month, mealData.day);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -246,7 +246,9 @@ export default {
                 year: mealData.year,
                 mealType: mealData.mealType,
                 createdAt: mealData.createdAt,
-                completed: mealData.completed || false
+                completed: mealData.completed || false,
+                isFromCommunity: mealData.recipe.isFromCommunity || false,
+                communityRecipeId: mealData.recipe.communityRecipeId || null
               });
             }
           }
@@ -280,9 +282,23 @@ export default {
       if (!this.currentUserId) return;
 
       try {
+        // Ensure recipe has required properties and preserve community recipe information
+        const processedRecipe = {
+          label: recipe.label || '',
+          uri: recipe.uri || `recipe_${Date.now()}`,
+          image: recipe.image || '',
+          ingredientLines: recipe.ingredientLines || [],
+          totalNutrients: recipe.totalNutrients || {},
+          calories: recipe.calories || 0,
+          yield: recipe.yield || 1,
+          mealType: this.mealType,
+          isFromCommunity: recipe.isFromCommunity || false,
+          communityRecipeId: recipe.communityRecipeId || null
+        };
+
         const docRef = await addDoc(collection(db, `users/${this.currentUserId}/mealPlans`), {
           day: this.selectedDay,
-          recipe: recipe,
+          recipe: processedRecipe,
           month: this.currentMonth,
           year: this.currentYear,
           mealType: this.mealType,
@@ -292,8 +308,9 @@ export default {
         if (!this.mealPlan[this.selectedDay]) {
           this.mealPlan[this.selectedDay] = [];
         }
+        
         this.mealPlan[this.selectedDay].push({
-          ...recipe,
+          ...processedRecipe,
           id: docRef.id,
           day: this.selectedDay,
           month: this.currentMonth,
@@ -403,7 +420,6 @@ export default {
       }
     },
 
-    // To grey out calander
     isPastDate(day) {
       if (!day) return false;
       const currentDate = new Date();
@@ -494,7 +510,6 @@ export default {
       }
     },
   },
-  // Add mounted hook for cleanup
   mounted() {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -506,7 +521,6 @@ export default {
             this.cleanupPastRecipes()
           ]);
           
-          // Set up daily cleanup
           const checkForCleanup = async () => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -516,7 +530,7 @@ export default {
             }
           };
 
-          this.cleanupInterval = setInterval(checkForCleanup, 3600000); // Check every hour
+          this.cleanupInterval = setInterval(checkForCleanup, 3600000);
         } catch (error) {
           console.error("Error loading data:", error);
         }
@@ -536,4 +550,3 @@ export default {
   },
 };
 </script>
-

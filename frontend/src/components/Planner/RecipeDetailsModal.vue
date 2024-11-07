@@ -106,10 +106,37 @@ export default {
       alert("Ingredients added to the shopping list!");
     },
     goToCookingInstructions() {
-      const encodedUri = encodeURIComponent(this.recipe.uri);
+      // console.log("Recipe data:", this.recipe);
+      
+      // Check if it's a community recipe
+      if (this.recipe.isFromCommunity || this.recipe.communityRecipeId) {
+        const recipeId = this.recipe.communityRecipeId;
+        console.log("Routing to community recipe:", recipeId);
+        
+        this.$router.push({
+          name: 'RecipeDetailPage',  // Changed from 'recipe-details' to 'RecipeDetailPage'
+          params: { id: recipeId }
+        }).catch(err => {
+          console.error("Navigation failed:", err);
+          // Fallback using path
+          this.$router.push(`/recipe/${recipeId}`);
+        });
+        return;
+      }
+
+      // Handle Edamam recipes
+      if (!this.recipe.uri) {
+        console.error('No recipe URI found');
+        return;
+      }
+
+      // For Edamam recipes, use the full URI
+      const edamamRecipeId = encodeURIComponent(this.recipe.uri);
       this.$router.push({ 
-        name: 'RecipeDetails',
-        params: { id: encodedUri }
+        name: 'RecipeDetails', 
+        params: { 
+          id: edamamRecipeId 
+        } 
       });
       this.close();
     }

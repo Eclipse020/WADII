@@ -331,9 +331,9 @@ export default {
 
     async fetchRecipes2() {
       const ingredients = this.items.map(item => item.name).join(","); // Join item names as comma-separated string
-      console.log(ingredients)
+      console.log("the ingredients are" + ingredients)
       const query = this.ingredientQuery ? this.ingredientQuery : ingredients;
-      console.log(query)
+      console.log("the query is " + query)
       const from = (this.currentPage - 1) * this.recipesPerPage;
       const to = from + this.recipesPerPage;
 

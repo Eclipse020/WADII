@@ -1,3 +1,4 @@
+<!-- Previous template section remains unchanged -->
 <template>
   <div v-if="show" class="recipe-modal">
     <div class="recipe-modal__card">
@@ -194,6 +195,7 @@ import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 export default {
+  // Component definition remains unchanged until the addRecipe method
   name: 'AddRecipeModal',
   props: {
     show: {
@@ -275,7 +277,10 @@ export default {
         ...recipe,
         totalNutrients: recipe.totalNutrients || {},
         yield: recipe.yield || 1,
-        calories: recipe.calories || 0
+        calories: recipe.calories || 0,
+        // Preserve community recipe information
+        isFromCommunity: recipe.isFromCommunity || false,
+        communityRecipeId: recipe.communityRecipeId || null
       };
       this.selectedRecipe = processedRecipe;
     },
@@ -311,6 +316,11 @@ export default {
         this.recipes = data.hits;
         this.hasSearched = true;
         this.selectedRecipe = null;
+        
+        // Log the structure of an API recipe for debugging
+        if (this.recipes.length > 0) {
+          console.log('API Recipe Structure:', this.recipes[0].recipe);
+        }
       } catch (error) {
         console.error("Error fetching recipes:", error);
       }
@@ -371,10 +381,16 @@ export default {
         const favoritesCollection = collection(db, `users/${user.uid}/favorites`);
         const snapshot = await getDocs(favoritesCollection);
         
-        this.favoriteRecipes = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        this.favoriteRecipes = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            // Ensure community recipe information is preserved
+            isFromCommunity: data.isFromCommunity || false,
+            communityRecipeId: data.communityRecipeId || null
+          };
+        });
 
         console.log("Fetched favorite recipes:", this.favoriteRecipes);
       } catch (error) {
@@ -390,16 +406,17 @@ export default {
     },
 
     addRecipe(recipe) {
-      // Add meal type and ensure all required nutritional data is included
       console.log('Original recipe data:', recipe);
-      console.log('Original totalNutrients:', recipe.totalNutrients);
+      
       const processedRecipe = {
-        ...recipe,
+        ...recipe,  // Keep all original properties
         mealType: this.mealType.toLowerCase(),
+        // Preserve community recipe information
+        isFromCommunity: recipe.isFromCommunity || false,
+        communityRecipeId: recipe.communityRecipeId || null,
         // Ensure these properties exist even if they're null/empty
         calories: recipe.calories || 0,
         yield: recipe.yield || 1,
-        // Single totalNutrients object with defaults for missing nutrients
         totalNutrients: {
           PROCNT: recipe.totalNutrients?.PROCNT || { quantity: 0, unit: 'g' },
           FAT: recipe.totalNutrients?.FAT || { quantity: 0, unit: 'g' },
@@ -407,11 +424,17 @@ export default {
           ...(recipe.totalNutrients || {})
         }
       };
+
+      // If this is a favorite recipe but not a community recipe, remove the Firestore id
+      if ('id' in recipe && !recipe.isFromCommunity) {
+        delete processedRecipe.id;
+      }
       
+      console.log('Processed recipe data:', processedRecipe);
       this.$emit('add-recipe', processedRecipe);
       this.selectedRecipe = null;
     },
-    
+
     close() {
       this.$emit('close');
       this.query = '';

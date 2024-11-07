@@ -1,3 +1,4 @@
+<!-- Previous template section remains unchanged -->
 <template>
   <div v-if="recipe && recipe.label" class="recipe">
     <!-- Header Section -->
@@ -78,7 +79,7 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, deleteDoc, doc, getDocs } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import axios from 'axios';
 
 export default {
@@ -124,7 +125,7 @@ export default {
       
       formatted = formatted.replace(
         /\*\*([^*]+)\*\*/g, 
-        '<strong class="recipe__text-bold">$1</strong>'
+        '<strong class="recipe__text-bold">$1</strong><br>'
       );
       
       formatted = formatted.split('\n\n').map(paragraph => {
@@ -142,6 +143,7 @@ export default {
   },
   mounted() {
     const recipeId = this.$route.params.id;
+    console.log("mounted recipe.id: ", recipeId)
     if (recipeId) {
       this.fetchRecipeById(recipeId);
     } else {
@@ -161,7 +163,7 @@ export default {
         const genAI = new GoogleGenerativeAI(process.env.VUE_APP_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const prompt = `Write step-by-step instructions for making ${this.recipe.label} using the following ingredients: ${this.recipe.ingredientLines.join(", ")}.`;
+        const prompt = `Write only the step-by-step instructions (no title) for making ${this.recipe.label} using the following ingredients: ${this.recipe.ingredientLines.join(", ")}.`;
         const result = await model.generateContent(prompt);
         
         if (result?.response?.candidates?.[0]?.content?.parts?.[0]?.text) {
@@ -192,6 +194,24 @@ export default {
         console.error("Error fetching recipe by ID:", error);
       }
     },
+    async deleteFromMealPlan() {
+      if (!this.currentUserId || !this.recipe.uri) return;
+
+      try {
+        // Query the mealPlans collection to find entries with matching recipe URI
+        const mealPlansRef = collection(db, `users/${this.currentUserId}/mealPlans`);
+        const q = query(mealPlansRef, where("recipe.uri", "==", this.recipe.uri));
+        const querySnapshot = await getDocs(q);
+
+        // Delete all matching entries
+        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+
+        console.log("Recipe removed from meal plan");
+      } catch (error) {
+        console.error("Error removing recipe from meal plan:", error);
+      }
+    },
     async cookNow() {
       if (!this.currentUserId) return;
 
@@ -205,14 +225,21 @@ export default {
       };
 
       try {
+        // Add to completed recipes
         const completedRecipesCollection = collection(db, `users/${this.currentUserId}/completedRecipes`);
         await addDoc(completedRecipesCollection, completedRecipe);
+
+        // Delete from meal plan
+        await this.deleteFromMealPlan();
+
+        // Navigate to CookNow page
         this.$router.push({ 
           name: 'CookNow', 
-          params: { 
-            recipe: this.recipe, 
-            fridgeIngredients: this.fridgeItems 
-          } 
+          params: { id: this.$route.params.id },
+          query: { 
+            requiredIngredients: JSON.stringify(this.recipe.ingredientLines),
+            fridgeIngredients: JSON.stringify(this.fridgeItems)
+          }
         });
       } catch (error) {
         console.error("Error marking recipe as completed:", error);
@@ -235,20 +262,30 @@ export default {
     async toggleFavorite() {
       if (!this.currentUserId) return;
 
-      const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === this.recipe.label);
-
       try {
+        const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === this.recipe.label);
+
         if (recipeIndex !== -1) {
-          const recipeId = this.favoriteRecipes[recipeIndex].id;
-          await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
+          // If the recipe is already in favorites, delete it
+          const existingRecipeId = this.favoriteRecipes[recipeIndex].id;
+          await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, existingRecipeId));
           this.favoriteRecipes.splice(recipeIndex, 1);
         } else {
+          // Add the recipe to favorites with all necessary properties
           const favoriteRecipe = {
             label: this.recipe.label,
             image: this.recipe.image,
             url: this.recipe.url,
+            uri: this.recipe.uri,
             ingredientLines: this.recipe.ingredientLines,
             totalTime: this.recipe.totalTime,
+            calories: this.recipe.calories || 0,
+            yield: this.recipe.yield || 1,
+            totalNutrients: {
+              PROCNT: this.recipe.totalNutrients?.PROCNT || { quantity: 0, unit: 'g' },
+              FAT: this.recipe.totalNutrients?.FAT || { quantity: 0, unit: 'g' },
+              CHOCDF: this.recipe.totalNutrients?.CHOCDF || { quantity: 0, unit: 'g' }
+            },
             dateAdded: new Date().toLocaleDateString()
           };
 
@@ -546,5 +583,4 @@ export default {
     width: 100%;
   }
 }
-
 </style>

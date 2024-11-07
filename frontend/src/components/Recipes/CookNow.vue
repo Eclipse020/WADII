@@ -1,5 +1,26 @@
 <template>
   <div class="fridge">
+    <!-- Added Recipe Ingredients Section -->
+    <div class="recipe-ingredients">
+      <div class="recipe-ingredients__content">
+        <header class="recipe-ingredients__header">
+          <h2 class="recipe-ingredients__title">Recipe Ingredients Required</h2>
+        </header>
+        
+        <section class="recipe__ingredients">
+          <ul class="recipe__ingredients-list">
+            <li 
+              v-for="(ingredient, index) in requiredIngredients" 
+              :key="index" 
+              class="recipe__ingredient"
+              :class="{ 'recipe__ingredient--available': fridgeIngredients.includes(ingredient) }"
+            >
+              {{ ingredient }}
+            </li>
+          </ul>
+        </section>
+      </div>
+    </div>
     <div class="fridge__container">
       <div class="fridge__content">
         <header class="fridge__header">
@@ -121,7 +142,18 @@ import {
 } from "firebase/firestore";
 
 export default {
-  name: 'FridgeManager',
+  name: 'CookNow',
+
+  props: {
+    requiredIngredients: {
+      type: Array,
+      default: () => []
+    },
+    fridgeIngredients: {
+      type: Array,
+      default: () => []
+    }
+  },
   
   data() {
     return {
@@ -307,6 +339,7 @@ export default {
         }
 
         alert('All changes saved successfully! 🎉');
+        window.location.href = "http://localhost:8080/recipes";
       } catch (error) {
         console.error("Error saving changes: ", error);
         alert('Error saving changes. Please try again. ❌');
@@ -326,6 +359,60 @@ export default {
 </script>
 
 <style scoped>
+.recipe-ingredients {
+  margin-bottom: 2rem;
+  padding: 0 2rem;
+}
+
+.recipe-ingredients__content {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-ingredients__header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.recipe-ingredients__title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+/* Copied Recipe Ingredients Styles from RecipeDetails */
+.recipe__ingredients {
+  margin: 2rem 0;
+}
+
+.recipe__ingredients-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.recipe__ingredient {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+
+.recipe__ingredient:hover {
+  transform: translateY(-2px);
+}
+
+.recipe__ingredient--available {
+  border-left: 4px solid #4a8c3a;
+}
+
 .fridge {
   padding: 2rem;
   background-color: #f8f9fa;

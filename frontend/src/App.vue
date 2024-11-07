@@ -2,40 +2,40 @@
   <div id="app">
     <!-- Conditionally show header and footer only if user is authenticated -->
     <header v-if="isAuthenticated" class="app-header">
-      <div class="logo-heading-container">
+      <div class="logo-heading-container d-flex align-items-center">
         <img :src="require('@/assets/healthychef.png')" alt="HealthyChef Logo" class="logo" />
         <h1 class="header-title">HealthyChef</h1>
       </div>
-      <nav class="app-nav">
-        <router-link to="/" class="nav-link">
-          <i class="fas fa-home"></i> Home
-        </router-link>
-        <router-link to="/dashboard" class="nav-link">
-          <i class="fas fa-tachometer-alt"></i> Dashboard
-        </router-link>
-        <router-link to="/fridge" class="nav-link">
-          <i class="fas fa-ice-cream"></i> Fridge Management
-        </router-link>
-        <router-link to="/recipes" class="nav-link">
-          <i class="fas fa-utensils"></i> Recipes
-        </router-link>
-        <router-link to="/mealPlanner" class="nav-link">
-          <i class="fas fa-calendar-alt"></i> Meal Planner
-        </router-link>
-        <router-link to="/community" class="nav-link">
-          <i class="fas fa-users"></i> Community
-        </router-link>
-        <router-link to="/profile" class="nav-link">
-          <i class="fas fa-user"></i> Profile
-        </router-link>
-        <router-link to="/logout" class="nav-link" @click.prevent="logoutUser">
-          Logout
-        </router-link>
-      </nav>
+        <nav class="app-nav d-flex">
+          <router-link to="/" class="nav-link">
+            <i class="fas fa-home"></i> Home
+          </router-link>
+          <router-link to="/dashboard" class="nav-link ">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </router-link>
+          <router-link to="/fridge" class="nav-link">
+            <i class="fas fa-ice-cream"></i> Fridge Management
+          </router-link>
+          <router-link to="/recipes" class="nav-link">
+            <i class="fas fa-utensils"></i> Recipes
+          </router-link>
+          <router-link to="/mealPlanner" class="nav-link">
+            <i class="fas fa-calendar-alt"></i> Meal Planner
+          </router-link>
+          <router-link to="/community" class="nav-link">
+            <i class="fas fa-users"></i> Community
+          </router-link>
+          <router-link to="/profile" class="nav-link">
+            <i class="fas fa-user"></i> Profile
+          </router-link>
+          <router-link to="/logout" class="nav-link" @click.prevent="logoutUser">
+            Logout
+          </router-link>
+        </nav>
     </header>
 
     <!-- Main Content -->
-    <main class="container-fluid p-0" @mousemove="resetTimer" @keydown="resetTimer" @click="resetTimer">
+    <main class="container-fluid p-0 content" @mousemove="resetTimer" @keydown="resetTimer" @click="resetTimer">
       <router-view />
     </main>
 
@@ -128,12 +128,6 @@ html, body {
   height: 100%;
 }
 
-/* General App Styling */
-#app {
-  font-family: 'Poppins', sans-serif;
-  color: var(--text-primary);
-  text-align: center;
-}
 
 /* Header Styling */
 .app-header {
@@ -144,6 +138,10 @@ html, body {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: sticky; /* Change to sticky */
+  top: 0; /* Stick to the top of the viewport */
+  z-index: 1000; /* Ensure it stays above other content */
+  width: 100%; /* Set width to 100% of the viewport */
 }
 
 .logo-heading-container {
@@ -258,6 +256,33 @@ footer {
     font-size: 1.5rem;
   }
 }
+
+@media (max-width: 1323px) {
+  /* Center-align items in the app header */
+  .app-header {
+    flex-direction: column;
+    align-items: center; /* Centers content horizontally */
+    padding: 15px;
+  }
+
+  .logo-heading-container {
+    margin-bottom: 15px;
+    text-align: center; /* Centers logo and title */
+  }
+
+  .app-nav {
+    display: flex;
+    justify-content: center; /* Centers the nav items */
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%; /* Ensures nav takes full width */
+  }
+  
+  .nav-link {
+    text-align: center; /* Centers text within each link */
+  }
+}
+
 
 @media (max-width: 992px) {
   .app-header {
