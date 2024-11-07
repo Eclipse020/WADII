@@ -38,7 +38,6 @@
         <img :src="recipe.image" alt="Recipe Image" v-if="recipe.image" class="recipe-image" />
         <div class="recipe-content">
           <h3>{{ recipe.name }}</h3>
-          <p><strong>Description:</strong> {{ recipe.description }}</p>
           <p><strong>Calories:</strong> {{ recipe.calories }}</p>
           <p><strong>Estimated Time:</strong> {{ recipe.estimatedTime }} mins</p>
           

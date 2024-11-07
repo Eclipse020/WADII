@@ -1,45 +1,48 @@
 <template>
   <div class="recipe-details">
     <!-- Recipe Image with Full-Image Modal -->
-    <div class="recipe-image-wrapper" @click="showFullImage = true">
-      <img :src="recipe.image" alt="Recipe Image" class="recipe-image" v-if="recipe.image" />
+    <div class="recipe-details__image-wrapper" @click="showFullImage = true">
+      <img :src="recipe.image" alt="Recipe Image" class="recipe-details__image" v-if="recipe.image" />
     </div>
-    <div v-if="showFullImage" class="modal-overlay" @click="showFullImage = false">
-      <img :src="recipe.image" alt="Full Recipe Image" class="full-image" />
+    <div v-if="showFullImage" class="recipe-details__modal-overlay" @click="showFullImage = false">
+      <img :src="recipe.image" alt="Full Recipe Image" class="recipe-details__full-image" />
     </div>
 
     <!-- Recipe Details -->
-    <h1>{{ recipe.name }}</h1>
-    <p>{{ recipe.description }}</p>
+    <h1 class="recipe-details__name">{{ recipe.name }}</h1>
+    <p class="recipe-details__description">{{ recipe.description }}</p>
 
     <!-- Additional Recipe Info -->
-    <div class="additional-info">
-      <p class="info-item">⏰ Estimated Time: {{ recipe.estimatedTime }} minutes</p>
-      <p class="info-item">🍽️ Calories: {{ recipe.calories }}</p>
+    <div class="recipe-details__additional-info">
+      <p class="recipe-details__info-item">⏰ Estimated Time: {{ recipe.estimatedTime }} minutes</p>
+      <p class="recipe-details__info-item">🍽️ Calories: {{ recipe.calories }}</p>
     </div>
 
     <!-- Ingredients List -->
-    <h3>Ingredients</h3>
-    <ul class="ingredients-list">
-      <li v-for="ingredient in recipe.ingredients" :key="ingredient">{{ ingredient }}</li>
+    <h3 class="recipe-details__section-title">Ingredients</h3>
+    <ul class="recipe-details__ingredients-list">
+      <li v-for="ingredient in recipe.ingredients" :key="ingredient" class="recipe-details__ingredient-item">{{ ingredient }}</li>
     </ul>
 
     <!-- Recipe Steps -->
-    <h3>Steps</h3>
-    <ol class="recipe-steps">
-      <li v-for="(step, index) in recipe.steps" :key="index">{{ step }}</li>
+    <h3 class="recipe-details__section-title">Steps</h3>
+    <ol class="recipe-details__recipe-steps">
+      <li v-for="(step, index) in recipe.steps" :key="index" class="recipe-details__recipe-step">{{ step }}</li>
     </ol>
 
     <!-- "Add to Favorites" Button -->
-    <button @click="toggleFavorite" class="btn btn-success mx-2 shadow"
-    :class="{'btn-success': !isFavorited, 'btn-secondary': isFavorited}">
-      {{ isFavorited ? 'Added to Favorites' : 'Add to Favorites' }}
+    <button @click="toggleFavorite" class="recipe-details__btn recipe-details__btn--favorite mx-2 shadow"
+    :class="{'recipe-details__btn--success': !isFavorited, 'recipe-details__btn--secondary': isFavorited}">
+      {{ isFavorited ? 'Remove from Favorites' : 'Add to Favorites' }}
     </button>
-    </div>
+  </div>
 </template>
 
 <script>
 import { getRecipeById } from '@/services/RecipeService'; // Adjust path if necessary
+import { db, auth } from '../../services/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, addDoc, deleteDoc, doc, getDocs } from "firebase/firestore";
 
 export default {
   props: {
@@ -71,18 +74,64 @@ export default {
         console.error("Failed to fetch recipe details:", error);
       }
     },
-    toggleFavorite() {
-      this.isFavorited = !this.isFavorited;
+    async loadFavoriteRecipes() {
+      if (!this.currentUserId) return;
+      
+      try {
+        const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+        const snapshot = await getDocs(favoritesCollection);
+        this.favoriteRecipes = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      } catch (error) {
+        console.error("Error loading favorite recipes:", error);
       }
+    },
+    async toggleFavorite() {
+      if (!this.currentUserId) return;
+
+      this.isFavorited = !this.isFavorited;
+
+      const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === this.recipe.label);
+
+      try {
+        if (recipeIndex !== -1) {
+          const recipeId = this.favoriteRecipes[recipeIndex].id;
+          await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
+          this.favoriteRecipes.splice(recipeIndex, 1);
+        } else {
+          const favoriteRecipe = {
+            label: this.recipe.label,
+            image: this.recipe.image,
+            url: this.recipe.url,
+            ingredientLines: this.recipe.ingredientLines,
+            totalTime: this.recipe.totalTime,
+            dateAdded: new Date().toLocaleDateString()
+          };
+
+          const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+          const docRef = await addDoc(favoritesCollection, favoriteRecipe);
+          this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
+        }
+      } catch (error) {
+        console.error("Error toggling favorite status:", error);
+      }
+    }
   },
   mounted() {
     this.fetchRecipeDetails(); // Fetch details when component is mounted
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.currentUserId = user.uid;
+        await this.loadFavoriteRecipes();
+      }
+    });
   },
 };
 </script>
 
 <style scoped>
-
 .recipe-details {
   padding: 20px; /* Add padding */
   display: flex; /* Use flexbox for centering */
@@ -91,7 +140,8 @@ export default {
   text-align: center; /* Center text */
 }
 
-.recipe-image-wrapper {
+/* Recipe Image */
+.recipe-details__image-wrapper {
   width: 100%; /* Set width to full width */
   height: auto; /* Adjust height automatically */
   overflow: hidden; /* Hide overflow to maintain crop */
@@ -99,7 +149,7 @@ export default {
   position: relative; /* Make it position relative for image styling */
 }
 
-.recipe-image {
+.recipe-details__image {
   width: 100%; /* Use full width of the wrapper */
   height: auto; /* Maintain aspect ratio */
   object-fit: cover; /* Ensures the image covers the area without stretching */
@@ -107,43 +157,47 @@ export default {
 }
 
 /* Additional Info Styling */
-.additional-info {
+.recipe-details__additional-info {
   display: flex; /* Use flexbox for layout */
   justify-content: center; /* Center items horizontally */
   gap: 20px; /* Add spacing between items */
   margin: 20px 0; /* Add margin for spacing */
 }
 
+.recipe-details__info-item {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
 /* Ingredients List */
-.ingredients-list {
+.recipe-details__ingredients-list {
   list-style-type: disc; /* Keep bullet points */
   padding-left: 20px; /* Add padding for bullets */
   margin: 20px 0; /* Add margin for spacing */
 }
 
-.ingredients-list li {
+.recipe-details__ingredient-item {
   font-size: 20px; /* Increase font size for ingredients */
   margin: 5px 0; /* Add margin for each ingredient */
   text-align: left; /* Align text to the left for better readability */
 }
 
 /* Recipe Steps */
-.recipe-steps {
+.recipe-details__recipe-steps {
   list-style-position: outside; /* Keep the numbers/bullets outside */
   padding-left: 20px; /* Add padding for left alignment */
   margin: 0; /* Remove margin */
   font-size: 1.2em; /* Adjust font size as desired */
 }
 
-.recipe-steps li {
+.recipe-details__recipe-step {
   margin: 5px 0; /* Optional: add some vertical spacing between steps */
   line-height: 1.4; /* Adjust line height for better readability */
   text-align: left; /* Align text to the left */
 }
 
-
 /* Full-screen modal styles */
-.modal-overlay {
+.recipe-details__modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -157,19 +211,31 @@ export default {
   cursor: pointer;
 }
 
-.full-image {
+.recipe-details__full-image {
   max-width: 90%;
   max-height: 90%;
   object-fit: contain;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.btn-success {
+/* Button styles */
+.recipe-details__btn {
+  padding: 10px 15px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.recipe-details__btn--favorite {
   background-color: #28a745; /* Green for 'Add to Favorites' */
 }
 
-.btn-secondary {
+.recipe-details__btn--secondary {
   background-color: #6c757d; /* Grey for 'Added to Favorites' */
+}
+
+.recipe-details__btn--success {
+  background-color: #28a745; /* Green for 'Add to Favorites' */
 }
 
 </style>
