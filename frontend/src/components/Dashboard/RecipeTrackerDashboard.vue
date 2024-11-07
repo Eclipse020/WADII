@@ -251,7 +251,7 @@ export default {
   height: 400px;
 }
 
-canvas {
+/* canvas {
   width: 100%;
   height: 100%;
 }
@@ -269,5 +269,5 @@ canvas {
   .recipe-image {
     margin: 0 auto;
   }
-}
+} */
 </style>
