@@ -204,7 +204,6 @@ export default {
         (this.selectedChart === "items" && !this.hasDataForMonthItem) ||
         (this.selectedChart === "expiredItems" && !this.hasDataForMonthExpired)
       ) {
-        console.warn("No data available for the selected chart:", this.selectedChart);
         this.isRendering = false;
         return;
       }
@@ -212,7 +211,6 @@ export default {
       let canvas = this.$refs[this.selectedChart === "items" ? "itemsChart" : "expiredItemsChart"];
       
       if (!canvas) {
-        console.warn("Canvas not available for selected chart:", this.selectedChart);
         this.isRendering = false;
         return;
       }
@@ -277,6 +275,9 @@ export default {
             this.updateMotivationalMessage();
             break;
           }
+
+          default:
+            break;
         }
       } catch (error) {
         console.error("Error rendering chart:", error);

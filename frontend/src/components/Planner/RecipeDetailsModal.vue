@@ -106,13 +106,23 @@ export default {
       alert("Ingredients added to the shopping list!");
     },
     goToCookingInstructions() {
-      const encodedUri = encodeURIComponent(this.recipe.uri);
-      this.$router.push({ 
-        name: 'RecipeDetails',
-        params: { id: encodedUri }
-      });
-      this.close();
+    if (!this.recipe.uri) {
+      console.error('No recipe URI found');
+      return;
     }
+
+    // Encode the URI component
+    const recipeId = encodeURIComponent(this.recipe.uri);
+    
+    this.$router.push({ 
+      name: 'RecipeDetails', 
+      params: { 
+        id: recipeId 
+      } 
+    });
+    this.close();
   }
-};
+    }
+  };
+  
 </script>
