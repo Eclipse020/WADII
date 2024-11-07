@@ -8,7 +8,6 @@
           v-model="searchQuery" 
           placeholder="Search recipes by name or description..."
           class="search-input"
-          @input="handleSearch" 
         />
       </div>
       
@@ -20,17 +19,25 @@
         Post New Recipe
       </button>
     </div>
+
+     <!-- Sort by Likes Dropdown -->
+    <div class="sort-container">
+      <label for="sortOption">Sort by:</label>
+      <select id="sortOption" v-model="sortOption">
+        <option value="default">Default</option>
+        <option value="likes">Most Liked</option>
+      </select>
+    </div>
     
     <h2>Recipes</h2>
 
     <p v-if="fetchError" class="error-message">{{ fetchError }}</p>
 
     <ul>
-      <li v-for="recipe in filteredRecipes" :key="recipe.id" class="recipe-card">
+      <li v-for="recipe in sortedRecipes" :key="recipe.id" class="recipe-card" @click="navigateToRecipeDetail(recipe.id)">
         <img :src="recipe.image" alt="Recipe Image" v-if="recipe.image" class="recipe-image" />
         <div class="recipe-content">
           <h3>{{ recipe.name }}</h3>
-          <p><strong>Description:</strong> {{ recipe.description }}</p>
           <p><strong>Calories:</strong> {{ recipe.calories }}</p>
           <p><strong>Estimated Time:</strong> {{ recipe.estimatedTime }} mins</p>
           
@@ -42,7 +49,7 @@
             </div>
 
             <button @click.stop="openCommentPopup(recipe)">
-              💬 {{ recipe.comments.length }} Comments
+              💬 {{ recipe.comments ? recipe.comments.length : 0 }} Comments
             </button>
           </div>
         </div>
@@ -80,6 +87,7 @@ export default {
       isCommentPopupOpen: false, // Track if the comment popup is open
       currentRecipeComments: [], // Store comments for the currently open recipe
       newComment: '', // For binding new comment input
+      sortOption: 'default', 
     };
   },
   async mounted() {
@@ -100,12 +108,18 @@ export default {
         this.fetchError = 'Failed to load recipes. Please try again later.';
       }
     },
+
+    
+
     handleSearch() {
       // The search logic is handled in the computed property
     },
     navigateToPostRecipe() {
       this.$router.push({ name: 'PostRecipe' });
     },
+     navigateToRecipeDetail(recipeId) {
+    this.$router.push({ name: 'RecipeDetailPage', params: { id: recipeId } });
+  },
     async toggleLike(recipe) {
       const wasLiked = recipe.isLiked;
       recipe.isLiked = !wasLiked; 
@@ -120,7 +134,7 @@ export default {
       }
     },
     openCommentPopup(recipe) {
-      this.currentRecipeComments = recipe.comments; // Load comments for the selected recipe
+      this.currentRecipeComments = recipe.comments || []; // Load comments for the selected recipe
       this.isCommentPopupOpen = true; // Open the comment popup
     },
     async addComment(comment) {
@@ -134,13 +148,20 @@ export default {
   },
   computed: {
     filteredRecipes() {
-      if (!this.searchQuery) return this.recipes;
+      if (!this.searchQuery) return this.recipes; // Return all recipes if no search query
       
-      const query = this.searchQuery.toLowerCase();
+      const query = this.searchQuery.toLowerCase(); // Normalize the search query
       return this.recipes.filter(recipe => 
         recipe.name.toLowerCase().includes(query) ||
         recipe.description.toLowerCase().includes(query)
       );
+    },
+    sortedRecipes() {
+      const recipesToSort = this.filteredRecipes; // Use filtered recipes for sorting
+      if (this.sortOption === 'likes') {
+        return [...recipesToSort].sort((a, b) => b.likeCount - a.likeCount);
+      }
+      return recipesToSort;
     }
   }
 };

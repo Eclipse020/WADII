@@ -1,9 +1,11 @@
 <template>
-  <div class="popup-overlay" @click="$emit('close')"> <!-- Overlay to close the popup on background click -->
+  <div class="popup-overlay" @click="$emit('close')">
     <div class="comment-popup" @click.stop>
       <div class="comments-list">
         <ul>
-          <li v-for="(comment, index) in comments" :key="index">{{ comment }}</li>
+          <li v-for="(comment, index) in comments" :key="index">
+            <strong>{{ comment.username }}:</strong> {{ comment.text }}
+          </li>
         </ul>
       </div>
       <input 
@@ -18,10 +20,42 @@
 </template>
 
 <script>
+import { auth, db } from '../../services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
 export default {
+  data() {
+    return {
+      user: null,
+    };
+  },
   props: {
-    comments: Array,
+    comments: {
+      type: Array,
+      required: true,
+      default: () => [],
+    },
     modelValue: String,
+  },
+  async created() {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      try {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          this.user = userSnap.data();
+        } else {
+          console.error('No such document!');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error.message);
+        this.$router.push('/login');
+      }
+    } else {
+      this.$router.push('/login');
+    }
   },
   computed: {
     localNewComment: {
@@ -36,7 +70,11 @@ export default {
   methods: {
     submitComment() {
       if (this.localNewComment.trim()) {
-        this.$emit('add-comment', this.localNewComment);
+        // Emit both the username and the comment text
+        this.$emit('add-comment', { 
+          username: this.user?.displayName || 'Anonymous', 
+          text: this.localNewComment 
+        });
         this.localNewComment = '';
       }
     }
@@ -51,11 +89,11 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Ensure it's above other content */
+  z-index: 1000;
 }
 
 .comment-popup {
@@ -63,5 +101,21 @@ export default {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.comments-list ul {
+  list-style-type: none; /* Removes the bullet points */
+  padding-left: 0; /* Removes default padding */
+  margin: 0;
+}
+
+.comments-list li {
+  text-align: left;
+  margin-bottom: 8px;
+  padding-left: 5px;
+}
+
+.comments-list strong {
+  margin-right: 5px; /* Adds space between the username and the comment text */
 }
 </style>
