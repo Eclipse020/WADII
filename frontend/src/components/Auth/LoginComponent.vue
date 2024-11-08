@@ -44,7 +44,7 @@
           {{ errorMessage }}
         </div>
 
-        <div>Or</div>
+        <div style="text-align:center">Or</div>
         
         <!-- Google Login Button -->
         <button @click="loginWithGoogle" class="login__button login__button--google">
