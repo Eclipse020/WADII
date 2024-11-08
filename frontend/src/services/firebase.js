@@ -10,7 +10,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyAHb-fBzzoIx6kv-WyAo8Q7ZLwzlVq6jTc",
   authDomain: "healthychef-a4655.firebaseapp.com",
   projectId: "healthychef-a4655",
-  storageBucket: "healthychef-a4655.appspot.com",
+  storageBucket: "healthychef-a4655.firebasestorage.app",
   messagingSenderId: "1030137873458",
   appId: "1:1030137873458:web:fb757968eac65d00e5e82b"
 };
