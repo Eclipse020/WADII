@@ -135,7 +135,7 @@ import {
   doc, 
   updateDoc, 
   deleteDoc, 
-  addDoc 
+  addDoc,
 } from "firebase/firestore";
 export default {
   name: 'CookNow',
@@ -269,8 +269,9 @@ export default {
     },
     async moveToUsedItems(item, quantityUsed) {
       try {
+
         await addDoc(
-          collection(db, `users/${this.currentUserId}/usedItems`), 
+          collection(db, `users/${this.currentUserId}/deletedItems`), 
           {
             ...item,
             usedAt: new Date().toISOString(),

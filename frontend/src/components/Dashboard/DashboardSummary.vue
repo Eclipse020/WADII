@@ -94,8 +94,8 @@ export default {
         totalItems: 0,
         expiringSoon: 0,
         categories: {},
-        usedItems: 0,
         expiredItemsCount: 0,
+        deletedItemsCount: 0
       },
       message: '',
       selectedChart: "items",
@@ -161,10 +161,14 @@ export default {
           ...doc.data(),
         }));
 
+        console.log(expiredItems);
+
         this.summary.expiredItemsCount = expiredItems.filter(item => {
           const expiryDate = new Date(item.expiryDate);
           return expiryDate >= startDate && expiryDate <= endDate;
         }).length;
+
+        console.log(this.summary.expiredItemsCount);
 
         const deletedItemsSnapshot = await getDocs(
           collection(db, `users/${this.currentUserId}/deletedItems`)
@@ -174,12 +178,13 @@ export default {
           ...doc.data(),
         }));
 
-        this.summary.usedItems = deletedItems.filter(item => {
-          const deleteDate = new Date(item.deletedAt);
-          return deleteDate >= startDate && deleteDate <= endDate;
-        }).length;
+        console.log(deletedItems);
 
-        this.hasDataForMonthExpired = this.summary.expiredItemsCount > 0 || this.summary.usedItems > 0;
+        this.summary.deletedItemsCount = deletedItems.length;
+
+        console.log(this.summary.deletedItemsCount);
+
+        this.hasDataForMonthExpired = this.summary.expiredItemsCount > 0 || this.summary.deletedItemsCount > 0;
 
         this.summary.categories = items.reduce((acc, item) => {
           acc[item.category] = (acc[item.category] || 0) + 1;
@@ -266,7 +271,7 @@ export default {
                 datasets: [
                   {
                     label: "Count",
-                    data: [this.summary.expiredItemsCount, this.summary.usedItems],
+                    data: [this.summary.expiredItemsCount, this.summary.deletedItemsCount],
                     backgroundColor: this.getChartColors(2),
                   },
                 ],
@@ -303,7 +308,7 @@ export default {
     },
 
     updateMotivationalMessage() {
-      if (this.summary.expiredItemsCount > this.summary.usedItems) {
+      if (this.summary.expiredItemsCount > this.summary.deletedItemsCount) {
         this.message = "Let's reduce waste! Remember to use items before they expire!";
       } else {
         this.message = "Great job! You're using items effectively!";
@@ -313,6 +318,7 @@ export default {
 
   mounted() {
     this.fetchSummaryData();
+
   },
 
   computed: {
