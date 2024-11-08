@@ -122,6 +122,9 @@ export default {
   },
     async toggleLike(recipe) {
       const wasLiked = recipe.isLiked;
+      if (!wasLiked && recipe.likeCount === 0) {
+    return; // Exit the function if attempting to unlike when likeCount is zero
+  }
       recipe.likeCount += recipe.isLiked ? 1 : -1;
       recipe.isLiked = !wasLiked; 
        
