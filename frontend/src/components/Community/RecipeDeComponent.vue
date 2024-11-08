@@ -1,241 +1,349 @@
-<template>
-  <div class="recipe-details">
-    <!-- Recipe Image with Full-Image Modal -->
-    <div class="recipe-details__image-wrapper" @click="showFullImage = true">
-      <img :src="recipe.image" alt="Recipe Image" class="recipe-details__image" v-if="recipe.image" />
+    <template>
+    <div class="recipe-details">
+        <!-- Recipe Image with Full-Image Modal -->
+        <div class="recipe-details__image-wrapper" @click="showFullImage = true">
+        <img :src="recipe.image" alt="Recipe Image" class="recipe-details__image" v-if="recipe.image" />
+        </div>
+        <div v-if="showFullImage" class="recipe-details__modal-overlay" @click="showFullImage = false">
+        <img :src="recipe.image" alt="Full Recipe Image" class="recipe-details__full-image" />
+        </div>
+
+        <!-- Recipe Details -->
+        <h1 class="recipe-details__name">{{ recipe.name }}</h1>
+        <p class="recipe-details__description">{{ recipe.description }}</p>
+
+        <!-- Additional Recipe Info -->
+        <div class="recipe-details__additional-info">
+        <p class="recipe-details__info-item">⏰ Estimated Time: {{ recipe.estimatedTime }} minutes</p>
+        <p class="recipe-details__info-item">🍽️ Calories: {{ recipe.calories }}</p>
+        </div>
+
+        <!-- Ingredients List -->
+        <h3 class="recipe-details__section-title">Ingredients</h3>
+        <ul class="recipe-details__ingredients-list">
+        <li v-for="ingredient in recipe.ingredients" :key="ingredient" class="recipe-details__ingredient-item">{{ ingredient }}</li>
+        </ul>
+
+        <!-- Recipe Steps -->
+        <h3 class="recipe-details__section-title">Steps</h3>
+        <ol class="recipe-details__recipe-steps">
+        <li v-for="(step, index) in recipe.steps" :key="index" class="recipe-details__recipe-step">{{ step }}</li>
+        </ol>
+
+        <div class="recipe-details__button-group">
+        <!-- "Add to Favorites" Button -->
+        <button @click="toggleFavorite" class="recipe-details__btn recipe-details__btn--favorite mx-2 shadow"
+        :class="{'recipe-details__btn--success': !isFavorited, 'recipe-details__btn--secondary': isFavorited}">
+        {{ isFavorited ? 'Remove from Favorites' : 'Add to Favorites' }}
+        </button>
+
+        <button 
+            class="recipe__button recipe__button--primary" 
+            @click="CCookNow"
+        >
+            Mark as completed
+        </button>
+        </div>
     </div>
-    <div v-if="showFullImage" class="recipe-details__modal-overlay" @click="showFullImage = false">
-      <img :src="recipe.image" alt="Full Recipe Image" class="recipe-details__full-image" />
-    </div>
+    </template>
 
-    <!-- Recipe Details -->
-    <h1 class="recipe-details__name">{{ recipe.name }}</h1>
-    <p class="recipe-details__description">{{ recipe.description }}</p>
+    <script>
+    import { getRecipeById } from '@/services/RecipeService';
+    import { db, auth } from '../../services/firebase';
+    import { onAuthStateChanged } from 'firebase/auth';
+    import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 
-    <!-- Additional Recipe Info -->
-    <div class="recipe-details__additional-info">
-      <p class="recipe-details__info-item">⏰ Estimated Time: {{ recipe.estimatedTime }} minutes</p>
-      <p class="recipe-details__info-item">🍽️ Calories: {{ recipe.calories }}</p>
-    </div>
-
-    <!-- Ingredients List -->
-    <h3 class="recipe-details__section-title">Ingredients</h3>
-    <ul class="recipe-details__ingredients-list">
-      <li v-for="ingredient in recipe.ingredients" :key="ingredient" class="recipe-details__ingredient-item">{{ ingredient }}</li>
-    </ul>
-
-    <!-- Recipe Steps -->
-    <h3 class="recipe-details__section-title">Steps</h3>
-    <ol class="recipe-details__recipe-steps">
-      <li v-for="(step, index) in recipe.steps" :key="index" class="recipe-details__recipe-step">{{ step }}</li>
-    </ol>
-
-    <!-- "Add to Favorites" Button -->
-    <button @click="toggleFavorite" class="recipe-details__btn recipe-details__btn--favorite mx-2 shadow"
-    :class="{'recipe-details__btn--success': !isFavorited, 'recipe-details__btn--secondary': isFavorited}">
-      {{ isFavorited ? 'Remove from Favorites' : 'Add to Favorites' }}
-    </button>
-  </div>
-</template>
-
-<script>
-import { getRecipeById } from '@/services/RecipeService'; // Adjust path if necessary
-import { db, auth } from '../../services/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, deleteDoc, doc, getDocs } from "firebase/firestore";
-
-export default {
-  props: {
-    recipeId: {
-      type: String,
-      required: true
-    }
-  },
-  data() {
-    return {
-      showFullImage: false, // Controls the full-image modal display
-      isFavorited: false, // Tracks if recipe is favorited
-      recipe: {
-        ingredients: [],
-        steps: [] // Ensure steps are initialized as an array
-      },
-    };
-  },
-  methods: {
-    async fetchRecipeDetails() {
-      try {
-        this.recipe = await getRecipeById(this.recipeId); // Use the passed recipeId prop
-
-        // Split the steps string into an array by line breaks
-        if (this.recipe.steps) {
-          this.recipe.steps = this.recipe.steps.split('\n'); // Adjust delimiter if needed
+    export default {
+    name: 'RecipeDeComponent',
+    props: {
+        recipeId: {
+        type: String,
+        required: true
         }
+    },
+    data() {
+        return {
+        showFullImage: false,
+        isFavorited: false,
+        currentUserId: null,
+        recipe: {
+            ingredients: [],
+            steps: []
+        },
+        favoriteRecipes: [],
+        };
+    },
+    methods: {
+        async fetchRecipeDetails() {
+        try {
+            this.recipe = await getRecipeById(this.recipeId);
+
+            if (this.recipe.steps) {
+            this.recipe.steps = this.recipe.steps.split('\n');
+            }
+            
+            // Check if this recipe is already in favorites
+            await this.checkIfFavorited();
+        } catch (error) {
+            console.error("Failed to fetch recipe details:", error);
+        }
+        },
+        async checkIfFavorited() {
+        if (!this.currentUserId) return;
+
+        try {
+            const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+            const q = query(favoritesCollection, where("label", "==", this.recipe.name));
+            const snapshot = await getDocs(q);
+            this.isFavorited = !snapshot.empty;
+        } catch (error) {
+            console.error("Error checking favorite status:", error);
+        }
+        },
+        async loadFavoriteRecipes() {
+        if (!this.currentUserId) return;
+        
+        try {
+            const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+            const snapshot = await getDocs(favoritesCollection);
+            this.favoriteRecipes = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+            }));
+        } catch (error) {
+            console.error("Error loading favorite recipes:", error);
+        }
+        },
+        async deleteFromMealPlan() {
+      if (!this.currentUserId || !this.recipe.uri) return;
+
+      try {
+        // Query the mealPlans collection to find entries with matching recipe URI
+        const mealPlansRef = collection(db, `users/${this.currentUserId}/mealPlans`);
+        const q = query(mealPlansRef, where("recipe.uri", "==", this.recipe.uri));
+        const querySnapshot = await getDocs(q);
+
+        // Delete all matching entries
+        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+
+        console.log("Recipe removed from meal plan");
       } catch (error) {
-        console.error("Failed to fetch recipe details:", error);
+        console.error("Error removing recipe from meal plan:", error);
       }
     },
-    async loadFavoriteRecipes() {
-      if (!this.currentUserId) return;
-      
-      try {
-        const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-        const snapshot = await getDocs(favoritesCollection);
-        this.favoriteRecipes = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        async CCookNow() {
+        if (!this.currentUserId) return;
+
+        const completedRecipe = {
+        label: this.recipe.name,
+        image: this.recipe.image,
+        url: this.recipe.id,
+        ingredientLines: this.recipe.ingredients,
+        totalTime: this.recipe.estimatedTime,
+        completionDate: new Date().toLocaleDateString()
+      };
+      console.log("Completed Recipe Data:", completedRecipe); // Log completedRecipe to check ingredients
+        try {
+        // Add to completed recipes
+        const completedRecipesCollection = collection(db, `users/${this.currentUserId}/completedRecipes`);
+        await addDoc(completedRecipesCollection, completedRecipe);
+
+        // Delete from meal plan
+        await this.deleteFromMealPlan();
+
+        // Navigate to CCookNow page
+        this.$router.push({ 
+          name: 'CCookNow', 
+          params: { id: this.$route.params.id },
+          query: { 
+            requiredIngredients: JSON.stringify(this.recipe.ingredients),
+            fridgeIngredients: JSON.stringify(this.fridgeItems)
+          }
+        });
       } catch (error) {
-        console.error("Error loading favorite recipes:", error);
+        console.error("Error marking recipe as completed:", error);
       }
     },
-    async toggleFavorite() {
-      if (!this.currentUserId) return;
-
-      this.isFavorited = !this.isFavorited;
-
-      const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === this.recipe.label);
-
-      try {
-        if (recipeIndex !== -1) {
-          const recipeId = this.favoriteRecipes[recipeIndex].id;
-          await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, recipeId));
-          this.favoriteRecipes.splice(recipeIndex, 1);
-        } else {
-          const favoriteRecipe = {
-            label: this.recipe.label,
-            image: this.recipe.image,
-            url: this.recipe.url,
-            ingredientLines: this.recipe.ingredientLines,
-            totalTime: this.recipe.totalTime,
-            dateAdded: new Date().toLocaleDateString()
-          };
-
-          const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-          const docRef = await addDoc(favoritesCollection, favoriteRecipe);
-          this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
+        async toggleFavorite() {
+        if (!this.currentUserId) {
+            console.error("User not authenticated");
+            return;
         }
-      } catch (error) {
-        console.error("Error toggling favorite status:", error);
-      }
-    }
-  },
-  mounted() {
-    this.fetchRecipeDetails(); // Fetch details when component is mounted
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
+
+        try {
+            const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+
+            if (this.isFavorited) {
+            // Find the recipe document to delete
+            const q = query(favoritesCollection, where("label", "==", this.recipe.name));
+            const snapshot = await getDocs(q);
+            
+            if (!snapshot.empty) {
+                const docId = snapshot.docs[0].id;
+                await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, docId));
+            }
+            } else {
+            // Create a new favorite with the expected structure
+            const favoriteRecipe = {
+                label: this.recipe.name,
+                image: this.recipe.image,
+                totalTime: this.recipe.estimatedTime,
+                ingredientLines: this.recipe.ingredients,
+                calories: this.recipe.calories,
+                description: this.recipe.description,
+                steps: this.recipe.steps,
+                dateAdded: new Date().toISOString(),
+                isFromCommunity: true,  // Add flag to identify community recipes
+                communityRecipeId: this.recipeId  // Store the community recipe ID
+            };
+
+            await addDoc(favoritesCollection, favoriteRecipe);
+            }
+
+            // Toggle the favorite status
+            this.isFavorited = !this.isFavorited;
+            
+            // Reload the favorites
+            await this.loadFavoriteRecipes();
+        } catch (error) {
+            console.error("Error toggling favorite status:", error);
+        }
+        }
+    },
+    
+    async created() {
+        // Set currentUserId as soon as possible
+        const user = auth.currentUser;
+        if (user) {
         this.currentUserId = user.uid;
         await this.loadFavoriteRecipes();
-      }
-    });
-  },
-};
-</script>
+        await this.fetchRecipeDetails();
+        }
 
-<style scoped>
-.recipe-details {
-  padding: 20px; /* Add padding */
-  display: flex; /* Use flexbox for centering */
-  flex-direction: column; /* Stack elements vertically */
-  align-items: center; /* Center horizontally */
-  text-align: center; /* Center text */
-}
+        // Listen for auth state changes
+        onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            this.currentUserId = user.uid;
+            await this.loadFavoriteRecipes();
+            await this.fetchRecipeDetails();
+        }
+        });
+    },
+    };
+    
+    </script>
 
-/* Recipe Image */
-.recipe-details__image-wrapper {
-  width: 100%; /* Set width to full width */
-  height: auto; /* Adjust height automatically */
-  overflow: hidden; /* Hide overflow to maintain crop */
-  cursor: pointer;
-  position: relative; /* Make it position relative for image styling */
-}
+    <style scoped>
+    .recipe-details {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    }
 
-.recipe-details__image {
-  width: 100%; /* Use full width of the wrapper */
-  height: auto; /* Maintain aspect ratio */
-  object-fit: cover; /* Ensures the image covers the area without stretching */
-  max-height: 300px; /* Set a maximum height to avoid it being too tall */
-}
+    .recipe-details__image-wrapper {
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    }
 
-/* Additional Info Styling */
-.recipe-details__additional-info {
-  display: flex; /* Use flexbox for layout */
-  justify-content: center; /* Center items horizontally */
-  gap: 20px; /* Add spacing between items */
-  margin: 20px 0; /* Add margin for spacing */
-}
+    .recipe-details__image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 300px;
+    }
 
-.recipe-details__info-item {
-  font-size: 1rem;
-  font-weight: 500;
-}
+    .recipe-details__additional-info {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+    }
 
-/* Ingredients List */
-.recipe-details__ingredients-list {
-  list-style-type: disc; /* Keep bullet points */
-  padding-left: 20px; /* Add padding for bullets */
-  margin: 20px 0; /* Add margin for spacing */
-}
+    .recipe-details__info-item {
+    font-size: 1rem;
+    font-weight: 500;
+    }
 
-.recipe-details__ingredient-item {
-  font-size: 20px; /* Increase font size for ingredients */
-  margin: 5px 0; /* Add margin for each ingredient */
-  text-align: left; /* Align text to the left for better readability */
-}
+    .recipe-details__ingredients-list {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin: 20px 0;
+    }
 
-/* Recipe Steps */
-.recipe-details__recipe-steps {
-  list-style-position: outside; /* Keep the numbers/bullets outside */
-  padding-left: 20px; /* Add padding for left alignment */
-  margin: 0; /* Remove margin */
-  font-size: 1.2em; /* Adjust font size as desired */
-}
+    .recipe-details__ingredient-item {
+    font-size: 20px;
+    margin: 5px 0;
+    text-align: left;
+    }
 
-.recipe-details__recipe-step {
-  margin: 5px 0; /* Optional: add some vertical spacing between steps */
-  line-height: 1.4; /* Adjust line height for better readability */
-  text-align: left; /* Align text to the left */
-}
+    .recipe-details__recipe-steps {
+    list-style-position: outside;
+    padding-left: 20px;
+    margin: 0;
+    font-size: 1.2em;
+    }
 
-/* Full-screen modal styles */
-.recipe-details__modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  cursor: pointer;
-}
+    .recipe-details__recipe-step {
+    margin: 5px 0;
+    line-height: 1.4;
+    text-align: left;
+    }
 
-.recipe-details__full-image {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
+    .recipe-details__modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    cursor: pointer;
+    }
 
-/* Button styles */
-.recipe-details__btn {
-  padding: 10px 15px;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-}
+    .recipe-details__full-image {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
 
-.recipe-details__btn--favorite {
-  background-color: #28a745; /* Green for 'Add to Favorites' */
-}
+    .recipe-details__btn {
+    padding: 10px 15px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: white;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    }
 
-.recipe-details__btn--secondary {
-  background-color: #6c757d; /* Grey for 'Added to Favorites' */
-}
+    .recipe-details__button-group {
+    display: flex;
+    gap: 10px; /* Add some space between buttons */
+    }
 
-.recipe-details__btn--success {
-  background-color: #28a745; /* Green for 'Add to Favorites' */
-}
+    .recipe-details__btn--favorite {
+    background-color: #28a745;
+    }
 
-</style>
+    .recipe-details__btn--secondary {
+    background-color: #dc3545;
+    }
+
+    .recipe-details__btn--success {
+    background-color: #28a745;
+    }
+
+    .recipe-details__btn:hover {
+    opacity: 0.9;
+    }
+    </style>

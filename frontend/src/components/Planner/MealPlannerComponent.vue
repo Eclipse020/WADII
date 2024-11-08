@@ -246,7 +246,9 @@ export default {
                 year: mealData.year,
                 mealType: mealData.mealType,
                 createdAt: mealData.createdAt,
-                completed: mealData.completed || false
+                completed: mealData.completed || false,
+                isFromCommunity: mealData.recipe.isFromCommunity || false,
+                communityRecipeId: mealData.recipe.communityRecipeId || null
               });
             }
           }
@@ -280,16 +282,18 @@ export default {
       if (!this.currentUserId) return;
 
       try {
-        // Ensure recipe has required properties
+        // Ensure recipe has required properties and preserve community recipe information
         const processedRecipe = {
           label: recipe.label || '',
-          uri: recipe.uri || `recipe_${Date.now()}`, // Generate a fallback URI if none exists
+          uri: recipe.uri || `recipe_${Date.now()}`,
           image: recipe.image || '',
           ingredientLines: recipe.ingredientLines || [],
           totalNutrients: recipe.totalNutrients || {},
           calories: recipe.calories || 0,
           yield: recipe.yield || 1,
-          mealType: this.mealType
+          mealType: this.mealType,
+          isFromCommunity: recipe.isFromCommunity || false,
+          communityRecipeId: recipe.communityRecipeId || null
         };
 
         const docRef = await addDoc(collection(db, `users/${this.currentUserId}/mealPlans`), {

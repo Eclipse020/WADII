@@ -46,11 +46,10 @@
           </div>
           <div class="post-recipe__input-group mb-3">
             <textarea 
-              v-model="recipe.ingredients" 
+              v-model="recipe.ingredientsText" 
               placeholder="Ingredients (comma-separated)" 
               class="post-recipe__textarea form-control" 
               rows="2"
-              @input="handleIngredientInput(recipe.ingredients)"  
               required 
             ></textarea>
           </div>
@@ -83,7 +82,7 @@ Cook till soft"
 
 <script>
 import { defineComponent } from 'vue';
-import { createRecipe, saveDraft } from '@/services/RecipeService'; // Import the functions
+import { createRecipe } from '@/services/RecipeService'; // Import the functions
 
 export default defineComponent({
   name: 'PostRecipeComponent',
@@ -94,6 +93,7 @@ export default defineComponent({
         estimatedTime: null,
         calories: null,
         description: '',
+        ingredientsText: '',
         ingredients: [],
         steps: '',
         image: ''
@@ -113,22 +113,18 @@ export default defineComponent({
       }
     },
 
-    handleIngredientInput(ingredients) {
-      // Convert comma-separated ingredients to an array
-      this.recipe.ingredients = ingredients.split(',').map(ing => ing.trim());
-    },
-
-    async saveToDrafts() {
-      try {
-        await saveDraft(this.recipe); // Save the recipe as a draft
-        console.log('Draft saved successfully');
-      } catch (error) {
-        console.error("Error saving draft:", error);
-      }
+    // Call this method when you save or post the recipe
+    processIngredients() {
+      // Split the ingredientsText by commas and trim each ingredient
+      this.recipe.ingredients = this.recipe.ingredientsText
+        .split(',')
+        .map(ingredient => ingredient.trim())
+        .filter(ingredient => ingredient); // Filters out empty strings
     },
 
     async postRecipe() {
       try {
+        this.processIngredients();
         await createRecipe(this.recipe); // Post the recipe
         console.log('Recipe posted successfully');
         this.$router.push('/community'); // Redirect to the community page

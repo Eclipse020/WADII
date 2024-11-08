@@ -75,6 +75,7 @@ import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import axios from 'axios';
+
 export default {
   data() {
     return {
