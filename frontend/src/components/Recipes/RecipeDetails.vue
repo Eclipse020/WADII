@@ -6,7 +6,6 @@
       <h1 class="recipe__title">{{ recipe.label }}</h1>
       <p class="recipe__time">Ready in <strong>{{ recipe.totalTime }}</strong> minutes</p>
     </header>
-
     <!-- Nutritional Information Section -->
     <section v-if="nutrition" class="recipe__nutrition">
       <h2 class="recipe__nutrition-title">Nutritional Information</h2>
@@ -29,7 +28,6 @@
         </li>
       </ul>
     </section>
-
     <!-- Ingredients Section -->
     <section class="recipe__ingredients">
       <h2 class="recipe__ingredients-title">Ingredients</h2>
@@ -44,13 +42,11 @@
         </li>
       </ul>
     </section>
-
     <!-- Instructions Section -->
     <section class="recipe__instructions">
       <h2 class="recipe__instructions-title">Instructions</h2>
       <div class="recipe__instructions-content" v-html="formattedInstructions"></div>
     </section>
-
     <!-- Action Buttons -->
     <div class="recipe__actions">
       <button 
@@ -68,21 +64,17 @@
       </button>
     </div>
   </div>
-
   <!-- Loading State -->
   <div v-else class="recipe__loading">
     Loading recipe details...
   </div>
 </template>
-
 <script>
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, deleteDoc, doc, getDocs } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import axios from 'axios';
-
-
 export default {
   data() {
     return {
@@ -150,7 +142,6 @@ export default {
     } else {
       console.error("Recipe not found or invalid recipe data.");
     }
-
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.currentUserId = user.uid;
@@ -163,8 +154,7 @@ export default {
       try {
         const genAI = new GoogleGenerativeAI(process.env.VUE_APP_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-        const prompt = `Write only the step-by-step instructions (no title) for making ${this.recipe.label} using the following ingredients: ${this.recipe.ingredientLines.join(", ")}.`;
+        const prompt = `Write only the step-by-step instructions (no title) for making ${this.recipe.label} using the following ingredients: ${this.recipe.ingredientLines.join(", ")}, end each line with <br>, and number each points.`;
         const result = await model.generateContent(prompt);
         
         if (result?.response?.candidates?.[0]?.content?.parts?.[0]?.text) {
@@ -183,7 +173,6 @@ export default {
         if (response.data?.[0]) {
           this.recipe = response.data[0];
           await this.fetchInstructions();
-
           this.nutrition = {
             calories: Math.round(this.recipe.calories),
             protein: this.recipe.totalNutrients.PROCNT?.quantity.toFixed(1) ?? "N/A",
@@ -195,9 +184,23 @@ export default {
         console.error("Error fetching recipe by ID:", error);
       }
     },
+    async deleteFromMealPlan() {
+      if (!this.currentUserId || !this.recipe.uri) return;
+      try {
+        // Query the mealPlans collection to find entries with matching recipe URI
+        const mealPlansRef = collection(db, `users/${this.currentUserId}/mealPlans`);
+        const q = query(mealPlansRef, where("recipe.uri", "==", this.recipe.uri));
+        const querySnapshot = await getDocs(q);
+        // Delete all matching entries
+        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+        console.log("Recipe removed from meal plan");
+      } catch (error) {
+        console.error("Error removing recipe from meal plan:", error);
+      }
+    },
     async cookNow() {
       if (!this.currentUserId) return;
-
       const completedRecipe = {
         label: this.recipe.label,
         image: this.recipe.image,
@@ -206,11 +209,13 @@ export default {
         totalTime: this.recipe.totalTime,
         completionDate: new Date().toLocaleDateString()
       };
-
       try {
+        // Add to completed recipes
         const completedRecipesCollection = collection(db, `users/${this.currentUserId}/completedRecipes`);
         await addDoc(completedRecipesCollection, completedRecipe);
-        console.log(this.recipe, this.fridgeItems, this.recipe.ingredientLines)
+        // Delete from meal plan
+        await this.deleteFromMealPlan();
+        // Navigate to CookNow page
         this.$router.push({ 
           name: 'CookNow', 
           params: { id: this.$route.params.id },
@@ -239,10 +244,8 @@ export default {
     },
     async toggleFavorite() {
       if (!this.currentUserId) return;
-
       try {
         const recipeIndex = this.favoriteRecipes.findIndex(fav => fav.label === this.recipe.label);
-
         if (recipeIndex !== -1) {
           // If the recipe is already in favorites, delete it
           const existingRecipeId = this.favoriteRecipes[recipeIndex].id;
@@ -254,7 +257,7 @@ export default {
             label: this.recipe.label,
             image: this.recipe.image,
             url: this.recipe.url,
-            uri: this.recipe.uri, // Add the uri property
+            uri: this.recipe.uri,
             ingredientLines: this.recipe.ingredientLines,
             totalTime: this.recipe.totalTime,
             calories: this.recipe.calories || 0,
@@ -266,7 +269,6 @@ export default {
             },
             dateAdded: new Date().toLocaleDateString()
           };
-
           const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
           const docRef = await addDoc(favoritesCollection, favoriteRecipe);
           this.favoriteRecipes.push({ id: docRef.id, ...favoriteRecipe });
@@ -278,7 +280,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 /* Recipe Page Base Styles */
 .recipe {
@@ -295,7 +296,6 @@ export default {
   --border-radius-md: 12px;
   --border-radius-lg: 15px;
 }
-
 .recipe {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   padding: 2rem;
@@ -305,13 +305,11 @@ export default {
   max-width: 1200px;
   margin: 2rem auto;
 }
-
 /* Header Section */
 .recipe__header {
   text-align: center;
   margin-bottom: 2rem;
 }
-
 .recipe__title {
   font-size: 2.5rem;
   color: var(--color-primary);
@@ -319,13 +317,11 @@ export default {
   position: relative;
   padding-bottom: 1rem;
 }
-
 .recipe__title::after {
   content: '👨‍🍳';
   display: inline-block;
   margin-left: 0.5rem;
 }
-
 .recipe__time {
   font-size: 1.2rem;
   color: var(--color-text-light);
@@ -334,11 +330,9 @@ export default {
   justify-content: center;
   gap: 0.5rem;
 }
-
 .recipe__time::before {
   content: '⏲️';
 }
-
 /* Nutrition Section */
 .recipe__nutrition {
   background-color: white;
@@ -347,7 +341,6 @@ export default {
   margin: 2rem 0;
   box-shadow: var(--shadow-sm);
 }
-
 .recipe__nutrition-title {
   color: var(--color-primary-dark);
   font-size: 1.5rem;
@@ -356,11 +349,9 @@ export default {
   align-items: center;
   gap: 0.5rem;
 }
-
 .recipe__nutrition-title::before {
   content: '📊';
 }
-
 .recipe__nutrition-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -368,7 +359,6 @@ export default {
   list-style: none;
   padding: 0;
 }
-
 .recipe__nutrition-item {
   background-color: var(--color-background-light);
   padding: 1rem;
@@ -377,12 +367,10 @@ export default {
   justify-content: space-between;
   align-items: center;
 }
-
 /* Ingredients Section */
 .recipe__ingredients {
   margin: 2rem 0;
 }
-
 .recipe__ingredients-title {
   color: var(--color-primary-dark);
   font-size: 1.5rem;
@@ -391,11 +379,9 @@ export default {
   align-items: center;
   gap: 0.5rem;
 }
-
 .recipe__ingredients-title::before {
   content: '🥗';
 }
-
 .recipe__ingredients-list {
   list-style: none;
   padding: 0;
@@ -403,7 +389,6 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
 }
-
 .recipe__ingredient {
   background-color: white;
   padding: 1rem;
@@ -411,15 +396,12 @@ export default {
   box-shadow: var(--shadow-sm);
   transition: transform 0.2s;
 }
-
 .recipe__ingredient:hover {
   transform: translateY(-2px);
 }
-
 .recipe__ingredient--available {
   border-left: 4px solid var(--color-primary);
 }
-
 /* Instructions Section */
 .recipe__instructions {
   background-color: var(--color-background-light);
@@ -428,7 +410,6 @@ export default {
   margin: 2rem 0;
   box-shadow: var(--shadow-sm);
 }
-
 .recipe__instructions-title {
   color: var(--color-primary-dark);
   font-size: 1.5rem;
@@ -437,11 +418,9 @@ export default {
   align-items: center;
   gap: 0.5rem;
 }
-
 .recipe__instructions-title::before {
   content: '📝';
 }
-
 .recipe__step {
   background-color: white;
   padding: 1.5rem;
@@ -450,13 +429,11 @@ export default {
   box-shadow: var(--shadow-sm);
   position: relative;
 }
-
 .recipe__step-title {
   color: var(--color-primary);
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
-
 /* Action Buttons */
 .recipe__actions {
   display: flex;
@@ -464,7 +441,6 @@ export default {
   gap: 1.5rem;
   margin-top: 2rem;
 }
-
 .recipe__button {
   padding: 1rem 2rem;
   border-radius: 2rem;
@@ -477,43 +453,34 @@ export default {
   align-items: center;
   gap: 0.5rem;
 }
-
 .recipe__button--primary {
   background-color: var(--color-primary);
   color: white;
 }
-
 .recipe__button--primary:hover {
   background-color: var(--color-primary-dark);
   transform: translateY(-2px);
 }
-
 .recipe__button--primary::before {
   content: '👩‍🍳';
 }
-
 .recipe__button--secondary {
   background-color: var(--color-primary-light);
   color: white;
 }
-
 .recipe__button--secondary:hover {
   background-color: var(--color-primary);
   transform: translateY(-2px);
 }
-
 .recipe__button--secondary::before {
   content: '⭐';
 }
-
 .recipe__button--secondary.recipe__button--active {
   background-color: var(--color-primary-dark);
 }
-
 .recipe__button--secondary.recipe__button--active::before {
   content: '★';
 }
-
 /* Loading State */
 .recipe__loading {
   text-align: center;
@@ -521,45 +488,37 @@ export default {
   color: var(--color-text-light);
   font-size: 1.2rem;
 }
-
 .recipe__loading::after {
   content: '⏳';
   display: inline-block;
   margin-left: 0.5rem;
   animation: spin 2s infinite linear;
 }
-
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .recipe {
     padding: 1rem;
     margin: 1rem;
   }
-
   .recipe__title {
     font-size: 2rem;
   }
-
   .recipe__nutrition-list {
     grid-template-columns: 1fr;
   }
-
   .recipe__ingredients-list {
     grid-template-columns: 1fr;
   }
-
   .recipe__actions {
     flex-direction: column;
   }
-
   .recipe__button {
     width: 100%;
   }
 }
-
 </style>
+
