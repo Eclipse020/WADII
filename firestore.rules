@@ -1,9 +1,55 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Allow read and write for the user's document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Allow read and write for user items
+    match /users/{userId}/items/{itemId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Allow read and write for deleted items
+    match /users/{userId}/deletedItems/{itemId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Allow read and write for meal plans
+    match /users/{userId}/mealPlans/{mealId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Allow read and write for shopping list items
+    match /users/{userId}/shoppingList/{itemId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Add rule for fridge items
+    match /users/{userId}/fridge/{ingredientId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Allow read and write for favorites in mealPlanner
+    match /users/{userId}/mealPlanner/favorites {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+        // Allow read and write for favorites in mealPlanner
+    match /users/{userId}/favorites/{favoriteId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Allow read and write for history items
+		match /users/{userId}/history/{historyId} {
+    	allow read, write: if request.auth != null && request.auth.uid == userId;
+		}
+    // Allow read and write for community recipes
+    match /users/{userId}/communityRecipes/{recipeId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Allow read and write for community recipes (test)
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if request.auth != null;
+    }
+    //Saves the completed recipes
+    match /completedRecipes/{recipe} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
+
+
