@@ -12,8 +12,8 @@
           <h3>{{ recipe.label }}</h3>
           
           <!-- Updated class name to match AddRecipeModal's implementation -->
-          <div class="recipe-modal__image" v-if="recipe.image">
-            <img :src="recipe.image" :alt="recipe.label" style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; margin: 15px 0;" />
+          <div class="recipe-modal__image d-flex justify-content-center" v-if="recipe.image">
+            <img :src="recipe.image" :alt="recipe.label" style="max-width: 400px; max-height: 400px; object-fit: contain; border-radius: 8px; margin: 15px 0;" />
           </div>
 
           <div class="recipe-modal__details">
