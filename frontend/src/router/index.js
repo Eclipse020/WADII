@@ -68,7 +68,9 @@ const routes = [
     props: true,
     meta: { requiresAuth: true }
   },
-  { path: '/community/:id/cook', name: 'CCookNow', component: CCookNow, meta: { requiresAuth: true } },
+  { path: '/community/:id/cook', name: 'CCookNow', component: CCookNow, 
+    props: true ,// Enables passing params as props to the component
+    meta: { requiresAuth: true } },
 
   // User profile-related routes
   { path: '/profile', name: 'ProfileSettings', component: ProfileSettingsPage, meta: { requiresAuth: true } },
