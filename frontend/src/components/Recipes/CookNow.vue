@@ -126,6 +126,7 @@
     </div>
   </div>
 </template>
+
 <script>
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';

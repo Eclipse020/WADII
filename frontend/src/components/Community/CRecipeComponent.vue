@@ -97,9 +97,11 @@ export default {
     async fetchRecipes() {
       try {
         this.recipes = await getRecipes();
+        const likedRecipes = JSON.parse(localStorage.getItem('likedRecipes')) || {};
+
         this.recipes.forEach(recipe => {
-          recipe.isLiked = false;
-          recipe.newComment = '';
+          // Set initial like state and count from localStorage
+          recipe.isLiked = likedRecipes[recipe.id] || false;
           recipe.likeCount = recipe.likeCount || 0;
           recipe.comments = recipe.comments || [];
         });
@@ -108,8 +110,6 @@ export default {
         this.fetchError = 'Failed to load recipes. Please try again later.';
       }
     },
-
-    
 
     handleSearch() {
       // The search logic is handled in the computed property
@@ -120,19 +120,29 @@ export default {
      navigateToRecipeDetail(recipeId) {
     this.$router.push({ name: 'RecipeDetailPage', params: { id: recipeId } });
   },
+
     async toggleLike(recipe) {
-      const wasLiked = recipe.isLiked;
-      recipe.isLiked = !wasLiked; 
-      recipe.likeCount += recipe.isLiked ? 1 : -1; 
+      // Toggle the like state
+      recipe.isLiked = !recipe.isLiked;
+      recipe.likeCount += recipe.isLiked ? 1 : -1;
 
       try {
+        // Update the like count on the server
         await updateRecipeLikes(recipe.id, recipe.likeCount);
+
+        // Save the new like/unlike status in localStorage
+        const likedRecipes = JSON.parse(localStorage.getItem('likedRecipes')) || {};
+        likedRecipes[recipe.id] = recipe.isLiked;
+        localStorage.setItem('likedRecipes', JSON.stringify(likedRecipes));
       } catch (error) {
         console.error("Error updating likes:", error);
-        recipe.isLiked = wasLiked; 
-        recipe.likeCount += wasLiked ? -1 : 1; 
+
+        // Roll back changes if the update fails
+        recipe.isLiked = !recipe.isLiked;
+        recipe.likeCount += recipe.isLiked ? 1 : -1;
       }
     },
+
     openCommentPopup(recipe) {
       this.currentRecipeComments = recipe.comments || []; // Load comments for the selected recipe
       this.isCommentPopupOpen = true; // Open the comment popup
@@ -166,6 +176,8 @@ export default {
   }
 };
 </script>
+
+
 
 <style scoped>
 .recipe-list {
