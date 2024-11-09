@@ -221,6 +221,7 @@ export default {
       selectedFridgeIngredients: [],
       items: [],
       showIngredientsDropdown: false,
+      fetchMode: 'manual' 
     };
   },
   async created() {
@@ -285,6 +286,7 @@ export default {
       }
     },
     async fetchRecipes() {
+      this.fetchMode = 'manual';
       // Use either manually entered ingredients or selected fridge ingredients
       let queryParts = [];
       if (this.recipeNameQuery) queryParts.push(this.recipeNameQuery);
@@ -309,6 +311,7 @@ export default {
       }
     },
     async fetchRecipes2() {
+      this.fetchMode = 'fridge'; 
       const ingredients = this.items.map(item => item.name).join(","); // Join item names as comma-separated string
       console.log("the ingredients are" + ingredients)
       const query = this.ingredientQuery ? this.ingredientQuery : ingredients;
@@ -328,13 +331,13 @@ export default {
     nextPage() {
       if (this.currentPage * this.recipesPerPage < this.totalRecipes) {
         this.currentPage++;
-        this.fetchRecipes();
+        this.fetchMode === 'manual' ? this.fetchRecipes() : this.fetchRecipes2();
       }
     },
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
-        this.fetchRecipes();
+        this.fetchMode === 'manual' ? this.fetchRecipes() : this.fetchRecipes2();
       }
     },
     viewRecipe(recipe) {
