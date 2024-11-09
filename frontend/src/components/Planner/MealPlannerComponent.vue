@@ -23,7 +23,7 @@
           <thead>
             <tr>
               <th class="calendar__header">Wk</th>
-              <th v-for="day in weekDays" :key="day" class="calendar__header">{{ day }}</th>
+              <th v-for="(day, index) in (isMobile ? shortWeekDays : weekDays)" :key="index" class="calendar__header">{{ day }}</th>
             </tr>
           </thead>
           <tbody>
@@ -134,6 +134,8 @@ export default {
       selectedRecipeIndex: null,
       mealPlan: {},
       weekDays: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortWeekDays: ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"],
+      isMobile: window.innerWidth < 768,
       shoppingList: [],
       currentUserId: null,
       availableIngredients: [],
@@ -509,6 +511,9 @@ export default {
         this.currentMonth += 1;
       }
     },
+    updateIsMobile() {
+      this.isMobile = window.innerWidth < 768;
+    },
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
@@ -541,12 +546,14 @@ export default {
         this.shoppingList = [];
       }
     });
+    window.addEventListener('resize', this.updateIsMobile);
   },
 
   beforeUnmount() {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
     }
+    window.removeEventListener('resize', this.updateIsMobile);
   },
 };
 </script>
