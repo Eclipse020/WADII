@@ -7,7 +7,7 @@
           <h2 class="recipe-ingredients__title">Recipe Ingredients Required</h2>
         </header>
         
-        <section class="recipe__ingredients">
+        <section v-if="requiredIngredients.length" class="recipe__ingredients">
           <ul class="recipe__ingredients-list">
             <li 
               v-for="(ingredient, index) in requiredIngredients" 
@@ -143,17 +143,6 @@ import {
 
 export default {
   name: 'CCookNow',
-
-  props: {
-    requiredIngredients: {
-      type: Array,
-      default: () => []
-    },
-    fridgeIngredients: {
-      type: Array,
-      default: () => []
-    }
-  },
   
   data() {
     return {
@@ -164,7 +153,32 @@ export default {
       isCategoryAscending: false,
       sortOrder: 'asc',
       itemsToDelete: new Set(), // Track items marked for deletion
+      requiredIngredients: [],
+      fridgeIngredients: [],
     };
+  },
+  mounted() {
+    // Access the query parameters
+    if (this.$route.query.requiredIngredients) {
+      this.requiredIngredients = JSON.parse(this.$route.query.requiredIngredients);
+    }
+    if (this.$route.query.fridgeIngredients) {
+      this.fridgeIngredients = JSON.parse(this.$route.query.fridgeIngredients);
+    }
+
+    // Log to ensure values are correctly set
+    console.log('Required Ingredients:', this.requiredIngredients);
+    console.log('Fridge Ingredients:', this.fridgeIngredients);
+
+    // Listen for auth state changes
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.currentUserId = user.uid;
+        await this.getCurrentUserItems();  // Load user's items
+      } else {
+        this.currentUserId = null;  // If no user is authenticated, reset user ID
+      }
+    });
   },
 
   computed: {
@@ -347,15 +361,6 @@ export default {
     }
   },
   
-  mounted() {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        this.currentUserId = user.uid;
-        await this.getCurrentUserItems();
-      }
-    });
-    console.log("Required Ingredients:", this.requiredIngredients);
-  }
 };
 </script>
 

@@ -58,7 +58,9 @@
     props: {
         recipeId: {
         type: String,
-        required: true
+        required: true,
+        fridgeItems: [],
+        requiredIngredients: []
         }
     },
     data() {
@@ -132,7 +134,7 @@
         console.error("Error removing recipe from meal plan:", error);
       }
     },
-        async CCookNow() {
+    async CCookNow() {
         if (!this.currentUserId) return;
 
         const completedRecipe = {
@@ -164,6 +166,7 @@
       } catch (error) {
         console.error("Error marking recipe as completed:", error);
       }
+      console.log('Sending ingredients:', this.recipe.ingredients);
     },
         async toggleFavorite() {
         if (!this.currentUserId) {
