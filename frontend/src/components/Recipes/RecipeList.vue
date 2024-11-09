@@ -2,7 +2,6 @@
   <div class="recipe-explorer">
     <div class="recipe-explorer__container">
       <h2 class="recipe-explorer__title">🥘 Recommended Recipes</h2>
-
       <!-- Fridge Ingredients Section -->
       <div class="search-block search-block--fridge">
         <label class="search-block__label" for="fridgeIngredientsSearch">🧊 Ingredients from Fridge:</label>
@@ -39,7 +38,6 @@
           </div>
         </div>
       </div>
-
       <!-- Search Sections -->
       <div class="search-block">
         <label class="search-block__label" for="ingredientSearch">🔍 Search by Ingredients:</label>
@@ -51,7 +49,6 @@
           class="search-block__input"
         />
       </div>
-
       <div class="search-block">
         <label class="search-block__label" for="recipeSearch">📖 Search by Recipe Name:</label>
         <input
@@ -62,7 +59,6 @@
           class="search-block__input"
         />
       </div>
-
       <!-- Filters Section -->
       <div class="filters-block">
         <div class="filters-block__group">
@@ -92,7 +88,6 @@
             <option value="world">World</option>
           </select>
         </div>
-
         <div class="filters-block__group">
           <label class="filters-block__label" for="diet">🥗 Diet Types:</label>
           <select v-model="diet" class="filters-block__select">
@@ -105,7 +100,6 @@
             <option value="low-sodium">🧂 Low-Sodium</option>
           </select>
         </div>
-
         <div class="filters-block__group filters-block__group">
           <label class="filters-block__label" for="health">⚕️ Dietary Restrictions:</label>
           <select v-model="selectedHealthLabels" class="filters-block__select">
@@ -147,7 +141,6 @@
             <option value="wheat-free">Wheat-Free</option>
           </select>
         </div>
-
         <div class="filters-block__group">
           <label class="filters-block__label" for="meal">🍽️ Meal Type:</label>
           <select v-model="meal" class="filters-block__select">
@@ -159,7 +152,6 @@
             <option value="teatime">☕ Teatime</option>
           </select>
         </div>
-
         <div class="filters-block__buttons">
           <button @click="fetchRecipes" class="filters-block__button filters-block__button--search">
             🔍 Find Recipes
@@ -169,7 +161,6 @@
           </button>
         </div>
       </div>
-
       <!-- Recipe Cards -->
       <div class="recipe-grid">
         <div v-for="recipe in recipes" :key="recipe.uri" class="recipe-card">
@@ -189,7 +180,6 @@
         </div>
       </div>
     </div>
-
     <!-- Pagination -->
     <div class="pagination">
       <button 
@@ -210,13 +200,11 @@
     </div>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
 import {db} from '../../services/firebase';
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, getDoc, doc} from "firebase/firestore";
-
 export default {
   data() {
     return {
@@ -252,7 +240,6 @@ export default {
       console.error('No user logged in');
       this.$router.push('/login');
     }
-
     await this.getCurrentUserItems();
     await this.fetchRecipes2();
     
@@ -281,12 +268,10 @@ export default {
     async getCurrentUserItems() {
       const auth = getAuth();
       const user = auth.currentUser;
-
       if (!user) {
         console.error("User is not authenticated");
         return;
       }
-
       try {
         const querySnapshot = await getDocs(collection(db, `users/${user.uid}/items`));
         this.items = querySnapshot.docs.map(doc => ({
@@ -302,24 +287,19 @@ export default {
     async fetchRecipes() {
       // Use either manually entered ingredients or selected fridge ingredients
       let queryParts = [];
-
       if (this.recipeNameQuery) queryParts.push(this.recipeNameQuery);
       if (this.ingredientQuery) queryParts.push(this.ingredientQuery);
       if (this.selectedFridgeIngredients.length > 0) queryParts.push(this.selectedFridgeIngredients.join(' '));
-
       // Combine all parts into one query string, separated by spaces
       let query = queryParts.join(' ');
       let from = (this.currentPage - 1) * this.recipesPerPage;
       let to = from + this.recipesPerPage;
-
       let apiUrl = `https://api.edamam.com/search?q=${query}&app_id=fcbb645c&app_key=475ad8f07b669d07d1b4e5a021a100cc&from=${from}&to=${to}`;
-
       if (this.cuisine) apiUrl += `&cuisineType=${this.cuisine}`;
       if (this.diet) apiUrl += `&diet=${this.diet}`;
       if (this.selectedHealthLabels) apiUrl += `&health=${this.selectedHealthLabels}`;
       
       if (this.meal) apiUrl += `&mealType=${this.meal}`;
-
       try {
         const response = await axios.get(apiUrl);
         this.recipes = response.data.hits.map(hit => hit.recipe);
@@ -328,7 +308,6 @@ export default {
         console.error("Error fetching recipes:", error);
       }
     },
-
     async fetchRecipes2() {
       const ingredients = this.items.map(item => item.name).join(","); // Join item names as comma-separated string
       console.log("the ingredients are" + ingredients)
@@ -336,11 +315,8 @@ export default {
       console.log("the query is " + query)
       const from = (this.currentPage - 1) * this.recipesPerPage;
       const to = from + this.recipesPerPage;
-
       let apiUrl = `https://api.edamam.com/search?q=${query}&app_id=fcbb645c&app_key=475ad8f07b669d07d1b4e5a021a100cc&from=${from}&to=${to}`;
-
       if (this.selectedHealthLabels) apiUrl += `&health=${this.selectedHealthLabels}`;
-
       try {
         const response = await axios.get(apiUrl);
         this.recipes = response.data.hits.map(hit => hit.recipe);
@@ -349,21 +325,18 @@ export default {
         console.error("Error fetching recipes:", error);
       }
     },
-
     nextPage() {
       if (this.currentPage * this.recipesPerPage < this.totalRecipes) {
         this.currentPage++;
         this.fetchRecipes();
       }
     },
-
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
         this.fetchRecipes();
       }
     },
-
     viewRecipe(recipe) {
       const recipeId = encodeURIComponent(recipe.uri);
       this.$router.push({
@@ -395,7 +368,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .recipe-explorer {
   display: flex;
@@ -403,7 +375,6 @@ export default {
   min-height: 100vh;
   background-color: #f8f9fa;
 }
-
 .recipe-explorer__container {
   flex: 1;
   padding: 2rem;
@@ -411,7 +382,6 @@ export default {
   margin: 0 auto;
   width: 100%;
 }
-
 .recipe-explorer__title {
   font-family: 'Poppins', sans-serif;
   font-size: 2.5rem;
@@ -420,20 +390,17 @@ export default {
   margin-bottom: 2rem;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 /* Search Block Styles */
 .search-block {
   margin-bottom: 1.5rem;
   max-width: 100%;
 }
-
 .search-block__label {
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
   color: #2c3e50;
 }
-
 .search-block__input {
   width: 100%;
   padding: 1rem 1.25rem; /* Increased padding */
@@ -443,17 +410,14 @@ export default {
   transition: all 0.3s ease;
   height: 56px; /* Increased height */
 }
-
 .search-block__input:focus {
   border-color: #3498db;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
   outline: none;
 }
-
 .search-block__dropdown-wrapper {
   position: relative;
 }
-
 .search-block__dropdown {
   position: absolute;
   top: 100%;
@@ -467,18 +431,15 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
-
 .search-block__checkbox-label {
   display: block;
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-
 .search-block__checkbox-label:hover {
   background-color: #f8f9fa;
 }
-
 /* Filters Block Styles */
 .filters-block {
   display: grid;
@@ -487,24 +448,20 @@ export default {
   margin-bottom: 2rem;
   width: 100%;
 }
-
 .filters-block__group {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
-
 .filters-block__group--wide {
   grid-column: 1 / -1;
 }
-
 .filters-block__label {
   font-weight: 600;
   margin-bottom: 0.5rem;
   color: #2c3e50;
   display: block;
 }
-
 .filters-block__select {
   width: 100%;
   padding: 1rem 2.5rem 1rem 1.25rem; /* Increased padding, with extra right padding for arrow */
@@ -520,13 +477,11 @@ export default {
   background-position: right 1.25rem center;
   line-height: 1.5; /* Improved text alignment */
 }
-
 .filters-block__select:focus {
   border-color: #3498db;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
   outline: none;
 }
-
 .filters-block__buttons {
   grid-column: 1 / -1; /* Span full width */
   display: flex;
@@ -534,7 +489,6 @@ export default {
   gap: 1rem;
   margin-top: 1.5rem;
 }
-
 .filters-block__button {
   padding: 1rem 1.5rem; /* Increased padding */
   height: 56px; /* Match height with filters */
@@ -545,25 +499,20 @@ export default {
   transition: all 0.3s ease;
   min-width: 150px; /* Ensure buttons have a good width */
 }
-
 .filters-block__button--search {
   background-color: #3498db;
   color: white;
 }
-
 .filters-block__button--search:hover {
   background-color: #2980b9;
 }
-
 .filters-block__button--favorites {
   background-color: #e74c3c;
   color: white;
 }
-
 .filters-block__button--favorites:hover {
   background-color: #c0392b;
 }
-
 /* Recipe Grid Styles */
 .recipe-grid {
   display: grid;
@@ -571,7 +520,6 @@ export default {
   gap: 2rem;
   margin-bottom: 2rem;
 }
-
 .recipe-card {
   background-color: white;
   border-radius: 12px;
@@ -582,17 +530,14 @@ export default {
   flex-direction: column;
   height: 100%;
 }
-
 .recipe-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
 }
-
 .recipe-card__image-container {
   position: relative;
   padding-top: 75%;
 }
-
 .recipe-card__image {
   position: absolute;
   top: 0;
@@ -601,7 +546,6 @@ export default {
   height: 100%;
   object-fit: cover;
 }
-
 .recipe-card__content {
   padding: 1.5rem;
   display: flex;
@@ -609,7 +553,6 @@ export default {
   flex-grow: 1;
   position: relative;
 }
-
 .recipe-card__info {
   flex-grow: 1;
   margin-bottom: 1rem;
@@ -620,14 +563,12 @@ export default {
   margin-bottom: 1rem;
   font-weight: 600;
 }
-
 .recipe-card__time,
 .recipe-card__diet {
   color: #666;
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
 }
-
 .recipe-card__button {
   width: 100%;
   padding: 0.75rem;
@@ -640,11 +581,9 @@ export default {
   transition: background-color 0.3s ease;
   margin-top: auto;
 }
-
 .recipe-card__button:hover {
   background-color: #27ae60;
 }
-
 /* Pagination Styles */
 .pagination {
   display: flex;
@@ -654,7 +593,6 @@ export default {
   padding: 1rem;
   margin-top: auto;
 }
-
 .pagination__button {
   padding: 0.75rem 1.5rem;
   border: none;
@@ -665,42 +603,36 @@ export default {
   font-weight: 600;
   transition: all 0.3s ease;
 }
-
 .pagination__button:disabled {
   background-color: #bdc3c7;
   cursor: not-allowed;
 }
-
 .pagination__button:not(:disabled):hover {
   background-color: #2980b9;
 }
-
 .pagination__text {
   font-weight: 600;
   color: #2c3e50;
 }
-
 @media (max-width: 1200px) {
   .filters-block {
     grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
   }
 }
-
 @media (max-width: 768px) {
   .recipe-explorer__container {
     padding: 1rem;
   }
-
   .filters-block {
     grid-template-columns: 1fr;
   }
-
   .recipe-grid {
     grid-template-columns: 1fr;
   }
-
   .filters-block__buttons {
     flex-direction: column;
   }
 }
 </style>
+
+

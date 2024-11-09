@@ -63,40 +63,20 @@
             <div v-if="showFavorites" class="recipe-modal__favorites-content">
               <div class="recipe-modal__recipe-list">
                 <div v-for="recipe in favoriteRecipes" :key="recipe.id" class="recipe-modal__recipe-item">
-                  <div class="d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <span 
-                        class="recipe-modal__recipe-label" 
-                        :class="{ 'selected': selectedRecipe?.uri === recipe.uri }"
-                        @click="selectFavoriteRecipe(recipe)"
-                      >
-                        {{ recipe.label }}
-                      </span>
-                      <button
-                        class="recipe-modal__btn-add btn btn-success btn-sm"
-                        @click.stop="addRecipe(recipe)"
-                      >
-                        Add
-                      </button>
-                    </div>
-                    
-                    <!-- Add Nutrition Information -->
-                    <div class="recipe-modal__nutrition-info mt-2" v-if="recipe.totalNutrients">
-                      <small class="text-muted d-block">
-                        Calories: {{ Math.round(recipe.calories / (recipe.yield || 1)) }} per serving
-                      </small>
-                      <div class="d-flex gap-2 mt-1">
-                        <small class="text-muted" v-if="recipe.totalNutrients.PROCNT">
-                          Protein: {{ Math.round(recipe.totalNutrients.PROCNT.quantity / (recipe.yield || 1)) }}g
-                        </small>
-                        <small class="text-muted" v-if="recipe.totalNutrients.FAT">
-                          Fat: {{ Math.round(recipe.totalNutrients.FAT.quantity / (recipe.yield || 1)) }}g
-                        </small>
-                        <small class="text-muted" v-if="recipe.totalNutrients.CHOCDF">
-                          Carbs: {{ Math.round(recipe.totalNutrients.CHOCDF.quantity / (recipe.yield || 1)) }}g
-                        </small>
-                      </div>
-                    </div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span 
+                      class="recipe-modal__recipe-label" 
+                      :class="{ 'selected': selectedRecipe?.uri === recipe.uri }"
+                      @click="selectFavoriteRecipe(recipe)"
+                    >
+                      {{ recipe.label }}
+                    </span>
+                    <button
+                      class="recipe-modal__btn-add btn btn-success btn-sm"
+                      @click.stop="addRecipe(recipe)"
+                    >
+                      Add
+                    </button>
                   </div>
                 </div>
               </div>
@@ -145,8 +125,8 @@
           <h3>{{ selectedRecipe.label }}</h3>
 
           <!-- Added image display -->
-          <div class="recipe-preview-modal__image" v-if="selectedRecipe.image">
-            <img :src="selectedRecipe.image" :alt="selectedRecipe.label" style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; margin: 15px 0;" />
+          <div class="recipe-preview-modal__image d-flex justify-content-center" v-if="selectedRecipe.image">
+            <img :src="selectedRecipe.image" :alt="selectedRecipe.label" style="max-width: 400px; max-height: 400px; object-fit: contain; border-radius: 8px; margin: 15px 0;" />
           </div>
 
           <div class="recipe-preview-modal__details">

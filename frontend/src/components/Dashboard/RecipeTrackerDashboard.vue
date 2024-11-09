@@ -1,22 +1,22 @@
 <template>
   <div class="recipe-tracker-dashboard">
-    <div class="stats-row">
-      <div class="total-recipes">
-        <div class="number">{{ completedRecipes.length }}</div>
-        <div class="label">Total Recipes Cooked</div>
+    <div class="recipe-tracker-dashboard__stats-row">
+      <div class="recipe-tracker-dashboard__total-recipes">
+        <div class="recipe-tracker-dashboard__total-recipes-number">{{ completedRecipes.length }}</div>
+        <div class="recipe-tracker-dashboard__total-recipes-label">Total Recipes Cooked</div>
       </div>
-      <div class="most-cooked" v-if="topRecipes.length">
-        <div class="recipe-info">
-          <h3>Most Cooked Recipe</h3>
-          <div class="recipe-name">{{ topRecipes[0].label }}</div>
-          <div class="cook-count">Cooked {{ topRecipes[0].count }} times</div>
+      <div class="recipe-tracker-dashboard__most-cooked" v-if="topRecipes.length">
+        <div class="recipe-tracker-dashboard__most-cooked-info">
+          <h3 class="recipe-tracker-dashboard__most-cooked-title">Most Cooked Recipe</h3>
+          <div class="recipe-tracker-dashboard__most-cooked-name">{{ topRecipes[0].label }}</div>
+          <div class="recipe-tracker-dashboard__most-cooked-count">Cooked {{ topRecipes[0].count }} times</div>
         </div>
-        <div class="recipe-image">
+        <div class="recipe-tracker-dashboard__most-cooked-image">
           <!-- <img :src="topRecipes[0].image" alt="Recipe Image"> -->
         </div>
       </div>
     </div>
-    <div v-if="dataLoaded" class="chart-wrapper">
+    <div v-if="dataLoaded" class="recipe-tracker-dashboard__chart-wrapper">
       <canvas ref="chartCanvas"></canvas>
     </div>
   </div>
@@ -158,97 +158,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.recipe-tracker-dashboard {
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.stats-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.total-recipes {
-  flex: 1;
-  background: #4CAF50;
-  color: white;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.total-recipes .number {
-  font-size: 48px;
-  font-weight: bold;
-  line-height: 1;
-  margin-bottom: 10px;
-}
-
-.total-recipes .label {
-  font-size: 18px;
-  opacity: 0.9;
-}
-
-.most-cooked {
-  flex: 2;
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.recipe-info {
-  flex: 1;
-}
-
-.recipe-info h3 {
-  margin: 0 0 10px 0;
-  color: #333;
-}
-
-.recipe-name {
-  font-size: 24px;
-  font-weight: 500;
-  color: #2196F3;
-  margin-bottom: 5px;
-}
-
-.cook-count {
-  color: #666;
-  font-size: 16px;
-}
-
-.recipe-image {
-  width: 120px;
-  height: 120px;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-.recipe-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.chart-wrapper {
-  position: relative;
-  margin: 20px 0;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  height: 400px;
-}
-
-</style>

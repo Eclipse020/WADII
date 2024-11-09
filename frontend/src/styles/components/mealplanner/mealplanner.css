@@ -48,6 +48,54 @@
   border-bottom: 1px solid #eee;
 }
 
+/* Calendar styles */
+.calendar {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.calendar__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.calendar__table th:first-child,
+.calendar__table td:first-child {
+  width: 40px;
+}
+
+.calendar__table th:not(:first-child),
+.calendar__table td:not(:first-child) {
+  width: calc((100% - 40px) / 7);
+}
+
+.calendar__header {
+  padding: 10px;
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.calendar__cell {
+  border: 1px solid #eee;
+  padding: 8px;
+  min-height: 100px;
+  vertical-align: top;
+  position: relative;
+}
+
+.calendar__week {
+  text-align: center;
+  background-color: #f0f0f0;
+  color: #666;
+  font-weight: 600;
+  padding: 8px;
+  border: 1px solid #eee;
+}
+
 @media (max-width: 1200px) {
   .planner {
     grid-template-columns: 1fr;
@@ -74,5 +122,31 @@
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar__header {
+    padding: 8px 4px;
+    font-size: 14px;
+  }
+
+  .calendar__cell {
+    padding: 4px;
+    min-height: 80px;
+  }
+
+  .calendar__table th:first-child,
+  .calendar__table td:first-child {
+    width: 30px;
+  }
+
+  .calendar__table th:not(:first-child),
+  .calendar__table td:not(:first-child) {
+    width: calc((100% - 30px) / 7);
+  }
+
+  .planner__title {
+    font-size: 20px;
   }
 }
