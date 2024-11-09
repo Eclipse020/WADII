@@ -52,6 +52,8 @@
     import { db, auth } from '../../services/firebase';
     import { onAuthStateChanged } from 'firebase/auth';
     import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+    import '../../styles/components/community/recipedecomponent.css';
+
 
     export default {
     name: 'RecipeDeComponent',
@@ -237,116 +239,3 @@
     
     </script>
 
-    <style scoped>
-    .recipe-details {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    }
-
-    .recipe-details__image-wrapper {
-    width: 100%;
-    height: auto;
-    overflow: hidden;
-    cursor: pointer;
-    position: relative;
-    }
-
-    .recipe-details__image {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    max-height: 300px;
-    }
-
-    .recipe-details__additional-info {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin: 20px 0;
-    }
-
-    .recipe-details__info-item {
-    font-size: 1rem;
-    font-weight: 500;
-    }
-
-    .recipe-details__ingredients-list {
-    list-style-type: disc;
-    padding-left: 20px;
-    margin: 20px 0;
-    }
-
-    .recipe-details__ingredient-item {
-    font-size: 20px;
-    margin: 5px 0;
-    text-align: left;
-    }
-
-    .recipe-details__recipe-steps {
-    list-style-position: outside;
-    padding-left: 20px;
-    margin: 0;
-    font-size: 1.2em;
-    }
-
-    .recipe-details__recipe-step {
-    margin: 5px 0;
-    line-height: 1.4;
-    text-align: left;
-    }
-
-    .recipe-details__modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    cursor: pointer;
-    }
-
-    .recipe-details__full-image {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .recipe-details__btn {
-    padding: 10px 15px;
-    border: none;
-    font-size: 1rem;
-    cursor: pointer;
-    color: white;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-    }
-
-    .recipe-details__button-group {
-    display: flex;
-    gap: 10px; /* Add some space between buttons */
-    }
-
-    .recipe-details__btn--favorite {
-    background-color: #28a745;
-    }
-
-    .recipe-details__btn--secondary {
-    background-color: #dc3545;
-    }
-
-    .recipe-details__btn--success {
-    background-color: #28a745;
-    }
-
-    .recipe-details__btn:hover {
-    opacity: 0.9;
-    }
-    </style>

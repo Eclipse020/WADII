@@ -22,6 +22,7 @@
 <script>
 import { auth, db } from '../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import '../../styles/components/community/commentpopup.css';
 
 export default {
   data() {
@@ -82,40 +83,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.comment-popup {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.comments-list ul {
-  list-style-type: none; /* Removes the bullet points */
-  padding-left: 0; /* Removes default padding */
-  margin: 0;
-}
-
-.comments-list li {
-  text-align: left;
-  margin-bottom: 8px;
-  padding-left: 5px;
-}
-
-.comments-list strong {
-  margin-right: 5px; /* Adds space between the username and the comment text */
-}
-</style>
