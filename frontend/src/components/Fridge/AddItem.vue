@@ -104,7 +104,7 @@
 <script>
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getDocs, collection, getDoc, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { getDocs, collection, getDoc, addDoc, deleteDoc, doc, updateDoc, where, query } from "firebase/firestore";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/components/fridge/fridge.css';
@@ -397,6 +397,13 @@ export default {
         return;
       }
 
+      // Check if any other item with the same name, category, and expiry date exists
+      const duplicateItem = await this.checkForDuplicateItem(updatedItem.name, updatedItem.category, updatedItem.expiryDate);
+      if (duplicateItem) {
+        this.validationError = "An item with this name and category already exists.";
+        return;
+      }
+
       this.updateItemInFirestore(updatedItem)
         .then(() => {
           this.resetForm();
@@ -404,6 +411,29 @@ export default {
         .catch(error => {
           console.error("Error updating item: ", error);
         });
+    },
+
+    async checkForDuplicateItem(name, category, expiryDate) {
+      try {
+        const itemsRef = collection(db, `users/${this.currentUserId}/items`);  // Reference to the 'items' collection
+        const q = query(
+          itemsRef,
+          where("name", "==", name),
+          where("category", "==", category),
+          where("expiryDate", "==", expiryDate)
+        );
+
+        const querySnapshot = await getDocs(q);  // Fetch the documents that match the query
+
+        // If any matching document is found, return true
+        if (!querySnapshot.empty) {
+          return true;  // Duplicate found
+        }
+        return false;  // No duplicates found
+      } catch (error) {
+        console.error("Error checking for duplicates: ", error);
+        return false;
+      }
     },
 
     async updateItemInFirestore(item) {
