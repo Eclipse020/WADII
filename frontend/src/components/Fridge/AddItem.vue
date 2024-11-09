@@ -4,14 +4,14 @@
       <div class="content">
         <header class="app-fridge__header">
           <div>
-            <button class="btn btn-sm me-2 app-fridge__button--top" @click="sortByCategory" :disabled="openAddCard">
+            <button class="btn btn-sm me-2 my-2 app-fridge__button--top" @click="sortByCategory" :disabled="openAddCard">
               Category &nbsp; <span v-if="isCategoryAscending">&#8681;</span><span v-else>&#8679;</span>
             </button>
-            <button class="btn btn-sm me-2 app-fridge__button--top" @click="navigateTo('summary')"
+            <button class="btn btn-sm me-2 my-2 app-fridge__button--top" @click="navigateTo('summary')"
               :disabled="openAddCard">View Inventory Summary</button>
             <!--Add Product + Edit Product Card-->
             <button v-if="!openAddCard && !isEditing" @click="openAddCard = true"
-              class="btn btn-sm app-fridge__button--top">
+              class="btn btn-sm my-2 app-fridge__button--top">
               Add Product
             </button>
             <div v-else class="card app-fridge__add-card">

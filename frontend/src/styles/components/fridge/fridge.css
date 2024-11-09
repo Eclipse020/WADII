@@ -151,6 +151,22 @@
     border-radius: 15px;
 }
 
+@media (max-width: 768px) {
+    .app-fridge__add-card {
+        width: 80%; /* Adjust the width on smaller screens */
+        padding: 1.5rem; /* Reduce padding on smaller screens */
+        font-size: 1.1rem; /* Increase font size slightly for better readability */
+    }
+}
+
+@media (max-width: 480px) {
+    .app-fridge__add-card {
+        width: 90%; /* Further adjust the width on very small screens */
+        padding: 1rem; /* Further reduce padding */
+        font-size: 1.2rem; /* Increase font size slightly for readability */
+    }
+}
+
 .mb-3 {
     display: flex;
     flex-direction: column;
