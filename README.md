@@ -27,3 +27,6 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+### Firebase Authentication
+If running on localhost, Firebase Authentication OAuth works as it is already registered. If deploying again to Vercel, will need to register domain name into Firebase Authentication.
