@@ -1,0 +1,66 @@
+/* Block Styles */
+.post-recipe {
+    padding: 20px;
+  }
+  
+  .post-recipe__card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .post-recipe__card-header {
+    padding: 20px;
+  }
+  
+  .post-recipe__card-body {
+    padding: 20px;
+  }
+  
+  .post-recipe__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* Element Styles */
+  .post-recipe__input-group {
+    margin-bottom: 16px;
+  }
+  
+  .post-recipe__input {
+    width: 100%;
+  }
+  
+  .post-recipe__textarea {
+    width: 100%;
+    resize: none;
+  }
+  
+  .post-recipe__file-input {
+    padding: 10px;
+  }
+  
+  /* Styling for number inputs */
+  .post-recipe__input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    padding-right: 25px;
+  }
+  
+  .post-recipe__submit {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .post-recipe__submit-btn {
+    background-color: #28a745;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .post-recipe__submit-btn:hover {
+    background-color: #218838;
+  }

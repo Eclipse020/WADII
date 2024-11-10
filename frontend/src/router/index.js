@@ -15,6 +15,7 @@ import LogoutComponent from '../components/Auth/LogoutComponent.vue';
 import RecipeList from '../components/Recipes/RecipeList.vue';
 import RecipeDetails from '../components/Recipes/RecipeDetails.vue';
 import CookNow from '../components/Recipes/CookNow.vue';
+import CCookNow from '../components/Community/CCookNow.vue';
 import FavouritesDisplay from '../components/Recipes/FavouritesDisplay.vue';
 import CommunityPage from '../pages/CommunityPage.vue';
 import DashboardSummary from '../components/Dashboard/DashboardSummary.vue';
@@ -67,6 +68,9 @@ const routes = [
     props: true,
     meta: { requiresAuth: true }
   },
+  { path: '/community/:id/cook', name: 'CCookNow', component: CCookNow, 
+    props: true ,// Enables passing params as props to the component
+    meta: { requiresAuth: true } },
 
   // User profile-related routes
   { path: '/profile', name: 'ProfileSettings', component: ProfileSettingsPage, meta: { requiresAuth: true } },

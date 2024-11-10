@@ -4,14 +4,14 @@
       <div class="content">
         <header class="app-fridge__header">
           <div>
-            <button class="btn btn-sm me-2 app-fridge__button--top" @click="sortByCategory" :disabled="openAddCard">
+            <button class="btn btn-sm me-2 my-2 app-fridge__button--top" @click="sortByCategory" :disabled="openAddCard">
               Category &nbsp; <span v-if="isCategoryAscending">&#8681;</span><span v-else>&#8679;</span>
             </button>
-            <button class="btn btn-sm me-2 app-fridge__button--top" @click="navigateTo('summary')"
+            <button class="btn btn-sm me-2 my-2 app-fridge__button--top" @click="navigateTo('summary')"
               :disabled="openAddCard">View Inventory Summary</button>
             <!--Add Product + Edit Product Card-->
             <button v-if="!openAddCard && !isEditing" @click="openAddCard = true"
-              class="btn btn-sm app-fridge__button--top">
+              class="btn btn-sm my-2 app-fridge__button--top">
               Add Product
             </button>
             <div v-else class="card app-fridge__add-card">
@@ -104,7 +104,7 @@
 <script>
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getDocs, collection, getDoc, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { getDocs, collection, getDoc, addDoc, deleteDoc, doc, updateDoc, where, query } from "firebase/firestore";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/components/fridge/fridge.css';
@@ -397,6 +397,19 @@ export default {
         return;
       }
 
+      // Check if any other item with the same name, category, and expiry date exists
+      const duplicateItem = await this.checkForDuplicateItem(
+        updatedItem.name,
+        updatedItem.category,
+        updatedItem.expiryDate,
+        updatedItem.id
+      );
+      
+      if (duplicateItem) {
+        this.validationError = "An item with this name and category already exists.";
+        return;
+      }
+
       this.updateItemInFirestore(updatedItem)
         .then(() => {
           this.resetForm();
@@ -404,6 +417,31 @@ export default {
         .catch(error => {
           console.error("Error updating item: ", error);
         });
+    },
+
+    async checkForDuplicateItem(name, category, expiryDate, currentItemId) {
+      try {
+        const itemsRef = collection(db, `users/${this.currentUserId}/items`);
+        const q = query(
+          itemsRef,
+          where("name", "==", name),
+          where("category", "==", category),
+          where("expiryDate", "==", expiryDate)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        // Loop through the documents to see if there's any other item with the same properties
+        for (const doc of querySnapshot.docs) {
+          if (doc.id !== currentItemId) {  // Exclude the current item
+            return true;  // Duplicate found
+          }
+        }
+        return false;  // No duplicates found
+      } catch (error) {
+        console.error("Error checking for duplicates: ", error);
+        return false;
+      }
     },
 
     async updateItemInFirestore(item) {

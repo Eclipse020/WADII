@@ -1,4 +1,3 @@
-cookNow
 <template>
   <div class="fridge">
     <!-- Added Recipe Ingredients Section -->
@@ -8,7 +7,7 @@ cookNow
           <h2 class="recipe-ingredients__title">Recipe Ingredients Required</h2>
         </header>
         
-        <section class="recipe__ingredients">
+        <section v-if="requiredIngredients.length" class="recipe__ingredients">
           <ul class="recipe__ingredients-list">
             <li 
               v-for="(ingredient, index) in requiredIngredients" 
@@ -44,6 +43,7 @@ cookNow
             </button>
           </div>
         </header>
+
         <div v-if="!items || items.length === 0" class="empty-state">
           <p class="empty-state__text">Your Fridge is Empty! Add some ingredients first~ 🥕</p>
           <img 
@@ -52,6 +52,7 @@ cookNow
             alt="Empty Fridge"
           >
         </div>
+
         <!-- Categorized Items -->
         <div 
           v-for="(itemsInCategory, category) in categorizedItems" 
@@ -127,10 +128,10 @@ cookNow
     </div>
   </div>
 </template>
-
 <script>
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import '../../styles/components/community/ccooknow.css';
 import { 
   collection, 
   getDocs, 
@@ -138,19 +139,12 @@ import {
   updateDoc, 
   deleteDoc, 
   addDoc,
+  query,
+  where 
 } from "firebase/firestore";
+
 export default {
-  name: 'CookNow',
-  props: {
-    requiredIngredients: {
-      type: Array,
-      default: () => []
-    },
-    fridgeIngredients: {
-      type: Array,
-      default: () => []
-    }
-  },
+  name: 'CCookNow',
   
   data() {
     return {
@@ -161,9 +155,35 @@ export default {
       isCategoryAscending: false,
       sortOrder: 'asc',
       itemsToDelete: new Set(), // Track items marked for deletion
+      requiredIngredients: [],
+      fridgeIngredients: [],
     };
   },
+
+  mounted() {
+    // Previous mounted code remains unchanged
+    if (this.$route.query.requiredIngredients) {
+      this.requiredIngredients = JSON.parse(this.$route.query.requiredIngredients);
+    }
+    if (this.$route.query.fridgeIngredients) {
+      this.fridgeIngredients = JSON.parse(this.$route.query.fridgeIngredients);
+    }
+
+    console.log('Required Ingredients:', this.requiredIngredients);
+    console.log('Fridge Ingredients:', this.fridgeIngredients);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.currentUserId = user.uid;
+        await this.getCurrentUserItems();
+      } else {
+        this.currentUserId = null;
+      }
+    });
+  },
+
   computed: {
+    // Previous computed properties remain unchanged
     categorizedItems() {
       const categorized = {};
       this.items.forEach(item => {
@@ -174,6 +194,7 @@ export default {
       });
       return categorized;
     },
+
     hasChanges() {
       return this.items.some(item => 
         this.hasItemChanged(item) || 
@@ -181,6 +202,7 @@ export default {
       );
     }
   },
+
   methods: {
     async getCurrentUserItems() {
       const today = new Date();
@@ -207,9 +229,11 @@ export default {
         }
       }
     },
+
     toggleCategory(category) {
       this.collapsedCategories[category] = !this.collapsedCategories[category];
     },
+
     sortByCategory() {
       this.isCategoryAscending = !this.isCategoryAscending;
       this.items.sort((a, b) => {
@@ -217,15 +241,18 @@ export default {
         return this.isCategoryAscending ? comparison : -comparison;
       });
     },
+
     sortItems() {
       this.items.sort((a, b) => a.name.localeCompare(b.name));
     },
+
     incrementQuantity(item) {
       if (item.quantity === 0) {
         this.itemsToDelete.delete(item.id);
       }
       item.quantity++;
     },
+
     decrementQuantity(item) {
       if (item.quantity > 0) {
         item.quantity--;
@@ -234,12 +261,15 @@ export default {
         }
       }
     },
+
     hasItemChanged(item) {
       return this.originalItems[item.id] !== item.quantity;
     },
+
     getOriginalQuantity(itemId) {
       return this.originalItems[itemId];
     },
+
     getCategoryEmoji(category) {
       const emojiMap = {
         'Vegetables': '🥬',
@@ -255,6 +285,7 @@ export default {
       };
       return emojiMap[category] || '🔍';
     },
+
     getIngredientEmoji(name) {
       const emojiMap = {
         'Apple': '🍎',
@@ -269,73 +300,122 @@ export default {
       };
       return emojiMap[name] || '';
     },
-    async moveToUsedItems(item, quantityUsed) {
-      try {
 
+    async moveToUsedItems(item) {
+      try {
         await addDoc(
-          collection(db, `users/${this.currentUserId}/deletedItems`), 
+          collection(db, `users/${this.currentUserId}/usedItems`), 
           {
             ...item,
             usedAt: new Date().toISOString(),
             originalQuantity: this.originalItems[item.id],
-            quantityUsed: quantityUsed, // Log the amount used
-            finalQuantity: item.quantity
+            finalQuantity: 0
           }
         );
       } catch (error) {
         console.error("Error moving item to used items: ", error);
       }
     },
+   // Previous methods remain unchanged until markRecipeAsCompleted
+
+    async markRecipeAsCompleted() {
+      if (!this.currentUserId) return;
+
+      try {
+        // Get the recipe ID from the route query parameters
+        const recipeId = this.$route.query.recipeId;
+        if (!recipeId) return;
+
+        // 1. Delete from meal plans
+        const mealPlansRef = collection(db, `users/${this.currentUserId}/mealPlans`);
+        const mealPlansQuery = query(mealPlansRef, where("recipe.communityRecipeId", "==", recipeId));
+        const mealPlansSnapshot = await getDocs(mealPlansQuery);
+
+        const mealPlanDeletePromises = mealPlansSnapshot.docs.map(doc => 
+          deleteDoc(doc.ref)
+        );
+
+        // 2. Delete from community recipes
+        const communityRecipesRef = collection(db, 'communityRecipes');
+        const communityRecipesQuery = query(communityRecipesRef, where("id", "==", recipeId));
+        const communityRecipesSnapshot = await getDocs(communityRecipesQuery);
+
+        const communityRecipeDeletePromises = communityRecipesSnapshot.docs.map(doc => 
+          deleteDoc(doc.ref)
+        );
+
+        // Execute all deletions
+        await Promise.all([
+          ...mealPlanDeletePromises,
+          ...communityRecipeDeletePromises
+        ]);
+
+        console.log('Successfully deleted recipe from meal plan and community recipes');
+
+      } catch (error) {
+        console.error("Error deleting recipe:", error);
+        throw error;
+      }
+    },
+
     async saveAllChanges() {
       try {
-        const itemsToUpdate = this.items.filter(item => this.hasItemChanged(item));
-        
+        // Handle items to be updated (quantity > 0)
+        const itemsToUpdate = this.items.filter(item => 
+          this.hasItemChanged(item) && item.quantity > 0
+        );
+
+        // Update quantities for remaining items
         for (const item of itemsToUpdate) {
-          const originalQuantity = this.originalItems[item.id];
-          const quantityUsed = originalQuantity - item.quantity;
-
-          if (quantityUsed > 0) {
-            // Move to usedItems with the amount subtracted
-            await this.moveToUsedItems(item, quantityUsed);
-          }
-
-          if (item.quantity > 0) {
-            // Update the item in Firestore
-            const itemRef = doc(db, `users/${this.currentUserId}/items`, item.id);
-            await updateDoc(itemRef, { quantity: item.quantity });
-            this.originalItems[item.id] = item.quantity;
-          } else {
-            // Delete the item from Firestore if quantity is 0
-            const itemRef = doc(db, `users/${this.currentUserId}/items`, item.id);
-            await deleteDoc(itemRef);
-            this.items = this.items.filter(i => i.id !== item.id);
-            delete this.originalItems[item.id];
-            this.itemsToDelete.delete(item.id);
-          }
+          const itemRef = doc(
+            db, 
+            `users/${this.currentUserId}/items`, 
+            item.id
+          );
+          await updateDoc(itemRef, {
+            quantity: item.quantity
+          });
+          this.originalItems[item.id] = item.quantity;
         }
 
+        // Handle items to be deleted (quantity = 0)
+        const itemsToDelete = this.items.filter(item => item.quantity === 0);
+        for (const item of itemsToDelete) {
+          await this.moveToUsedItems(item);
+          
+          const itemRef = doc(
+            db, 
+            `users/${this.currentUserId}/items`, 
+            item.id
+          );
+          await deleteDoc(itemRef);
+          
+          this.items = this.items.filter(i => i.id !== item.id);
+          delete this.originalItems[item.id];
+          this.itemsToDelete.delete(item.id);
+        }
+
+        // Delete the recipe from meal plan and community recipes
+        await this.markRecipeAsCompleted();
+
         alert('All changes saved successfully! 🎉');
-        window.location.pathname = "/recipes";
+        
+        // Force refresh the meal planner by adding a timestamp to the URL
+        const timestamp = new Date().getTime();
+        window.location.href = `http://localhost:8080/recipes?t=${timestamp}`;
       } catch (error) {
-        console.error("Error saving changes: ", error);
+        console.error("Error saving changes:", error);
         alert('Error saving changes. Please try again. ❌');
       }
-    }
-  },
+    },
 
-  
-  mounted() {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        this.currentUserId = user.uid;
-        await this.getCurrentUserItems();
-      }
-    });
-  }
+    // Rest of the methods remain unchanged
+  },
 };
 </script>
 
 <style scoped>
+/* Previous styles remain unchanged */
 /* CookNow Base Styles */
 .fridge {
   --color-primary: #4a8c3a;
