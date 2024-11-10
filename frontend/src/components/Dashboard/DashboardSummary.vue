@@ -125,8 +125,8 @@ export default {
 
     async fetchSummaryData() {
       const today = new Date();
-      // const startDate = new Date(today.getFullYear(), this.selectedMonth, 1);
-      // const endDate = new Date(today.getFullYear(), this.selectedMonth + 1, 0);
+      const startDate = new Date(today.getFullYear(), this.selectedMonth, 1);
+      const endDate = new Date(today.getFullYear(), this.selectedMonth + 1, 0);
 
       try {
         const user = auth.currentUser;
