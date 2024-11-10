@@ -175,7 +175,7 @@ export default {
         }));
 
         this.summary.usedItems = deletedItems.filter(item => {
-          const deleteDate = new Date(item.deletedAt);
+          const deleteDate = new Date(item.usedAt);
           return deleteDate >= startDate && deleteDate <= endDate;
         }).length;
 
