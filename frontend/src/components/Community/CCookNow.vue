@@ -1,4 +1,3 @@
-CCookNow
 <template>
   <div class="fridge">
     <!-- Added Recipe Ingredients Section -->
@@ -129,7 +128,6 @@ CCookNow
     </div>
   </div>
 </template>
-
 <script>
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -140,7 +138,9 @@ import {
   doc, 
   updateDoc, 
   deleteDoc, 
-  addDoc 
+  addDoc,
+  query,
+  where 
 } from "firebase/firestore";
 
 export default {
@@ -159,8 +159,9 @@ export default {
       fridgeIngredients: [],
     };
   },
+
   mounted() {
-    // Access the query parameters
+    // Previous mounted code remains unchanged
     if (this.$route.query.requiredIngredients) {
       this.requiredIngredients = JSON.parse(this.$route.query.requiredIngredients);
     }
@@ -168,22 +169,21 @@ export default {
       this.fridgeIngredients = JSON.parse(this.$route.query.fridgeIngredients);
     }
 
-    // Log to ensure values are correctly set
     console.log('Required Ingredients:', this.requiredIngredients);
     console.log('Fridge Ingredients:', this.fridgeIngredients);
 
-    // Listen for auth state changes
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         this.currentUserId = user.uid;
-        await this.getCurrentUserItems();  // Load user's items
+        await this.getCurrentUserItems();
       } else {
-        this.currentUserId = null;  // If no user is authenticated, reset user ID
+        this.currentUserId = null;
       }
     });
   },
 
   computed: {
+    // Previous computed properties remain unchanged
     categorizedItems() {
       const categorized = {};
       this.items.forEach(item => {
@@ -316,6 +316,47 @@ export default {
         console.error("Error moving item to used items: ", error);
       }
     },
+   // Previous methods remain unchanged until markRecipeAsCompleted
+
+    async markRecipeAsCompleted() {
+      if (!this.currentUserId) return;
+
+      try {
+        // Get the recipe ID from the route query parameters
+        const recipeId = this.$route.query.recipeId;
+        if (!recipeId) return;
+
+        // 1. Delete from meal plans
+        const mealPlansRef = collection(db, `users/${this.currentUserId}/mealPlans`);
+        const mealPlansQuery = query(mealPlansRef, where("recipe.communityRecipeId", "==", recipeId));
+        const mealPlansSnapshot = await getDocs(mealPlansQuery);
+
+        const mealPlanDeletePromises = mealPlansSnapshot.docs.map(doc => 
+          deleteDoc(doc.ref)
+        );
+
+        // 2. Delete from community recipes
+        const communityRecipesRef = collection(db, 'communityRecipes');
+        const communityRecipesQuery = query(communityRecipesRef, where("id", "==", recipeId));
+        const communityRecipesSnapshot = await getDocs(communityRecipesQuery);
+
+        const communityRecipeDeletePromises = communityRecipesSnapshot.docs.map(doc => 
+          deleteDoc(doc.ref)
+        );
+
+        // Execute all deletions
+        await Promise.all([
+          ...mealPlanDeletePromises,
+          ...communityRecipeDeletePromises
+        ]);
+
+        console.log('Successfully deleted recipe from meal plan and community recipes');
+
+      } catch (error) {
+        console.error("Error deleting recipe:", error);
+        throw error;
+      }
+    },
 
     async saveAllChanges() {
       try {
@@ -354,19 +395,27 @@ export default {
           this.itemsToDelete.delete(item.id);
         }
 
+        // Delete the recipe from meal plan and community recipes
+        await this.markRecipeAsCompleted();
+
         alert('All changes saved successfully! 🎉');
-        window.location.href = "http://localhost:8080/recipes";
+        
+        // Force refresh the meal planner by adding a timestamp to the URL
+        const timestamp = new Date().getTime();
+        window.location.href = `http://localhost:8080/recipes?t=${timestamp}`;
       } catch (error) {
-        console.error("Error saving changes: ", error);
+        console.error("Error saving changes:", error);
         alert('Error saving changes. Please try again. ❌');
       }
-    }
+    },
+
+    // Rest of the methods remain unchanged
   },
-  
 };
 </script>
 
 <style scoped>
+/* Previous styles remain unchanged */
 /* CookNow Base Styles */
 .fridge {
   --color-primary: #4a8c3a;

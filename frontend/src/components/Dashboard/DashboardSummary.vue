@@ -161,7 +161,7 @@ export default {
           ...doc.data(),
         }));
 
-        this.summary.expiredItemsCount = expiredItems.reduce((total, item) => {
+        this.summary.expiredItemsQuantity = expiredItems.reduce((total, item) => {
           const expiryDate = new Date(item.expiryDate);
           if (expiryDate >= startDate && expiryDate <= endDate) {
             return total + (item.quantity || 0);  // Add the quantity, defaulting to 0 if undefined
