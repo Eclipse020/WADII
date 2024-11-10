@@ -1,3 +1,4 @@
+recipelist
 <template>
   <div class="recipe-explorer">
     <div class="recipe-explorer__container">
@@ -101,9 +102,8 @@
           </select>
         </div>
         <div class="filters-block__group filters-block__group">
-          <label class="filters-block__label" for="health">⚕️ Dietary Restrictions:</label>
-          <select v-model="selectedHealthLabels" class="filters-block__select">
-            <option value="">None</option>
+          <label class="filters-block__label" for="health">⚕️ Dietary Preferences:</label>
+          <select v-model="selectedHealthLabels" multiple class="filters-block__select" size="3">
             <option value="alcohol-cocktail">Alcohol-Cocktail</option>
             <option value="alcohol-free">Alcohol-Free</option>
             <option value="celery-free">Celery-Free</option>
@@ -140,7 +140,8 @@
             <option value="vegetarian">Vegetarian</option>
             <option value="wheat-free">Wheat-Free</option>
           </select>
-        </div>
+          <span class="filters-block__helper-text">*Hold Ctrl (Windows) or ⌘ Cmd (Mac) to select multiple options</span>
+          </div>
         <div class="filters-block__group">
           <label class="filters-block__label" for="meal">🍽️ Meal Type:</label>
           <select v-model="meal" class="filters-block__select">
@@ -213,7 +214,7 @@ export default {
       recipes: [],
       cuisine: "",
       diet: "",
-      selectedHealthLabels: "", // Now initialized for auto-selection
+      selectedHealthLabels: [], 
       meal: "",
       currentPage: 1,
       recipesPerPage: 12,
@@ -230,7 +231,7 @@ export default {
       try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
-          this.selectedHealthLabels = userDoc.data().dietaryPreferences[0] || ""; // Auto-select the first preference
+          this.selectedHealthLabels = userDoc.data().dietaryPreferences || [];
         } else {
           console.error('No such document!');
         }
@@ -247,19 +248,16 @@ export default {
   },
   methods: {
     handleBlur(event) {
-      // Check if the related target is a checkbox
       if (event.relatedTarget && event.relatedTarget.type === 'checkbox') {
-        return; // Don't close dropdown if clicking on a checkbox
+        return;
       }
       
-      // Close dropdown after a short delay
       setTimeout(() => {
         this.showIngredientsDropdown = false;
       }, 200);
     },
     updateIngredientsSearch() {
       console.log('Selected ingredients:', this.selectedFridgeIngredients);
-      // Update ingredientQuery when fridge ingredients are selected
       this.ingredientQuery = this.selectedFridgeIngredients
         .map(ingredient => ingredient.trim())
         .join(',');
@@ -299,7 +297,12 @@ export default {
       let apiUrl = `https://api.edamam.com/search?q=${query}&app_id=fcbb645c&app_key=475ad8f07b669d07d1b4e5a021a100cc&from=${from}&to=${to}`;
       if (this.cuisine) apiUrl += `&cuisineType=${this.cuisine}`;
       if (this.diet) apiUrl += `&diet=${this.diet}`;
-      if (this.selectedHealthLabels) apiUrl += `&health=${this.selectedHealthLabels}`;
+
+      if (this.selectedHealthLabels && this.selectedHealthLabels.length > 0) {
+        this.selectedHealthLabels.forEach(label => {
+          apiUrl += `&health=${label}`;
+        });
+      }
       
       if (this.meal) apiUrl += `&mealType=${this.meal}`;
       try {
@@ -319,7 +322,13 @@ export default {
       const from = (this.currentPage - 1) * this.recipesPerPage;
       const to = from + this.recipesPerPage;
       let apiUrl = `https://api.edamam.com/search?q=${query}&app_id=fcbb645c&app_key=475ad8f07b669d07d1b4e5a021a100cc&from=${from}&to=${to}`;
-      if (this.selectedHealthLabels) apiUrl += `&health=${this.selectedHealthLabels}`;
+
+      if (this.selectedHealthLabels && this.selectedHealthLabels.length > 0) {
+        this.selectedHealthLabels.forEach(label => {
+          apiUrl += `&health=${label}`;
+        });
+      }
+
       try {
         const response = await axios.get(apiUrl);
         this.recipes = response.data.hits.map(hit => hit.recipe);
@@ -372,6 +381,68 @@ export default {
 };
 </script>
 <style scoped>
+
+
+.filters-block__select {
+  width: 100%;
+  padding: 1rem 2.5rem 1rem 1.25rem; /* Increased padding for uniformity */
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  height: 56px; /* Set to match the height of other select inputs */
+  appearance: none; /* Remove default select styling */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%232c3e50' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.25rem center;
+  line-height: 1.5; /* Improved text alignment */
+}
+
+.filters-block__select[multiple] {
+  height: 56px; /* Ensuring this select box matches others */
+  padding: 1rem 1.25rem; /* Same padding as other selects */
+}
+
+.filters-block__select[multiple]:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+.filters-block__select[multiple] option {
+  padding: 8px;
+}
+
+.filters-block__select[multiple] option:checked {
+  background-color: #e2e8f0;
+  color: #1a202c;
+}
+
+.filters-block__helper-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: #666;
+}
+
+/* Additional styles to ensure consistency */
+.filters-block__group {
+  margin-bottom: 1rem;
+}
+
+.filters-block__label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.filters-block__select {
+  width: 100%;
+  min-width: 200px;
+}
+
 .recipe-explorer {
   display: flex;
   flex-direction: column;

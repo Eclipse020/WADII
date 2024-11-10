@@ -1,3 +1,4 @@
+CCookNow
 <template>
   <div class="fridge">
     <!-- Added Recipe Ingredients Section -->
@@ -365,32 +366,62 @@ export default {
 </script>
 
 <style scoped>
+/* CookNow Base Styles */
+.fridge {
+  --color-primary: #4a8c3a;
+  --color-primary-light: #66bb6a;
+  --color-primary-dark: #2e7d32;
+  --color-background: #e8f5e9;
+  --color-background-light: #f1f8e9;
+  --color-text: #343a40;
+  --color-text-light: #6c757d;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.1);
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 15px;
+  
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  padding: 2rem;
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+/* Recipe Ingredients Section */
 .recipe-ingredients {
-  margin-bottom: 2rem;
-  padding: 0 2rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
 }
 
 .recipe-ingredients__content {
-  background-color: #ffffff;
-  border-radius: 1rem;
+  background-color: white;
+  border-radius: var(--border-radius-lg);
   padding: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .recipe-ingredients__header {
+  text-align: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e9ecef;
+  border-bottom: 2px solid var(--color-background);
 }
 
 .recipe-ingredients__title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #2c3e50;
+  font-size: 2rem;
+  color: var(--color-primary);
   margin: 0;
+  position: relative;
+  padding-bottom: 1rem;
 }
 
-/* Copied Recipe Ingredients Styles from RecipeDetails */
+.recipe-ingredients__title::after {
+  content: '📝';
+  display: inline-block;
+  margin-left: 0.5rem;
+}
+
+/* Recipe Ingredients List */
 .recipe__ingredients {
   margin: 2rem 0;
 }
@@ -405,36 +436,34 @@ export default {
 
 .recipe__ingredient {
   background-color: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s;
+  padding: 1.25rem;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--color-background);
 }
 
 .recipe__ingredient:hover {
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .recipe__ingredient--available {
-  border-left: 4px solid #4a8c3a;
+  border-left: 4px solid var(--color-primary);
+  background-color: var(--color-background-light);
 }
 
-.fridge {
-  padding: 2rem;
-  background-color: #f8f9fa;
-  min-height: 100vh;
-}
-
+/* Fridge Section */
 .fridge__container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .fridge__content {
-  background-color: #ffffff;
-  border-radius: 1rem;
+  background-color: white;
+  border-radius: var(--border-radius-lg);
   padding: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .fridge__header {
@@ -443,14 +472,14 @@ export default {
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e9ecef;
+  border-bottom: 2px solid var(--color-background);
 }
 
 .fridge__title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #2c3e50;
+  font-size: 2rem;
+  color: var(--color-primary);
   margin: 0;
+  position: relative;
 }
 
 .fridge__controls {
@@ -459,105 +488,145 @@ export default {
 }
 
 .fridge__button {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 2rem;
   border: none;
-  background-color: #6c757d;
-  color: white;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fridge__button--sort {
+  background-color: var(--color-primary-light);
+  color: white;
+}
+
+.fridge__button--save {
+  background-color: var(--color-primary);
+  color: white;
 }
 
 .fridge__button:hover:not(:disabled) {
-  background-color: #5a6268;
-  transform: translateY(-1px);
+  background-color: var(--color-primary-dark);
+  transform: translateY(-2px);
 }
 
 .fridge__button:disabled {
-  background-color: #adb5bd;
+  background-color: var(--color-text-light);
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
+/* Empty State */
 .empty-state {
   text-align: center;
   padding: 3rem;
+  background-color: var(--color-background-light);
+  border-radius: var(--border-radius-lg);
+  margin: 2rem 0;
 }
 
 .empty-state__text {
-  font-size: 1.25rem;
-  color: #6c757d;
+  font-size: 1.5rem;
+  color: var(--color-text);
   margin-bottom: 2rem;
 }
 
 .empty-state__image {
   max-width: 300px;
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
+/* Category Section */
 .category {
   margin-bottom: 2rem;
 }
 
 .category__header {
-  background-color: #f8f9fa;
-  padding: 1rem;
-  border-radius: 0.5rem;
+  background-color: var(--color-background-light);
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius-md);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .category__header:hover {
-  background-color: #e9ecef;
+  background-color: var(--color-background);
+  transform: translateX(5px);
 }
 
 .category__title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #2c3e50;
+  font-size: 1.5rem;
+  color: var(--color-primary-dark);
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .category__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  padding: 0.5rem;
 }
 
+/* Ingredient Cards */
 .ingredient {
-  background-color: #ffffff;
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
-  height: 100%;
+  border: 1px solid var(--color-background);
+  overflow: hidden;
 }
 
 .ingredient:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
 }
 
 .ingredient--expiring {
   border: 2px solid #dc3545;
+  position: relative;
+}
+
+.ingredient--expiring::before {
+  content: '⚠️ Expiring Soon!';
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #dc3545;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-bottom-left-radius: var(--border-radius-sm);
+  font-size: 0.8rem;
 }
 
 .ingredient--empty {
   opacity: 0.7;
-  background-color: #f8f9fa;
+  background-color: var(--color-background-light);
 }
 
 .ingredient__body {
-  padding: 1.25rem;
+  padding: 1.5rem;
 }
 
 .ingredient__title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #2c3e50;
+  font-size: 1.25rem;
+  color: var(--color-primary);
   margin-bottom: 1rem;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .ingredient__info {
@@ -565,25 +634,31 @@ export default {
 }
 
 .ingredient__expiry {
-  color: #6c757d;
+  color: var(--color-text-light);
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .ingredient__controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 1rem;
+  margin: 1rem 0;
 }
 
 .ingredient__button {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.375rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
   border: none;
-  background-color: #6c757d;
+  background-color: var(--color-primary);
   color: white;
   font-weight: 600;
+  font-size: 1.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -592,7 +667,67 @@ export default {
 }
 
 .ingredient__button:hover:not(:disabled) {
-  background-color: #5a6268;
+  background-color: var(--color-primary-dark);
+  transform: scale(1.1);
 }
 
+.ingredient__button:disabled {
+  background-color: var(--color-text-light);
+  cursor: not-allowed;
+}
+
+.ingredient__quantity {
+  font-size: 1.25rem;
+  color: var(--color-text);
+  font-weight: 600;
+  min-width: 2.5rem;
+}
+
+.ingredient__original {
+  color: var(--color-text-light);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.ingredient__warning {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .fridge {
+    padding: 1rem;
+  }
+  
+  .recipe-ingredients__content,
+  .fridge__content {
+    padding: 1rem;
+  }
+  
+  .fridge__header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .fridge__controls {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .fridge__button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .category__grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

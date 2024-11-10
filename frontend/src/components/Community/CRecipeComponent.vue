@@ -1,3 +1,4 @@
+RecipeComponent
 <template>
   <div class="recipe-list">
     <div class="header-container">
@@ -178,134 +179,203 @@ export default {
 </script>
 
 
-
 <style scoped>
 .recipe-list {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8f9fa;
 }
 
+.recipe-list__container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Header Section */
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
 }
 
 .search-container {
-  flex-grow: 1;
+  flex: 1;
 }
 
 .search-input {
   width: 100%;
-  padding: 12px;
-  border: 2px solid #ddd;
+  padding: 1rem 1.25rem;
+  border: 2px solid #e9ecef;
   border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s ease;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  height: 56px;
 }
 
 .search-input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
   outline: none;
-  border-color: #666;
 }
 
 .post-recipe-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background-color: #4CAF50;
+  padding: 1rem 1.5rem;
+  height: 56px;
+  background-color: #3498db;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .post-recipe-btn:hover {
-  background-color: #45a049;
-  transform: translateY(-1px);
-}
-
-.post-recipe-btn:active {
-  transform: translateY(0);
+  background-color: #2980b9;
 }
 
 .btn-icon {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 1.25rem;
 }
 
-.recipe-list h2 {
-  color: #333;
-  margin: 20px 0;
+/* Sort Container */
+.sort-container {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.recipe-list ul {
-  list-style-type: none;
-  padding: 0;
+.sort-container label {
+  font-weight: 600;
+  color: #2c3e50;
 }
 
+.sort-container select {
+  padding: 0.75rem 2.5rem 0.75rem 1.25rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%232c3e50' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.25rem center;
+}
+
+/* Recipe Cards */
 .recipe-card {
-  position: relative;
-  margin: 1rem; /* Adjust the margin as needed */
-  border: 1px solid #ccc; /* Optional: adds a border to the card */
-  border-radius: 8px; /* Optional: rounded corners */
-  overflow: hidden; /* Ensures child elements stay within the card bounds */
-  height: auto; /* Let the height adjust to content */
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 2rem;
+  cursor: pointer;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
 }
 
 .recipe-image {
-  width: 100%; /* Makes the image take the full width of the card */
-  height: auto; /* Maintain aspect ratio */
-  max-height: 200px; /* Set a max height for the image to control its vertical size */
-  object-fit: cover; /* Ensures the image covers the area without distortion */
-  border-radius: 8px; /* Optional: adds rounded corners to the image */
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
 }
 
 .recipe-content {
-  padding: 1rem; /* Adds padding around the content */
-  display: flex;
-  flex-direction: column; /* Arrange child elements vertically */
-  justify-content: space-between; /* Space out content to push the interaction section down */
+  padding: 1.5rem;
 }
 
+.recipe-content h3 {
+  font-size: 1.25rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.recipe-content p {
+  color: #666;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Interaction Section */
 .interaction-section {
   display: flex;
-  align-items: center; /* Align items vertically center */
-  gap: 10px; /* Adjust the gap between like button and comment section */
-  margin-top: auto; /* Pushes the interaction section to the bottom */
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
-.like-section button {
-  background: none;
+.interaction-section button {
+  padding: 0.75rem 1.25rem;
   border: none;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  color: #2c3e50;
   cursor: pointer;
-  font-size: 1.2em;
-  color: #e74c3c;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.interaction-section button:hover {
+  background-color: #e9ecef;
 }
 
 .like-section button.liked {
-  color: #c0392b;
+  background-color: #e74c3c;
+  color: white;
+}
+
+/* Error Messages */
+.error-message {
+  color: #e74c3c;
+  text-align: center;
+  padding: 1rem;
+  background-color: #fdf1f0;
+  border-radius: 8px;
+  margin: 1rem 0;
 }
 
 .no-results {
   text-align: center;
   color: #666;
-  padding: 20px;
-  font-style: italic;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 1rem 0;
 }
 
-.error-message {
-  color: red;
-  text-align: center;
+/* Comment Popup Styles */
+.comment-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 90%;
 }
 
-/* Responsive design adjustments */
+/* Responsive Design */
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
@@ -315,5 +385,37 @@ export default {
     width: 100%;
     justify-content: center;
   }
+  
+  .recipe-image {
+    height: 200px;
+  }
+  
+  .interaction-section {
+    flex-direction: column;
+  }
+  
+  .interaction-section button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Recipe List */
+ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 </style>

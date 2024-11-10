@@ -1,3 +1,4 @@
+cookNow
 <template>
   <div class="fridge">
     <!-- Added Recipe Ingredients Section -->
@@ -314,7 +315,7 @@ export default {
         }
 
         alert('All changes saved successfully! 🎉');
-        window.location.href = "http://localhost:8080/recipes";
+        window.location.pathname = "/recipes";
       } catch (error) {
         console.error("Error saving changes: ", error);
         alert('Error saving changes. Please try again. ❌');

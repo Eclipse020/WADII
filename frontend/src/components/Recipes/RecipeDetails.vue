@@ -1,3 +1,4 @@
+RecipeDetails
 <!-- Previous template section remains unchanged -->
 <template>
   <div v-if="recipe && recipe.label" class="recipe">
