@@ -39,7 +39,7 @@
         </button>
 
         <button 
-            class="recipe__button recipe__button--primary" 
+            class="recipe__button recipe__button--primary recipe__button--completed shadow" 
             @click="CCookNow"
         >
             Mark as completed
@@ -53,6 +53,8 @@
     import { db, auth } from '../../services/firebase';
     import { onAuthStateChanged } from 'firebase/auth';
     import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+    import '../../styles/components/community/recipedecomponent.css';
+
 
     export default {
     name: 'RecipeDeComponent',

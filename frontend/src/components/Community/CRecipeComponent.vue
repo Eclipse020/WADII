@@ -75,6 +75,8 @@ RecipeComponent
 <script>
 import { getRecipes, updateRecipeLikes, saveComment } from '../../services/RecipeService';
 import CommentPopup from '@/components/Community/CommentPopup.vue';
+import '../../styles/components/community/crecipecomponent.css';
+
 
 export default {
   components: {

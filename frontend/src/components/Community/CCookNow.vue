@@ -133,6 +133,7 @@ CCookNow
 <script>
 import { db, auth } from '../../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import '../../styles/components/community/ccooknow.css';
 import { 
   collection, 
   getDocs, 
