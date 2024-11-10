@@ -1,5 +1,5 @@
-    RecipeDeComponent
-    <template>
+<!-- Previous template section remains unchanged -->
+<template>
     <div class="recipe-details">
         <!-- Recipe Image with Full-Image Modal -->
         <div class="recipe-details__image-wrapper" @click="showFullImage = true">
@@ -46,175 +46,174 @@
         </button>
         </div>
     </div>
-    </template>
+</template>
 
-    <script>
-    import { getRecipeById } from '@/services/RecipeService';
-    import { db, auth } from '../../services/firebase';
-    import { onAuthStateChanged } from 'firebase/auth';
-    import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
-    import '../../styles/components/community/recipedecomponent.css';
+<script>
+import { getRecipeById } from '../../services/RecipeService';
+import { db, auth } from '../../services/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, addDoc, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+import '../../styles/components/community/recipedecomponent.css';
 
-
-    export default {
+export default {
     name: 'RecipeDeComponent',
     props: {
         recipeId: {
-        type: String,
-        required: true,
-        fridgeItems: [],
-        requiredIngredients: []
+            type: String,
+            required: true,
+            fridgeItems: [],
+            requiredIngredients: []
         }
     },
     data() {
         return {
-        showFullImage: false,
-        isFavorited: false,
-        currentUserId: null,
-        recipe: {
-            ingredients: [],
-            steps: []
-        },
-        favoriteRecipes: [],
+            showFullImage: false,
+            isFavorited: false,
+            currentUserId: null,
+            recipe: {
+                ingredients: [],
+                steps: []
+            },
+            favoriteRecipes: [],
         };
     },
     methods: {
         async fetchRecipeDetails() {
-        try {
-            this.recipe = await getRecipeById(this.recipeId);
+            try {
+                this.recipe = await getRecipeById(this.recipeId);
 
-            if (this.recipe.steps) {
-            this.recipe.steps = this.recipe.steps.split('\n');
+                if (this.recipe.steps) {
+                    this.recipe.steps = this.recipe.steps.split('\n');
+                }
+                
+                // Check if this recipe is already in favorites
+                await this.checkIfFavorited();
+            } catch (error) {
+                console.error("Failed to fetch recipe details:", error);
             }
-            
-            // Check if this recipe is already in favorites
-            await this.checkIfFavorited();
-        } catch (error) {
-            console.error("Failed to fetch recipe details:", error);
-        }
         },
         async checkIfFavorited() {
-        if (!this.currentUserId) return;
+            if (!this.currentUserId) return;
 
-        try {
-            const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-            const q = query(favoritesCollection, where("label", "==", this.recipe.name));
-            const snapshot = await getDocs(q);
-            this.isFavorited = !snapshot.empty;
-        } catch (error) {
-            console.error("Error checking favorite status:", error);
-        }
+            try {
+                const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+                const q = query(favoritesCollection, where("label", "==", this.recipe.name));
+                const snapshot = await getDocs(q);
+                this.isFavorited = !snapshot.empty;
+            } catch (error) {
+                console.error("Error checking favorite status:", error);
+            }
         },
         async loadFavoriteRecipes() {
-        if (!this.currentUserId) return;
-        
-        try {
-            const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-            const snapshot = await getDocs(favoritesCollection);
-            this.favoriteRecipes = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-            }));
-        } catch (error) {
-            console.error("Error loading favorite recipes:", error);
-        }
+            if (!this.currentUserId) return;
+            
+            try {
+                const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+                const snapshot = await getDocs(favoritesCollection);
+                this.favoriteRecipes = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error("Error loading favorite recipes:", error);
+            }
         },
         async deleteFromMealPlan() {
-      if (!this.currentUserId || !this.recipe.uri) return;
+            if (!this.currentUserId) return;
 
-      try {
-        // Query the mealPlans collection to find entries with matching recipe URI
-        const mealPlansRef = collection(db, `users/${this.currentUserId}/mealPlans`);
-        const q = query(mealPlansRef, where("recipe.uri", "==", this.recipe.uri));
-        const querySnapshot = await getDocs(q);
+            try {
+                // Query the mealPlans collection to find entries with matching community recipe ID
+                const mealPlansRef = collection(db, `users/${this.currentUserId}/mealPlans`);
+                const q = query(mealPlansRef, where("recipe.communityRecipeId", "==", this.recipeId));
+                const querySnapshot = await getDocs(q);
 
-        // Delete all matching entries
-        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
-        await Promise.all(deletePromises);
+                // Delete all matching entries
+                const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(deletePromises);
 
-        console.log("Recipe removed from meal plan");
-      } catch (error) {
-        console.error("Error removing recipe from meal plan:", error);
-      }
-    },
-    async CCookNow() {
-        if (!this.currentUserId) return;
-
-        const completedRecipe = {
-        label: this.recipe.name,
-        image: this.recipe.image,
-        url: this.recipe.id,
-        ingredientLines: this.recipe.ingredients,
-        totalTime: this.recipe.estimatedTime,
-        completionDate: new Date().toLocaleDateString()
-      };
-      console.log("Completed Recipe Data:", completedRecipe); // Log completedRecipe to check ingredients
-        try {
-        // Add to completed recipes
-        const completedRecipesCollection = collection(db, `users/${this.currentUserId}/completedRecipes`);
-        await addDoc(completedRecipesCollection, completedRecipe);
-
-        // Delete from meal plan
-        await this.deleteFromMealPlan();
-
-        // Navigate to CCookNow page
-        this.$router.push({ 
-          name: 'CCookNow', 
-          params: { id: this.$route.params.id },
-          query: { 
-            requiredIngredients: JSON.stringify(this.recipe.ingredients),
-            fridgeIngredients: JSON.stringify(this.fridgeItems)
-          }
-        });
-      } catch (error) {
-        console.error("Error marking recipe as completed:", error);
-      }
-      console.log('Sending ingredients:', this.recipe.ingredients);
-    },
-        async toggleFavorite() {
-        if (!this.currentUserId) {
-            console.error("User not authenticated");
-            return;
-        }
-
-        try {
-            const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
-
-            if (this.isFavorited) {
-            // Find the recipe document to delete
-            const q = query(favoritesCollection, where("label", "==", this.recipe.name));
-            const snapshot = await getDocs(q);
-            
-            if (!snapshot.empty) {
-                const docId = snapshot.docs[0].id;
-                await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, docId));
+                console.log("Recipe removed from meal plan");
+            } catch (error) {
+                console.error("Error removing recipe from meal plan:", error);
             }
-            } else {
-            // Create a new favorite with the expected structure
-            const favoriteRecipe = {
+        },
+        async CCookNow() {
+            if (!this.currentUserId) return;
+
+            const completedRecipe = {
                 label: this.recipe.name,
                 image: this.recipe.image,
-                totalTime: this.recipe.estimatedTime,
+                url: this.recipe.id,
                 ingredientLines: this.recipe.ingredients,
-                calories: this.recipe.calories,
-                description: this.recipe.description,
-                steps: this.recipe.steps,
-                dateAdded: new Date().toISOString(),
-                isFromCommunity: true,  // Add flag to identify community recipes
-                communityRecipeId: this.recipeId  // Store the community recipe ID
+                totalTime: this.recipe.estimatedTime,
+                completionDate: new Date().toLocaleDateString()
             };
+            console.log("Completed Recipe Data:", completedRecipe);
+            try {
+                // Add to completed recipes
+                const completedRecipesCollection = collection(db, `users/${this.currentUserId}/completedRecipes`);
+                await addDoc(completedRecipesCollection, completedRecipe);
 
-            await addDoc(favoritesCollection, favoriteRecipe);
+                // Delete from meal plan
+                await this.deleteFromMealPlan();
+
+                // Navigate to CCookNow page
+                this.$router.push({ 
+                    name: 'CCookNow', 
+                    params: { id: this.$route.params.id },
+                    query: { 
+                        requiredIngredients: JSON.stringify(this.recipe.ingredients),
+                        fridgeIngredients: JSON.stringify(this.fridgeItems)
+                    }
+                });
+            } catch (error) {
+                console.error("Error marking recipe as completed:", error);
+            }
+            console.log('Sending ingredients:', this.recipe.ingredients);
+        },
+        async toggleFavorite() {
+            if (!this.currentUserId) {
+                console.error("User not authenticated");
+                return;
             }
 
-            // Toggle the favorite status
-            this.isFavorited = !this.isFavorited;
-            
-            // Reload the favorites
-            await this.loadFavoriteRecipes();
-        } catch (error) {
-            console.error("Error toggling favorite status:", error);
-        }
+            try {
+                const favoritesCollection = collection(db, `users/${this.currentUserId}/favorites`);
+
+                if (this.isFavorited) {
+                    // Find the recipe document to delete
+                    const q = query(favoritesCollection, where("label", "==", this.recipe.name));
+                    const snapshot = await getDocs(q);
+                    
+                    if (!snapshot.empty) {
+                        const docId = snapshot.docs[0].id;
+                        await deleteDoc(doc(db, `users/${this.currentUserId}/favorites`, docId));
+                    }
+                } else {
+                    // Create a new favorite with the expected structure
+                    const favoriteRecipe = {
+                        label: this.recipe.name,
+                        image: this.recipe.image,
+                        totalTime: this.recipe.estimatedTime,
+                        ingredientLines: this.recipe.ingredients,
+                        calories: this.recipe.calories,
+                        description: this.recipe.description,
+                        steps: this.recipe.steps,
+                        dateAdded: new Date().toISOString(),
+                        isFromCommunity: true,  // Add flag to identify community recipes
+                        communityRecipeId: this.recipeId  // Store the community recipe ID
+                    };
+
+                    await addDoc(favoritesCollection, favoriteRecipe);
+                }
+
+                // Toggle the favorite status
+                this.isFavorited = !this.isFavorited;
+                
+                // Reload the favorites
+                await this.loadFavoriteRecipes();
+            } catch (error) {
+                console.error("Error toggling favorite status:", error);
+            }
         }
     },
     
@@ -222,23 +221,22 @@
         // Set currentUserId as soon as possible
         const user = auth.currentUser;
         if (user) {
-        this.currentUserId = user.uid;
-        await this.loadFavoriteRecipes();
-        await this.fetchRecipeDetails();
-        }
-
-        // Listen for auth state changes
-        onAuthStateChanged(auth, async (user) => {
-        if (user) {
             this.currentUserId = user.uid;
             await this.loadFavoriteRecipes();
             await this.fetchRecipeDetails();
         }
+
+        // Listen for auth state changes
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                this.currentUserId = user.uid;
+                await this.loadFavoriteRecipes();
+                await this.fetchRecipeDetails();
+            }
         });
     },
-    };
-    
-    </script>
+};
+</script>
 
 <style scoped>
 /* Recipe Page Base Styles */
@@ -390,8 +388,6 @@
   margin: 2rem 0;
   box-shadow: var(--shadow-sm);
 }
-
-
 
 /* Button Group */
 .recipe-details__button-group {
