@@ -398,7 +398,13 @@ export default {
       }
 
       // Check if any other item with the same name, category, and expiry date exists
-      const duplicateItem = await this.checkForDuplicateItem(updatedItem.name, updatedItem.category, updatedItem.expiryDate);
+      const duplicateItem = await this.checkForDuplicateItem(
+        updatedItem.name,
+        updatedItem.category,
+        updatedItem.expiryDate,
+        updatedItem.id
+      );
+      
       if (duplicateItem) {
         this.validationError = "An item with this name and category already exists.";
         return;
@@ -413,9 +419,9 @@ export default {
         });
     },
 
-    async checkForDuplicateItem(name, category, expiryDate) {
+    async checkForDuplicateItem(name, category, expiryDate, currentItemId) {
       try {
-        const itemsRef = collection(db, `users/${this.currentUserId}/items`);  // Reference to the 'items' collection
+        const itemsRef = collection(db, `users/${this.currentUserId}/items`);
         const q = query(
           itemsRef,
           where("name", "==", name),
@@ -423,11 +429,13 @@ export default {
           where("expiryDate", "==", expiryDate)
         );
 
-        const querySnapshot = await getDocs(q);  // Fetch the documents that match the query
+        const querySnapshot = await getDocs(q);
 
-        // If any matching document is found, return true
-        if (!querySnapshot.empty) {
-          return true;  // Duplicate found
+        // Loop through the documents to see if there's any other item with the same properties
+        for (const doc of querySnapshot.docs) {
+          if (doc.id !== currentItemId) {  // Exclude the current item
+            return true;  // Duplicate found
+          }
         }
         return false;  // No duplicates found
       } catch (error) {
