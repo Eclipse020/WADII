@@ -38,7 +38,7 @@
         </button>
 
         <button 
-            class="recipe__button recipe__button--primary" 
+            class="recipe__button recipe__button--primary recipe__button--completed shadow" 
             @click="CCookNow"
         >
             Mark as completed
