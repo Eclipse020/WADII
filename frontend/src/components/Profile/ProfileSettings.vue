@@ -18,9 +18,9 @@
           <label class="profile-container__checkbox-inline">
             <input type="checkbox" value="alcohol-free" v-model="user.dietaryPreferences" /> &nbsp; Alcohol-Free
           </label>
-          <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="alcohol-cocktail" v-model="user.dietaryPreferences" /> &nbsp; Alcohol-Cocktail
-          </label>
+          <!-- <label class="profile-container__checkbox-inline">
+            <input type="checkbox" value="alcohol-cocktail" v-model="user.dietaryPreferences" /> Alcohol-Cocktail
+          </label> -->
           <label class="profile-container__checkbox-inline">
             <input type="checkbox" value="celery-free" v-model="user.dietaryPreferences" /> &nbsp; Celery-Free
           </label>
@@ -120,8 +120,8 @@
           <label class="profile-container__checkbox-inline">
             <input type="checkbox" value="gluten-free" v-model="user.dietaryPreferences" /> &nbsp; Gluten-Free
           </label>
-          <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="balanced" v-model="user.dietaryPreferences" /> &nbsp; Balanced
+          <!-- <label class="profile-container__checkbox-inline">
+            <input type="checkbox" value="balanced" v-model="user.dietaryPreferences" /> Balanced
           </label>
           <label class="profile-container__checkbox-inline">
             <input type="checkbox" value="high-fiber" v-model="user.dietaryPreferences" /> &nbsp; High-Fiber
@@ -136,8 +136,8 @@
             <input type="checkbox" value="low-fat" v-model="user.dietaryPreferences" /> &nbsp; Low-Fat
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="low-sodium" v-model="user.dietaryPreferences" /> &nbsp; Low-Sodium
-          </label>
+            <input type="checkbox" value="low-sodium" v-model="user.dietaryPreferences" /> Low-Sodium
+          </label> -->
           <!-- <label class="profile-container__checkbox-inline">
             <input type="checkbox" value="none" v-model="user.dietaryPreferences" /> None
           </label> -->
