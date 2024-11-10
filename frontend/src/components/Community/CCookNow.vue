@@ -402,7 +402,7 @@ export default {
         
         // Force refresh the meal planner by adding a timestamp to the URL
         const timestamp = new Date().getTime();
-        window.location.href = `http://localhost:8080/recipes?t=${timestamp}`;
+        window.location.pathname = `/recipes?t=${timestamp}`;
       } catch (error) {
         console.error("Error saving changes:", error);
         alert('Error saving changes. Please try again. ❌');
