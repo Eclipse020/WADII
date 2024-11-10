@@ -144,23 +144,6 @@
         </div>
       </div>
 
-      <div class="profile-container__form-group">
-        <label class="profile-container__label">Notification Preferences:</label>
-        <div class="profile-container__form-check">
-          <input type="checkbox" v-model="user.notifications" class="form-check-input" id="notifications" />
-          <label class="profile-container__form-check-label" for="notifications">
-            I would like to receive notifications!
-          </label>
-        </div>
-
-        <div class="notification-form" v-if="user.notifications">
-          <div class="profile-container__form-group">
-            <label class="profile-container__label" for="daysBeforeExpiry">Notify me before an item expires (in days):</label>
-            <input type="number" v-model="notificationSettings.daysBeforeExpiry" class="profile-container__input" min="1" max="30" required />
-          </div>
-        </div>
-      </div>
-
       <button type="submit" class="profile-container__button">Update Profile</button>
 
       <div v-if="message" class="profile-container__alert alert-success mt-3">{{ message }}</div>
@@ -221,14 +204,6 @@ export default {
           dietaryPreferences: this.user.dietaryPreferences,
           notifications: this.user.notifications,
         };
-
-
-        if (this.user.notifications) {
-          updateData.notificationSettings = {
-            daysBeforeExpiry: this.notificationSettings.daysBeforeExpiry,
-          };
-        }
-
 
         await updateDoc(doc(db, 'users', user.uid), updateData);
         this.message = 'Profile updated successfully!';

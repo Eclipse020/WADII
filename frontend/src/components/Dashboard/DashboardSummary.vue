@@ -161,7 +161,13 @@ export default {
           ...doc.data(),
         }));
 
-        this.summary.expiredItemsQuantity = expiredItems.reduce((total, item) => total + item.quantity, 0);
+        this.summary.expiredItemsCount = expiredItems.reduce((total, item) => {
+          const expiryDate = new Date(item.expiryDate);
+          if (expiryDate >= startDate && expiryDate <= endDate) {
+            return total + (item.quantity || 0);  // Add the quantity, defaulting to 0 if undefined
+          }
+          return total;
+        }, 0);  // Start with a total of 0
 
         const deletedItemsSnapshot = await getDocs(
           collection(db, `users/${this.currentUserId}/deletedItems`)
@@ -171,7 +177,15 @@ export default {
           ...doc.data(),
         }));
 
-        this.summary.deletedItemsQuantity = deletedItems.reduce((total, item) => total + item.quantity, 0);
+        // Calculate the total quantity difference (originalQuantity - finalQuantity) for items used within the date range
+        this.summary.usedItems = deletedItems.reduce((total, item) => {
+          const deleteDate = new Date(item.usedAt);
+          if (deleteDate >= startDate && deleteDate <= endDate) {
+            const quantityDifference = (item.originalQuantity || 0) - (item.finalQuantity || 0);
+            return total + quantityDifference;  // Add the quantity difference
+          }
+          return total;
+        }, 0);  // Start with a total of 0
 
         this.hasDataForMonthExpired = this.summary.expiredItemsQuantity > 0 || this.summary.deletedItemsQuantity > 0;
 
