@@ -104,7 +104,6 @@ recipelist
         <div class="filters-block__group filters-block__group">
           <label class="filters-block__label" for="health">⚕️ Dietary Preferences:</label>
           <select v-model="selectedHealthLabels" multiple class="filters-block__select" size="3">
-            <option value="alcohol-cocktail">Alcohol-Cocktail</option>
             <option value="alcohol-free">Alcohol-Free</option>
             <option value="celery-free">Celery-Free</option>
             <option value="crustacean-free">Crustacean-Free</option>

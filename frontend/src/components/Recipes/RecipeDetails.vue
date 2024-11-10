@@ -5,7 +5,8 @@ RecipeDetails
     <!-- Header Section -->
     <header class="recipe__header">
       <h1 class="recipe__title">{{ recipe.label }}</h1>
-      <p class="recipe__time">Ready in <strong>{{ recipe.totalTime }}</strong> minutes</p>
+      <p class="recipe__time">Ready in <strong>{{ recipe.totalTime === 0 ? 'Duration unavailable' : recipe.totalTime }}</strong> minutes</p>
+
     </header>
     <!-- Nutritional Information Section -->
     <section v-if="nutrition" class="recipe__nutrition">
