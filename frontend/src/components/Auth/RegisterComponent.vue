@@ -72,27 +72,13 @@
           </div>
         </div>
 
-        <button 
+        <button
           type="button"
-          class="register__toggle-btn register__button"
+          class="register__toggle-btn register__button my-3"
           @click="passwordVisible = !passwordVisible"
         >
           {{ passwordVisible ? 'Hide Passwords' : 'Show Passwords' }}
         </button>
-
-        <div class="register__form-group form-check mb-3">
-          <div>
-            <input
-              type="checkbox"
-              id="notifications"
-              v-model="formData.notifications"
-              class="register__checkbox form-check-input"
-            />
-            <label for="notifications" class="register__checkbox-label form-check-label">
-              I would like to receive notifications.
-            </label>
-          </div>
-        </div>
 
         <button 
           type="submit" 
@@ -126,7 +112,6 @@ export default {
         password: '',
         confirmPassword: '',
         displayName: '',
-        notifications: false,
       },
       passwordVisible: false,
       isSubmitting: false,
@@ -199,7 +184,6 @@ export default {
             email: this.formData.email,
             dietaryPreferences: [],
             displayName: this.formData.displayName || '',
-            notifications: this.formData.notifications,
             photoURL: user.photoURL || '',
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
