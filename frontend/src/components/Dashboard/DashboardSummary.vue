@@ -178,7 +178,7 @@ export default {
         }));
 
         // Calculate the total quantity difference (originalQuantity - finalQuantity) for items used within the date range
-        this.summary.usedItems = deletedItems.reduce((total, item) => {
+        this.summary.deletedItemsQuantity = deletedItems.reduce((total, item) => {
           const deleteDate = new Date(item.usedAt);
           if (deleteDate >= startDate && deleteDate <= endDate) {
             const quantityDifference = (item.originalQuantity || 0) - (item.finalQuantity || 0);
