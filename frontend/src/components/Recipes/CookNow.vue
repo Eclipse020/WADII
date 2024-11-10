@@ -288,7 +288,7 @@ export default {
     async moveToUsedItems(item) {
       try {
         await addDoc(
-          collection(db, `users/${this.currentUserId}/usedItems`), 
+          collection(db, `users/${this.currentUserId}/deletedItems`), 
           {
             ...item,
             usedAt: new Date().toISOString(),

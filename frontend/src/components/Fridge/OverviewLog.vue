@@ -16,7 +16,7 @@
         </ul>
         <h4 class="app-summary__section-title app-summary__section-title--h4">Recently Used Items:</h4>
         <ul class="app-summary__list">
-            <li class="app-summary__list-item" v-for="item in summary.deletedItems" :key="item.id">{{ item.name }} (Deleted on: {{ item.deletedAt }})</li>
+            <li class="app-summary__list-item" v-for="item in summary.deletedItems" :key="item.id">{{ item.name }} (Deleted on: {{ item.usedAt }})</li>
         </ul>
         <h4 class="app-summary__section-title app-summary__section-title--h4">Expired Items:</h4>
         <ul class="app-summary__list">
@@ -124,13 +124,13 @@ export default {
                     return {
                         id: doc.id,
                         ...data,
-                        deletedAt: new Date(data.deletedAt).toLocaleString()
+                        usedAt: new Date(data.usedAt).toLocaleString()  // Keep as Date object
                     };
                 });
 
-
+                // Filter items based on date range
                 this.summary.deletedItems = deletedItems.filter(deletedItem => {
-                    const deletedAt = new Date(deletedItem.deletedAt);
+                    const deletedAt = new Date(deletedItem.usedAt);  // Already a Date object
                     return deletedAt >= threeDaysAgo && deletedAt <= today;
                 });
 
