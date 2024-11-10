@@ -16,127 +16,127 @@
         <label class="profile-container__label">Dietary Preferences (You may select multiple):</label>
         <div class="profile-container__dietary-preferences">
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="alcohol-free" v-model="user.dietaryPreferences" /> Alcohol-Free
+            <input type="checkbox" value="alcohol-free" v-model="user.dietaryPreferences" /> &nbsp; Alcohol-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="alcohol-cocktail" v-model="user.dietaryPreferences" /> Alcohol-Cocktail
+            <input type="checkbox" value="alcohol-cocktail" v-model="user.dietaryPreferences" /> &nbsp; Alcohol-Cocktail
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="celery-free" v-model="user.dietaryPreferences" /> Celery-Free
+            <input type="checkbox" value="celery-free" v-model="user.dietaryPreferences" /> &nbsp; Celery-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="crustacean-free" v-model="user.dietaryPreferences" /> Crustacean-Free
+            <input type="checkbox" value="crustacean-free" v-model="user.dietaryPreferences" /> &nbsp; Crustacean-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="dairy-free" v-model="user.dietaryPreferences" /> Dairy-Free
+            <input type="checkbox" value="dairy-free" v-model="user.dietaryPreferences" /> &nbsp; Dairy-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="dash" v-model="user.dietaryPreferences" /> DASH
+            <input type="checkbox" value="dash" v-model="user.dietaryPreferences" /> &nbsp; DASH
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="egg-free" v-model="user.dietaryPreferences" /> Egg-Free
+            <input type="checkbox" value="egg-free" v-model="user.dietaryPreferences" /> &nbsp; Egg-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="fish-free" v-model="user.dietaryPreferences" /> Fish-Free
+            <input type="checkbox" value="fish-free" v-model="user.dietaryPreferences" /> &nbsp; Fish-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="fodmap-free" v-model="user.dietaryPreferences" /> FODMAP-Free
+            <input type="checkbox" value="fodmap-free" v-model="user.dietaryPreferences" /> &nbsp; FODMAP-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="immuno-supportive" v-model="user.dietaryPreferences" /> Immuno-Supportive
+            <input type="checkbox" value="immuno-supportive" v-model="user.dietaryPreferences" /> &nbsp; Immuno-Supportive
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="keto-friendly" v-model="user.dietaryPreferences" /> Keto-Friendly
+            <input type="checkbox" value="keto-friendly" v-model="user.dietaryPreferences" /> &nbsp; Keto-Friendly
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="kidney-friendly" v-model="user.dietaryPreferences" /> Kidney-Friendly
+            <input type="checkbox" value="kidney-friendly" v-model="user.dietaryPreferences" /> &nbsp; Kidney-Friendly
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="kosher" v-model="user.dietaryPreferences" /> Kosher
+            <input type="checkbox" value="kosher" v-model="user.dietaryPreferences" /> &nbsp; Kosher
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="low-potassium" v-model="user.dietaryPreferences" /> Low Potassium
+            <input type="checkbox" value="low-potassium" v-model="user.dietaryPreferences" /> &nbsp; Low Potassium
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="low-sugar" v-model="user.dietaryPreferences" /> Low Sugar
+            <input type="checkbox" value="low-sugar" v-model="user.dietaryPreferences" /> &nbsp; Low Sugar
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="lupine-free" v-model="user.dietaryPreferences" /> Lupine-Free
+            <input type="checkbox" value="lupine-free" v-model="user.dietaryPreferences" /> &nbsp; Lupine-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="mediterranean" v-model="user.dietaryPreferences" /> Mediterranean
+            <input type="checkbox" value="mediterranean" v-model="user.dietaryPreferences" /> &nbsp; Mediterranean
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="mollusk-free" v-model="user.dietaryPreferences" /> Mollusk-Free
+            <input type="checkbox" value="mollusk-free" v-model="user.dietaryPreferences" /> &nbsp; Mollusk-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="mustard-free" v-model="user.dietaryPreferences" /> Mustard-Free
+            <input type="checkbox" value="mustard-free" v-model="user.dietaryPreferences" /> &nbsp; Mustard-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="no-oil-added" v-model="user.dietaryPreferences" /> No oil added
+            <input type="checkbox" value="no-oil-added" v-model="user.dietaryPreferences" /> &nbsp; No oil added
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="paleo" v-model="user.dietaryPreferences" /> Paleo
+            <input type="checkbox" value="paleo" v-model="user.dietaryPreferences" /> &nbsp; Paleo
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="peanut-free" v-model="user.dietaryPreferences" /> Peanut-Free
+            <input type="checkbox" value="peanut-free" v-model="user.dietaryPreferences" /> &nbsp; Peanut-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="pescatarian" v-model="user.dietaryPreferences" /> Pescatarian
+            <input type="checkbox" value="pescatarian" v-model="user.dietaryPreferences" /> &nbsp; Pescatarian
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="pork-free" v-model="user.dietaryPreferences" /> Pork-Free
+            <input type="checkbox" value="pork-free" v-model="user.dietaryPreferences" /> &nbsp; Pork-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="red-meat-free" v-model="user.dietaryPreferences" /> Red-Meat-Free
+            <input type="checkbox" value="red-meat-free" v-model="user.dietaryPreferences" /> &nbsp; Red-Meat-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="sesame-free" v-model="user.dietaryPreferences" /> Sesame-Free
+            <input type="checkbox" value="sesame-free" v-model="user.dietaryPreferences" /> &nbsp; Sesame-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="shellfish-free" v-model="user.dietaryPreferences" /> Shellfish-Free
+            <input type="checkbox" value="shellfish-free" v-model="user.dietaryPreferences" /> &nbsp; Shellfish-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="soy-free" v-model="user.dietaryPreferences" /> Soy-Free
+            <input type="checkbox" value="soy-free" v-model="user.dietaryPreferences" /> &nbsp; Soy-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="sugar-conscious" v-model="user.dietaryPreferences" /> Sugar-Conscious
+            <input type="checkbox" value="sugar-conscious" v-model="user.dietaryPreferences" /> &nbsp; Sugar-Conscious
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="sulfite-free" v-model="user.dietaryPreferences" /> Sulfite-Free
+            <input type="checkbox" value="sulfite-free" v-model="user.dietaryPreferences" /> &nbsp; Sulfite-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="tree-nut-free" v-model="user.dietaryPreferences" /> Tree-Nut-Free
+            <input type="checkbox" value="tree-nut-free" v-model="user.dietaryPreferences" /> &nbsp; Tree-Nut-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="wheat-free" v-model="user.dietaryPreferences" /> Wheat-Free
+            <input type="checkbox" value="wheat-free" v-model="user.dietaryPreferences" /> &nbsp; Wheat-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="vegetarian" v-model="user.dietaryPreferences" /> Vegetarian
+            <input type="checkbox" value="vegetarian" v-model="user.dietaryPreferences" /> &nbsp; Vegetarian
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="vegan" v-model="user.dietaryPreferences" /> Vegan
+            <input type="checkbox" value="vegan" v-model="user.dietaryPreferences" /> &nbsp; Vegan
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="gluten-free" v-model="user.dietaryPreferences" /> Gluten-Free
+            <input type="checkbox" value="gluten-free" v-model="user.dietaryPreferences" /> &nbsp; Gluten-Free
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="balanced" v-model="user.dietaryPreferences" /> Balanced
+            <input type="checkbox" value="balanced" v-model="user.dietaryPreferences" /> &nbsp; Balanced
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="high-fiber" v-model="user.dietaryPreferences" /> High-Fiber
+            <input type="checkbox" value="high-fiber" v-model="user.dietaryPreferences" /> &nbsp; High-Fiber
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="high-protein" v-model="user.dietaryPreferences" /> High-Protein
+            <input type="checkbox" value="high-protein" v-model="user.dietaryPreferences" /> &nbsp; High-Protein
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="low-carb" v-model="user.dietaryPreferences" /> Low-Carb
+            <input type="checkbox" value="low-carb" v-model="user.dietaryPreferences" /> &nbsp; Low-Carb
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="low-fat" v-model="user.dietaryPreferences" /> Low-Fat
+            <input type="checkbox" value="low-fat" v-model="user.dietaryPreferences" /> &nbsp; Low-Fat
           </label>
           <label class="profile-container__checkbox-inline">
-            <input type="checkbox" value="low-sodium" v-model="user.dietaryPreferences" /> Low-Sodium
+            <input type="checkbox" value="low-sodium" v-model="user.dietaryPreferences" /> &nbsp; Low-Sodium
           </label>
           <!-- <label class="profile-container__checkbox-inline">
             <input type="checkbox" value="none" v-model="user.dietaryPreferences" /> None
